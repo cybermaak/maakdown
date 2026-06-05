@@ -8,8 +8,8 @@ The app is a viewer, not an editor. It renders CommonMark/GFM, code, KaTeX math,
 
 ## Current Phase
 
-**Phase:** P1-P3 implementation  
-**Active focus:** safe base renderer, navigation model, trusted local assets, and file watcher.
+**Phase:** P4 next
+**Active focus:** rich rendering enhancements, starting with lazy code highlighting and theme propagation.
 
 ## Major Files And Directories
 
@@ -20,7 +20,12 @@ The app is a viewer, not an editor. It renders CommonMark/GFM, code, KaTeX math,
 - `AGENTS.md`: repo-level agent operating rules.
 - `CLAUDE.md`: Claude-specific working context.
 - `internal/`: Go backend service packages.
+- `internal/assetservice/`: trusted-root local image resolver and tokenized loopback asset server.
+- `internal/watcher/`: parent-directory filesystem watcher with safe-save debounce.
 - `frontend/`: Svelte/Vite frontend.
+- `frontend/src/core/pipeline/`: unified Markdown parser, sanitizer integration, frontmatter/callout/index extraction, and parser tests.
+- `frontend/src/core/navigation/`: anchor/link/scroll-spy helpers and navigation tests.
+- `frontend/src/components/`: reader surface, table of contents, and metadata panel.
 - `build/darwin/`, `build/windows/`, `build/signing/`: signing and packaging templates/documentation; secrets excluded.
 - `.github/workflows/ci.yml`: initial CI workflow for frontend and Go package checks.
 
@@ -33,6 +38,8 @@ The app is a viewer, not an editor. It renders CommonMark/GFM, code, KaTeX math,
 - Use a tokenized loopback Go asset server for local Markdown images; do not send normal image payloads over Wails IPC.
 - Treat generated Wails bindings as generated; frontend code calls through `frontend/src/ipc/`.
 - Use virtualizer-aware navigation for TOC, anchors, footnotes, and scroll-spy.
+- Resolve Markdown images against a trusted root chosen by configured vault root, then git root, then document parent.
+- Preserve reload position using the nearest active heading until the virtualizer-specific block restore lands.
 
 ## Planned Tasks
 
@@ -48,6 +55,9 @@ See `docs/task-tracker.md`.
 - 2026-06-05: Created initial scaffold commit.
 - 2026-06-05: Installed Go 1.26.4 and Wails CLI v2.11.0 locally.
 - 2026-06-05: Generated Wails bindings and verified P0 with `scripts/verify.sh`.
+- 2026-06-05: Implemented P1 safe base renderer with unified/GFM/frontmatter/math/callout parsing, sanitizer schema, document view, and metadata panel.
+- 2026-06-05: Implemented P2 navigation model with heading/anchor indexes, TOC, internal link delegation, and scroll-spy helpers.
+- 2026-06-05: Implemented P3 trusted local assets and watcher with loopback asset URLs, SVG safety policy, parent-directory safe-save watching, and reload restore.
 
 ## Verification Commands
 
@@ -59,13 +69,19 @@ $(go env GOPATH)/bin/wails version
 cd frontend && npm install
 cd frontend && npm run check
 cd frontend && npm run build
+cd frontend && npm run test
 go test ./...
 scripts/verify.sh
 ```
 
 ## Current Verification Blockers
 
-- The Wails CLI is installed at `$(go env GOPATH)/bin/wails`; it may not be on shell `PATH`. `scripts/verify.sh` resolves this automatically.
+- None.
+
+## Verification Notes
+
+- `scripts/verify.sh` currently passes frontend tests, Svelte checks, frontend build, Go tests, and Wails build.
+- Vite reports the main JavaScript chunk is above 500 kB after the parser stack was added. This is non-blocking for P1-P3 and should be addressed during the worker/lazy-enhancement and P4/P5 performance work.
 
 ## Signing Context
 

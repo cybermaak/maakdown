@@ -55,3 +55,87 @@ button {
   padding: 36px 48px;
   line-height: 1.65;
 }
+
+.reader-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  height: calc(100vh - 49px);
+}
+
+.document-scroll {
+  min-width: 0;
+  overflow: auto;
+  padding: 36px 48px;
+  line-height: 1.65;
+}
+
+.doc-block {
+  max-width: 860px;
+}
+
+.doc-block img {
+  max-width: 100%;
+  height: auto;
+}
+
+.doc-block pre {
+  overflow: auto;
+  border-radius: 6px;
+  padding: 12px;
+  background: #232320;
+  color: #f5f3ea;
+}
+
+.callout {
+  border-left: 4px solid #78766b;
+  padding: 8px 12px;
+  background: #f1f0ea;
+}
+
+.metadata-panel {
+  border-left: 1px solid #d8d8d2;
+  padding: 18px;
+  overflow: auto;
+  background: #faf9f4;
+}
+
+.metadata-panel h2 {
+  margin-top: 0;
+  font-size: 14px;
+  text-transform: uppercase;
+}
+
+.metadata-panel dt {
+  font-weight: 700;
+}
+
+.metadata-panel dd {
+  margin: 0 0 12px;
+  color: #4b4a44;
+}
+
+.toc {
+  display: grid;
+  gap: 4px;
+  margin-top: 18px;
+}
+
+.toc button {
+  border: 0;
+  border-radius: 6px;
+  padding: 6px 8px;
+  padding-left: calc(8px + (var(--depth, 1) - 1) * 12px);
+  text-align: left;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.toc button:hover,
+.toc button.active {
+  background: #deddd6;
+}
+
+.error {
+  color: #8f1d1d;
+}

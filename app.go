@@ -36,7 +36,9 @@ func NewApp() *App {
 
 func (a *App) Startup(ctx context.Context) {
 	a.ctx = ctx
+	a.Files.SetContext(ctx)
 	a.Links.SetContext(ctx)
+	a.Watcher.SetContext(ctx)
 	a.Assets.Start(ctx)
 }
 

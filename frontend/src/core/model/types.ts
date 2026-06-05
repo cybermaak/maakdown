@@ -16,6 +16,8 @@ export interface Block {
   kind: BlockKind;
   html: string;
   enhancement: EnhancementKind;
+  text?: string;
+  level?: number;
   sourceStart?: number;
   sourceEnd?: number;
 }
@@ -30,11 +32,15 @@ export interface Heading {
 export interface AnchorTarget {
   id: string;
   blockId: string;
+  kind: 'heading' | 'footnote' | 'backref' | 'generic';
 }
 
 export interface DocumentModel {
   blocks: Block[];
   headings: Heading[];
   anchors: Record<string, AnchorTarget>;
+  footnotes: Record<string, AnchorTarget>;
   frontmatter: Record<string, unknown>;
+  languages: string[];
+  unresolvedWikilinks: string[];
 }

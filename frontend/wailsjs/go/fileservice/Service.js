@@ -13,3 +13,7 @@ export function OpenDocumentAt(arg1) {
 export function ReadDocument(arg1) {
   return window['go']['fileservice']['Service']['ReadDocument'](arg1);
 }
+
+export function SetContext(arg1) {
+  return window['go']['fileservice']['Service']['SetContext'](arg1);
+}

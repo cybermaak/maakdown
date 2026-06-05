@@ -1,0 +1,51 @@
+import { describe, expect, it } from 'vitest';
+import { extractFrontmatter, parseDocument } from './parseDocument';
+
+describe('extractFrontmatter', () => {
+  it('extracts YAML frontmatter and removes it from the body', () => {
+    const result = extractFrontmatter('---\ntitle: Demo\ntags:\n  - docs\n---\n# Hello');
+
+    expect(result.data).toEqual({ title: 'Demo', tags: ['docs'] });
+    expect(result.body).toBe('# Hello');
+  });
+});
+
+describe('parseDocument', () => {
+  it('returns sanitized blocks, heading anchors, languages, and frontmatter', async () => {
+    const model = await parseDocument({
+      path: '/tmp/readme.md',
+      source: [
+        '---',
+        'title: Test Doc',
+        '---',
+        '# Hello World',
+        '',
+        'Paragraph with <script>alert(1)</script> text.',
+        '',
+        '```ts',
+        'const value = 1;',
+        '```',
+        '',
+        '> [!NOTE]',
+        '> Remember this.',
+        ''
+      ].join('\n')
+    });
+
+    expect(model.frontmatter.title).toBe('Test Doc');
+    expect(model.headings[0]).toMatchObject({ id: 'hello-world', depth: 1, text: 'Hello World' });
+    expect(model.anchors['hello-world']).toMatchObject({ blockId: 'block-1', kind: 'heading' });
+    expect(model.languages).toEqual(['ts']);
+    expect(model.blocks.some((block) => block.html.includes('<script>'))).toBe(false);
+    expect(model.blocks.some((block) => block.kind === 'callout')).toBe(true);
+  });
+
+  it('records unresolved wikilinks', async () => {
+    const model = await parseDocument({
+      path: '/tmp/note.md',
+      source: 'See [[Other Note]] and [[Daily Log]].'
+    });
+
+    expect(model.unresolvedWikilinks).toEqual(['Daily Log', 'Other Note']);
+  });
+});

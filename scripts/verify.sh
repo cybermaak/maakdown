@@ -5,9 +5,11 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 echo "== Frontend check =="
 if [ -d "$ROOT/frontend/node_modules" ]; then
+  (cd "$ROOT/frontend" && npm run test)
   (cd "$ROOT/frontend" && npm run check)
+  (cd "$ROOT/frontend" && npm run build)
 else
-  echo "frontend/node_modules missing; run 'cd frontend && npm install' to enable npm run check"
+  echo "frontend/node_modules missing; run 'cd frontend && npm install' to enable frontend verification"
 fi
 
 echo "== Go tests =="

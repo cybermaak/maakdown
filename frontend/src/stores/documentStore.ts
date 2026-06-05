@@ -14,3 +14,12 @@ export const documentStore = writable<DocumentState>({
   loading: false,
   error: null
 });
+
+export function setDocument(path: string, model: DocumentModel): void {
+  documentStore.set({
+    model,
+    path,
+    loading: false,
+    error: null
+  });
+}

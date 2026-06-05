@@ -1,12 +1,19 @@
 package fileservice
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"time"
+
+	"maakdown/internal/assetservice"
+
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
-type Service struct{}
+type Service struct {
+	ctx context.Context
+}
 
 type OpenDocumentResult struct {
 	Path        string `json:"path"`
@@ -27,8 +34,35 @@ func New() *Service {
 	return &Service{}
 }
 
+func (s *Service) SetContext(ctx context.Context) {
+	s.ctx = ctx
+}
+
 func (s *Service) OpenDocument() (OpenDocumentResult, error) {
-	return OpenDocumentResult{}, ErrFileDialogNotImplemented
+	if s.ctx == nil {
+		return OpenDocumentResult{}, ErrFileDialogNotImplemented
+	}
+
+	path, err := runtime.OpenFileDialog(s.ctx, runtime.OpenDialogOptions{
+		Title: "Open Markdown Document",
+		Filters: []runtime.FileFilter{
+			{
+				DisplayName: "Markdown Documents (*.md, *.markdown, *.mdown)",
+				Pattern:     "*.md;*.markdown;*.mdown",
+			},
+			{
+				DisplayName: "All Files (*.*)",
+				Pattern:     "*.*",
+			},
+		},
+	})
+	if err != nil {
+		return OpenDocumentResult{}, err
+	}
+	if path == "" {
+		return OpenDocumentResult{}, ErrNoFileSelected
+	}
+	return s.OpenDocumentAt(path)
 }
 
 func (s *Service) OpenDocumentAt(path string) (OpenDocumentResult, error) {
@@ -48,11 +82,15 @@ func (s *Service) OpenDocumentAt(path string) (OpenDocumentResult, error) {
 	}
 
 	dir := filepath.Dir(abs)
+	trustedRoot, err := assetservice.DetectTrustedRoot(abs, "")
+	if err != nil {
+		return OpenDocumentResult{}, err
+	}
 	return OpenDocumentResult{
 		Path:        abs,
 		Contents:    string(bytes),
 		DocumentDir: dir,
-		TrustedRoot: dir,
+		TrustedRoot: trustedRoot,
 		ModTime:     formatTime(info.ModTime()),
 	}, nil
 }

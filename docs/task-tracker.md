@@ -9,9 +9,9 @@
 | Phase | Status | Goal | Exit Criteria |
 |---|---|---|---|
 | P0 | Done | Scaffold repository and app shell | repo initialized, project tree present, tool versions pinned, Wails build passes |
-| P1 | Todo | Safe base renderer | GFM fixture renders safely; frontmatter panel/hide works |
-| P2 | Todo | Navigation model | TOC, anchors, and footnote backlinks work before virtualization |
-| P3 | Todo | Assets and watcher | trusted-root images work; traversal blocked; safe-save reload works |
+| P1 | Done | Safe base renderer | GFM fixture renders safely; frontmatter panel/hide works |
+| P2 | Done | Navigation model | TOC, anchors, and footnote backlinks work before virtualization |
+| P3 | Done | Assets and watcher | trusted-root images work; traversal blocked; safe-save reload works |
 | P4 | Todo | Rich enhancements | code, math, Mermaid, and theme propagation work |
 | P5 | Todo | Virtualized large docs | 10k-line fixture has bounded DOM and working anchors |
 | P6 | Todo | Notes support | wikilinks navigate within configured vault |
@@ -32,31 +32,31 @@
 
 | ID | Status | Task | Depends On | Exit Criteria | Verification |
 |---|---|---|---|---|---|
-| P1.1 | Todo | Implement parser worker protocol | P0 | worker returns sanitized block records | unit fixtures |
-| P1.2 | Todo | Assemble unified pipeline | P1.1 | GFM/frontmatter/math/callouts parse as expected | pipeline tests |
-| P1.3 | Todo | Implement sanitize schema | P1.2 | malicious HTML fixtures render inert | security tests |
-| P1.4 | Todo | Build base non-virtualized document view | P1.2 | visible Markdown renders without enhancement | frontend check/build |
-| P1.5 | Todo | Implement frontmatter metadata panel | P1.2 | panel/hide modes work | component tests/manual check |
+| P1.1 | Done | Implement parser worker protocol | P0 | worker returns sanitized block records | `npm run test`, `npm run check`, `npm run build` |
+| P1.2 | Done | Assemble unified pipeline | P1.1 | GFM/frontmatter/math/callouts parse as expected | `parseDocument.test.ts` |
+| P1.3 | Done | Implement sanitize schema | P1.2 | malicious HTML fixtures render inert | `parseDocument.test.ts` |
+| P1.4 | Done | Build base non-virtualized document view | P1.2 | visible Markdown renders without enhancement | `npm run check`, `npm run build` |
+| P1.5 | Done | Implement frontmatter metadata panel | P1.2 | panel/hide modes work | `npm run check`, `npm run build` |
 
 ## P2 - Navigation Model
 
 | ID | Status | Task | Depends On | Exit Criteria | Verification |
 |---|---|---|---|---|---|
-| P2.1 | Todo | Build anchor/heading/footnote indexes | P1 | anchors map to block ids | unit tests |
-| P2.2 | Todo | Implement TOC sidebar | P2.1 | headings render and click-scroll works | integration test |
-| P2.3 | Todo | Implement internal link interception | P2.1 | `#anchor` and footnote backlinks route through navigation | integration test |
-| P2.4 | Todo | Implement scroll-spy state | P2.1 | active heading follows visible range | integration test |
+| P2.1 | Done | Build anchor/heading/footnote indexes | P1 | anchors map to block ids | `parseDocument.test.ts` |
+| P2.2 | Done | Implement TOC sidebar | P2.1 | headings render and click-scroll works | `npm run check`, `npm run build` |
+| P2.3 | Done | Implement internal link interception | P2.1 | `#anchor` and footnote backlinks route through navigation | `navigation.test.ts`, `npm run check` |
+| P2.4 | Done | Implement scroll-spy state | P2.1 | active heading follows visible range | `navigation.test.ts`, `npm run check` |
 
 ## P3 - Assets And Watcher
 
 | ID | Status | Task | Depends On | Exit Criteria | Verification |
 |---|---|---|---|---|---|
-| P3.1 | Todo | Implement trusted-root detection | P0 | vault > git root > file parent precedence | unit tests |
-| P3.2 | Todo | Implement asset resolver and tokenized ids | P3.1 | traversal and symlink escapes rejected | security tests |
-| P3.3 | Todo | Implement loopback asset server | P3.2 | images stream via tokenized URLs | integration test |
-| P3.4 | Todo | Implement SVG policy | P3.3 | unsafe SVG blocked or sanitized | security fixtures |
-| P3.5 | Todo | Implement parent-directory watcher | P0 | write/rename/safe-save coalesced | watcher tests |
-| P3.6 | Todo | Preserve position on reload | P3.5/P2 | reload restores nearest anchor/block | integration test |
+| P3.1 | Done | Implement trusted-root detection | P0 | vault > git root > file parent precedence | `go test ./internal/assetservice` |
+| P3.2 | Done | Implement asset resolver and tokenized ids | P3.1 | traversal and symlink escapes rejected | `go test ./internal/assetservice` |
+| P3.3 | Done | Implement loopback asset server | P3.2 | images stream via tokenized URLs | `go test ./internal/assetservice` |
+| P3.4 | Done | Implement SVG policy | P3.3 | unsafe SVG blocked or sanitized | `go test ./internal/assetservice` |
+| P3.5 | Done | Implement parent-directory watcher | P0 | write/rename/safe-save coalesced | `go test ./internal/watcher` |
+| P3.6 | Done | Preserve position on reload | P3.5/P2 | reload restores nearest anchor/block | `npm run check`, `npm run build` |
 
 ## P4 - Rich Enhancements
 
