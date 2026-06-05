@@ -1,0 +1,55 @@
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Local automation/browser artifacts
+.playwright-cli/
+cache/
+
+# Go
+bin/
+*.test
+coverage.out
+
+# Frontend
+node_modules/
+frontend/node_modules/
+frontend/.svelte-kit/
+frontend/dist/*
+!frontend/dist/.gitkeep
+frontend/.vite/
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+
+# Wails/build outputs
+build/bin/
+/dist/
+*.app
+*.dmg
+*.pkg
+*.msi
+*.exe
+*.zip
+
+# Signing secrets and release artifacts
+secrets/
+build/signing/private/
+*.p12
+*.pfx
+*.cer
+*.crt
+*.key
+*.pem
+*.mobileprovision
+*.provisionprofile
+*.dSYM.zip
+
+# Environment
+.env
+.env.*
+!.env.example

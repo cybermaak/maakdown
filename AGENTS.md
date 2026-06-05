@@ -1,0 +1,103 @@
+# AGENTS
+
+This file defines repo-level operating rules for any agent working in Maakdown.
+
+## Core Rules
+
+1. Follow the approved docs in `docs/`; if implementation must deviate, update `DEV_CONTEXT.md` and the relevant docs.
+2. Keep `docs/task-tracker.md` current when tasks are added, reprioritized, started, completed, or blocked.
+3. Keep `DEV_CONTEXT.md` current whenever project state meaningfully changes.
+4. Do not push to a remote repository, create remote branches, or open pull requests unless the user explicitly asks.
+5. Never commit signing certificates, private keys, notarization credentials, store credentials, provisioning profiles, or generated release binaries.
+
+## Verification And Commit Policy
+
+- Every meaningful implementation change should end with verification that matches the scope of the change.
+- Use the cheapest useful verification first:
+  - docs/tree-only changes: `find`, `rg`, and `git status`
+  - frontend changes: `npm install` if needed, then `npm run check` and `npm run build`
+  - backend changes: `go test ./...` once Go is installed
+  - full app changes: `wails build` once Wails and Go are installed
+- After verification succeeds, commit the completed coherent unit of work unless the user asks not to.
+- Do not batch unrelated work into one commit when they can be split cleanly.
+- If verification is blocked by missing local tools or functional constraints, record the blocker in `DEV_CONTEXT.md`.
+
+## DEV_CONTEXT.md Policy
+
+`DEV_CONTEXT.md` is required project memory. Update it whenever one or more of the following changes:
+
+- the purpose of files or directories becomes clearer
+- a new file or subsystem is added
+- a planned task is added, removed, reprioritized, or redefined
+- a task is completed
+- an implementation detail materially changes
+- an architectural or product decision is made or revised
+- verification commands or blockers change
+
+At minimum, `DEV_CONTEXT.md` should contain:
+
+- project summary
+- tree-level summary
+- current phase and active focus
+- planned tasks and features
+- completed tasks with timestamps
+- implementation notes and decision log
+- current verification commands and blockers
+
+## Task Tracker Policy
+
+`docs/task-tracker.md` is the project/progress tracker. It should be updated as work lands:
+
+- `Todo`: not started
+- `In Progress`: actively being worked
+- `Blocked`: cannot proceed without a dependency or decision
+- `Done`: implemented and verified
+- `Deferred`: intentionally out of current scope
+
+Each task should have an owner field, dependencies, exit criteria, and verification notes.
+
+## Remote Policy
+
+- Never push.
+- Never create or update a remote branch.
+- Never open a pull request.
+- Exception: only do any of the above if the user explicitly instructs you to.
+
+## Signing And Release Policy
+
+The user plans to sign macOS and Windows builds with their own certificates. Agents must preserve that structure without storing secrets:
+
+- macOS signing assets belong in the user's keychain or external secret storage, not git.
+- Windows code-signing certificates (`.pfx`, `.p12`, `.cer`, private keys) must not be committed.
+- Notarization credentials, Apple API keys, timestamp server credentials, and CI secrets must be referenced by environment variable names or secret-manager keys only.
+- Keep signing-safe templates, entitlements, manifests, and documentation in git.
+- Generated installers, disk images, signed binaries, symbol archives, and notarization logs are build artifacts and should remain ignored unless the user explicitly asks otherwise.
+
+## Beast Mode
+
+If the user says to "go beast mode" on a goal:
+
+- Work autonomously toward the requested goal without pausing for ordinary decisions.
+- If a decision is needed and there is a reasonable recommended path, take that path and continue.
+- Break work into coherent milestones and create verified commits along the way.
+- Keep `DEV_CONTEXT.md` and `docs/task-tracker.md` updated as milestones land.
+- Stop only if a real blocker, destructive external action, missing credential, or user-only decision prevents progress.
+
+Beast mode increases autonomy for implementation choices, not for remote pushes or secret-handling.
+
+## Practical Workflow
+
+1. Read `DEV_CONTEXT.md` and `docs/task-tracker.md`.
+2. Inspect relevant docs/code.
+3. Implement the next coherent task.
+4. Verify the result.
+5. Update `DEV_CONTEXT.md` and `docs/task-tracker.md`.
+6. Commit verified work.
+
+## Current Repo Expectations
+
+- `docs/markdown-viewer-design-spec.md` and `docs/markdown-viewer-implementation-plan.md` are the current source of product and architecture truth.
+- Wails v2.11.x is pinned for v1; do not migrate to Wails v3 unless the user explicitly reopens that decision.
+- Svelte 5.x and Vite 8.x are the frontend baseline.
+- Local Markdown images use the tokenized loopback asset server, not Wails v2 dynamic `AssetsHandler`.
+- Generated Wails bindings under `frontend/wailsjs/` must be treated as generated. Application code should import through `frontend/src/ipc/`.
