@@ -8,8 +8,8 @@ The app is a viewer, not an editor. It renders CommonMark/GFM, code, KaTeX math,
 
 ## Current Phase
 
-**Phase:** P0 scaffold  
-**Active focus:** Go/Wails tool installation is needed before backend/app verification. Frontend scaffold and repo structure are in place.
+**Phase:** P1-P3 implementation  
+**Active focus:** safe base renderer, navigation model, trusted local assets, and file watcher.
 
 ## Major Files And Directories
 
@@ -46,31 +46,26 @@ See `docs/task-tracker.md`.
 - 2026-06-05: Initialized git repository.
 - 2026-06-05: Installed frontend dependencies and verified `npm run check` plus `npm run build`.
 - 2026-06-05: Created initial scaffold commit.
+- 2026-06-05: Installed Go 1.26.4 and Wails CLI v2.11.0 locally.
+- 2026-06-05: Generated Wails bindings and verified P0 with `scripts/verify.sh`.
 
 ## Verification Commands
-
-Available locally:
 
 ```bash
 node --version
 npm --version
-```
-
-Planned when dependencies/tools are installed:
-
-```bash
+go version
+$(go env GOPATH)/bin/wails version
 cd frontend && npm install
 cd frontend && npm run check
 cd frontend && npm run build
 go test ./...
-wails build
 scripts/verify.sh
 ```
 
 ## Current Verification Blockers
 
-- `go` is not currently on `PATH`.
-- `wails` is not currently on `PATH`.
+- The Wails CLI is installed at `$(go env GOPATH)/bin/wails`; it may not be on shell `PATH`. `scripts/verify.sh` resolves this automatically.
 
 ## Signing Context
 

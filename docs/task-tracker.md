@@ -8,7 +8,7 @@
 
 | Phase | Status | Goal | Exit Criteria |
 |---|---|---|---|
-| P0 | In Progress | Scaffold repository and app shell | repo initialized, project tree present, tool versions pinned; Go/Wails verification blocked by missing tools |
+| P0 | Done | Scaffold repository and app shell | repo initialized, project tree present, tool versions pinned, Wails build passes |
 | P1 | Todo | Safe base renderer | GFM fixture renders safely; frontmatter panel/hide works |
 | P2 | Todo | Navigation model | TOC, anchors, and footnote backlinks work before virtualization |
 | P3 | Todo | Assets and watcher | trusted-root images work; traversal blocked; safe-save reload works |
@@ -26,7 +26,7 @@
 | P0.3 | Done | Create project tree from implementation plan | P0.1 | Go/Wails, frontend, core, signing, docs folders exist | `find`/`rg` tree check |
 | P0.4 | Done | Add repo agent guidance | P0.1 | `AGENTS.md`, `CLAUDE.md`, `DEV_CONTEXT.md` exist | file review |
 | P0.5 | Done | Pin frontend dependencies | P0.3 | `frontend/package.json` pins Svelte 5.x and Vite 8.x | `npm install`, `npm run check`, `npm run build` |
-| P0.6 | Blocked | Verify Go/Wails scaffold | P0.3 | `go test ./...` and `wails build` can run | blocked until Go/Wails are installed |
+| P0.6 | Done | Verify Go/Wails scaffold | P0.3 | `go test ./...` and `wails build` can run | `scripts/verify.sh` |
 
 ## P1 - Safe Base Renderer
 
