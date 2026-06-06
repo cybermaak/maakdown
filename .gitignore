@@ -9,6 +9,7 @@ Thumbs.db
 # Local automation/browser artifacts
 .playwright-cli/
 cache/
+output/playwright/
 
 # Go
 bin/

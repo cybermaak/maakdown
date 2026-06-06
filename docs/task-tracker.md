@@ -46,6 +46,7 @@
 | P2.2 | Done | Implement TOC sidebar | P2.1 | headings render and click-scroll works | `npm run check`, `npm run build` |
 | P2.3 | Done | Implement internal link interception | P2.1 | `#anchor` and footnote backlinks route through navigation | `navigation.test.ts`, `npm run check` |
 | P2.4 | Done | Implement scroll-spy state | P2.1 | active heading follows visible range | `navigation.test.ts`, `npm run check` |
+| P2.5 | Todo | Correct large-document heading/block mapping | P2.1 | late TOC targets land on the requested heading and scroll-spy exposes the active entry | `maakdown-reader-evaluation.md` Playwright navigation test |
 
 ## P3 - Assets And Watcher
 
@@ -89,7 +90,7 @@
 
 | ID | Status | Task | Depends On | Exit Criteria | Verification |
 |---|---|---|---|---|---|
-| P7.1 | Todo | Build performance fixture corpus | P1 | named fixtures exist | perf harness |
+| P7.1 | In Progress | Build performance fixture corpus | P1 | named fixtures exist | large reader evaluation fixture and generator added; small/medium fixtures remain |
 | P7.2 | Todo | Implement perf harness | P5 | target metrics recorded per platform | perf report |
 | P7.3 | Todo | Add macOS signing/notarization runbook | P0 | non-secret signing docs exist | doc review |
 | P7.4 | Todo | Add Windows signing runbook | P0 | non-secret signing docs exist | doc review |

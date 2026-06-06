@@ -26,6 +26,8 @@ The app is a viewer, not an editor. It renders CommonMark/GFM, code, KaTeX math,
 - `frontend/src/core/pipeline/`: unified Markdown parser, sanitizer integration, frontmatter/callout/index extraction, and parser tests.
 - `frontend/src/core/navigation/`: anchor/link/scroll-spy helpers and navigation tests.
 - `frontend/src/components/`: reader surface, table of contents, and metadata panel.
+- `fixtures/`: deterministic Markdown evaluation documents and local fixture assets.
+- `tools/generate-reader-evaluation-fixture.mjs`: regenerates the large reader evaluation dossier.
 - `build/darwin/`, `build/windows/`, `build/signing/`: signing and packaging templates/documentation; secrets excluded.
 - `.github/workflows/ci.yml`: initial CI workflow for frontend and Go package checks.
 
@@ -58,6 +60,7 @@ See `docs/task-tracker.md`.
 - 2026-06-05: Implemented P1 safe base renderer with unified/GFM/frontmatter/math/callout parsing, sanitizer schema, document view, and metadata panel.
 - 2026-06-05: Implemented P2 navigation model with heading/anchor indexes, TOC, internal link delegation, and scroll-spy helpers.
 - 2026-06-05: Implemented P3 trusted local assets and watcher with loopback asset URLs, SVG safety policy, parent-directory safe-save watching, and reload restore.
+- 2026-06-05: Added a deterministic 7,727-line reader evaluation fixture, local architecture asset, generator, and development-only browser QA loader.
 
 ## Verification Commands
 
@@ -82,6 +85,9 @@ scripts/verify.sh
 
 - `scripts/verify.sh` currently passes frontend tests, Svelte checks, frontend build, Go tests, and Wails build.
 - Vite reports the main JavaScript chunk is above 500 kB after the parser stack was added. This is non-blocking for P1-P3 and should be addressed during the worker/lazy-enhancement and P4/P5 performance work.
+- The large reader fixture currently mounts 1,870 document blocks and 571 TOC buttons. Three browser QA loads reached the document heading in 1,073 ms, 694 ms, and 743 ms.
+- The fixture run confirmed open P4/P5 work: Mermaid is still raw source, code is not highlighted, math styling/output is incomplete, and the DOM is not virtualized.
+- The fixture also exposed a P2 navigation defect: a late TOC target can land on an earlier scenario, and the active TOC entry is not kept visible.
 
 ## Signing Context
 

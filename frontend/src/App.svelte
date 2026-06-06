@@ -12,20 +12,21 @@
   let documentView: DocumentView | undefined;
   let removeFileChangedListener: (() => void) | null = null;
 
+  async function loadSource(path: string, source: string) {
+    const model = await parseDocument({ source, path });
+    setDocument(path, model);
+    uiStore.update((state) => ({
+      ...state,
+      activeHeadingId: model.headings[0]?.id ?? null
+    }));
+  }
+
   async function handleOpen() {
     documentStore.update((state) => ({ ...state, loading: true, error: null }));
     try {
       const opened = await openDocument();
-      const model = await parseDocument({
-        source: opened.contents,
-        path: opened.path
-      });
-      setDocument(opened.path, model);
+      await loadSource(opened.path, opened.contents);
       await startWatch(opened.path);
-      uiStore.update((state) => ({
-        ...state,
-        activeHeadingId: model.headings[0]?.id ?? null
-      }));
     } catch (error) {
       documentStore.update((state) => ({
         ...state,
@@ -62,6 +63,26 @@
   }
 
   onMount(() => {
+    const fixture = import.meta.env.DEV ? new URLSearchParams(window.location.search).get('fixture') : null;
+    if (fixture) {
+      documentStore.update((state) => ({ ...state, loading: true, error: null }));
+      void fetch(`/__maakdown_fixture/${encodeURI(fixture)}`)
+        .then(async (response) => {
+          if (!response.ok) {
+            throw new Error(`Fixture load failed: ${response.status}`);
+          }
+          await loadSource(`fixtures/${fixture}`, await response.text());
+        })
+        .catch((error) => {
+          documentStore.update((state) => ({
+            ...state,
+            loading: false,
+            error: error instanceof Error ? error.message : String(error)
+          }));
+        });
+      return;
+    }
+
     removeFileChangedListener = onFileChanged((path) => {
       void reloadDocument(path);
     });

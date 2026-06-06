@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520" role="img" aria-labelledby="title desc">
+  <title id="title">Maakdown architecture overview</title>
+  <desc id="desc">The Wails shell connects a Go service boundary to a sanitized Svelte reader and progressive rendering services.</desc>
+  <rect width="1200" height="520" fill="#f3f4ef"/>
+  <g font-family="system-ui, sans-serif">
+    <text x="60" y="70" font-size="34" font-weight="700" fill="#20231f">Maakdown architecture</text>
+    <text x="60" y="104" font-size="18" fill="#596158">Readable first, bounded later, local by default</text>
+    <g stroke="#667066" stroke-width="3" fill="none">
+      <path d="M290 260 H410"/>
+      <path d="M680 260 H800"/>
+      <path d="M545 335 V400"/>
+      <path d="M955 335 V400"/>
+    </g>
+    <g fill="#ffffff" stroke="#303830" stroke-width="2">
+      <rect x="60" y="185" width="230" height="150" rx="8"/>
+      <rect x="410" y="185" width="270" height="150" rx="8"/>
+      <rect x="800" y="185" width="310" height="150" rx="8"/>
+      <rect x="410" y="400" width="270" height="82" rx="8"/>
+      <rect x="800" y="400" width="310" height="82" rx="8"/>
+    </g>
+    <g fill="#20231f">
+      <text x="88" y="230" font-size="23" font-weight="700">Wails desktop shell</text>
+      <text x="88" y="270" font-size="17">Native file dialog</text>
+      <text x="88" y="298" font-size="17">System WebView</text>
+      <text x="442" y="230" font-size="23" font-weight="700">Go trust boundary</text>
+      <text x="442" y="270" font-size="17">Files, assets, links</text>
+      <text x="442" y="298" font-size="17">Watch and configuration</text>
+      <text x="832" y="230" font-size="23" font-weight="700">Svelte reader</text>
+      <text x="832" y="270" font-size="17">Sanitized block model</text>
+      <text x="832" y="298" font-size="17">Navigation and progressive UI</text>
+      <text x="442" y="434" font-size="19" font-weight="700">Tokenized asset server</text>
+      <text x="442" y="462" font-size="16">127.0.0.1, random port</text>
+      <text x="832" y="434" font-size="19" font-weight="700">Enhancement services</text>
+      <text x="832" y="462" font-size="16">KaTeX, highlight.js, Mermaid</text>
+    </g>
+  </g>
+</svg>

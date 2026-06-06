@@ -79,6 +79,14 @@
           return;
         }
         try {
+          const fixture = import.meta.env.DEV ? new URLSearchParams(window.location.search).get('fixture') : null;
+          if (fixture) {
+            const fixtureDirectory = fixture.includes('/') ? fixture.slice(0, fixture.lastIndexOf('/') + 1) : '';
+            image.src = `/__maakdown_fixture/${encodeURI(`${fixtureDirectory}${raw}`)}`;
+            image.dataset.assetResolved = 'true';
+            image.loading = 'lazy';
+            return;
+          }
           const asset = await resolveAsset(documentPath, raw);
           image.src = asset.url;
           image.dataset.assetResolved = 'true';
