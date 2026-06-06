@@ -1,0 +1,102 @@
+/* Maakdown — Color tokens
+   ----------------------------------------------------------------
+   A calm, paper-and-ink palette. Light is warm off-white paper with
+   near-black warm ink; dark is a sage-tinted charcoal. Values are taken
+   verbatim from the product's global.css, then organised into a raw
+   palette + semantic aliases. Semantic aliases are what components use.
+*/
+
+:root {
+  color-scheme: light;
+
+  /* ---- Raw palette: warm paper neutrals (light) ---- */
+  --paper-0: #ffffff; /* pure surface (the page) */
+  --paper-50: #faf9f4; /* metadata / faint surface */
+  --paper-100: #f7f7f4; /* app background */
+  --paper-150: #f1f0ea; /* callout / inset */
+  --paper-200: #efeee8; /* panel / sidebar */
+  --paper-300: #deddd6; /* active / pressed */
+  --paper-400: #d8d8d2; /* hairline border */
+
+  /* ---- Raw palette: warm ink ---- */
+  --ink-900: #232320; /* primary text + code surface */
+  --ink-600: #78766b; /* callout rule / quiet accent */
+  --ink-500: #6b6a61; /* muted text */
+  --ink-on-dark: #f5f3ea; /* text on the dark code surface */
+
+  /* ---- Raw palette: functional hues ---- */
+  --blue-link: #075cc7; /* links / wikilinks (light) */
+  --blue-link-dark: #75b4ff; /* links (dark) */
+  --red-error: #8f1d1d; /* error text */
+  --red-error-soft: #b63a3a; /* error rule / mermaid error */
+  --red-unresolved: #a14848; /* unresolved wikilink */
+
+  /* ---- Callout accent hues (Obsidian-style) ---- */
+  --accent-note: #3a6ea5;
+  --accent-tip: #2c8a6a;
+  --accent-important: #7a52c9;
+  --accent-warning: #b8860b;
+  --accent-caution: #b63a3a;
+
+  /* ---- Semantic aliases (use these in components) ---- */
+  --app-bg: var(--paper-100);
+  --panel-bg: var(--paper-200);
+  --surface-bg: var(--paper-0);
+  --metadata-bg: var(--paper-50);
+  --callout-bg: var(--paper-150);
+
+  --text: var(--ink-900);
+  --muted: var(--ink-500);
+  --border: var(--paper-400);
+  --active: var(--paper-300);
+  --link: var(--blue-link);
+
+  --code-bg: var(--ink-900);
+  --code-fg: var(--ink-on-dark);
+  --callout-rule: var(--ink-600);
+
+  --text-error: var(--red-error);
+  --rule-error: var(--red-error-soft);
+  --wikilink: var(--blue-link);
+  --wikilink-unresolved: var(--red-unresolved);
+
+  /* Focus ring */
+  --ring: color-mix(in srgb, var(--blue-link) 55%, transparent);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* ---- Raw palette: sage charcoal (dark) ---- */
+  --paper-0: #191c1a; /* surface (the page) */
+  --paper-50: #1d201e; /* metadata */
+  --paper-100: #171918; /* app background */
+  --paper-150: #252a26; /* callout / inset */
+  --paper-200: #202320; /* panel / sidebar */
+  --paper-300: #343a34; /* active / pressed */
+  --paper-400: #3a403a; /* hairline border */
+
+  --ink-900: #edf0ea; /* primary text */
+  --ink-600: #78766b;
+  --ink-500: #a9b0a7; /* muted text */
+  --ink-on-dark: #f5f3ea;
+
+  --blue-link: #75b4ff;
+
+  /* The code surface stays dark in BOTH themes (matches the product's
+     unconditional `pre { background:#232320 }`). Re-declare explicitly so
+     these don't inherit the flipped --ink-900. */
+  --code-bg: #20231f;
+  --code-fg: #f5f3ea;
+
+  /* Semantic aliases follow the raw remap automatically, but a few
+     hues need their own dark values. */
+  --link: var(--blue-link);
+  --accent-note: #6fa8dc;
+  --accent-tip: #5fc6a0;
+  --accent-important: #b39ae8;
+  --accent-warning: #e0b341;
+  --accent-caution: #e07a7a;
+  --wikilink: var(--blue-link);
+  --wikilink-unresolved: #e07a7a;
+}

@@ -1,0 +1,49 @@
+/* Maakdown — Spacing, radius, border & elevation tokens
+   ----------------------------------------------------------------
+   The product chrome is built on hairline borders and flat fills, not
+   shadows. Radii are small (6px is the workhorse). Spacing follows the
+   real measurements in global.css (18px panel padding, 8px control gap,
+   36/48 document padding).
+*/
+
+:root {
+  /* ---- Spacing scale ---- */
+  --space-0: 0;
+  --space-1: 4px; /* TOC row gap, tight stacks */
+  --space-2: 6px; /* control padding-y, callout padding-y */
+  --space-3: 8px; /* control gap, callout padding-x */
+  --space-4: 12px; /* code padding, metadata dd gap */
+  --space-5: 16px;
+  --space-6: 18px; /* panel padding, sidebar padding */
+  --space-7: 24px;
+  --space-8: 36px; /* document padding-y */
+  --space-9: 48px; /* document padding-x */
+  --space-10: 64px;
+
+  /* ---- Layout rails (from the real shell) ---- */
+  --sidebar-width: 280px;
+  --metadata-width: 260px;
+  --toolbar-height: 48px;
+
+  /* ---- Radius ---- */
+  --radius-sm: 4px; /* tags, small chips */
+  --radius-md: 6px; /* buttons, TOC rows, code blocks (workhorse) */
+  --radius-lg: 10px; /* cards, dialogs */
+  --radius-pill: 999px;
+
+  /* ---- Border widths ---- */
+  --border-hairline: 1px; /* panel dividers, inputs */
+  --border-accent: 4px; /* callout / blockquote left rule */
+
+  /* ---- Elevation — used sparingly; chrome prefers borders ---- */
+  --shadow-none: none;
+  --shadow-sm: 0 1px 2px rgba(35, 35, 32, 0.06);
+  --shadow-md: 0 4px 16px rgba(35, 35, 32, 0.1);
+  --shadow-pop:
+    0 8px 28px rgba(35, 35, 32, 0.16); /* dialogs, popovers, command menu */
+
+  /* ---- Motion ---- */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1); /* @kind other */
+  --duration-fast: 120ms; /* @kind other */
+  --duration-base: 180ms; /* @kind other */
+}

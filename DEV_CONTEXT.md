@@ -8,9 +8,9 @@ The app is a viewer, not an editor. It renders CommonMark/GFM, code, KaTeX math,
 
 ## Current Phase
 
-**Phase:** P7 external verification
-**Active focus:** run cross-platform packaging smoke tests and certificate-backed
-signing outside the local macOS development environment.
+**Phase:** P8 design system foundation in progress; P7.5 remains externally blocked
+**Active focus:** establish the approved design language, themes, fonts, icons,
+Svelte primitives, and visual regression harness before workspace features.
 
 ## Major Files And Directories
 
@@ -18,6 +18,8 @@ signing outside the local macOS development environment.
 - `docs/markdown-viewer-implementation-plan.md`: approved implementation plan.
 - `docs/review-consensus.md`: Claude/Gemini/Codex review consensus.
 - `docs/task-tracker.md`: project/progress tracker.
+- `docs/design-system/`: reviewed mock, design-system references, adoption
+  rules, screenshots, token exports, component contracts, and review notes.
 - `AGENTS.md`: repo-level agent operating rules.
 - `CLAUDE.md`: Claude-specific working context.
 - `internal/`: Go backend service packages.
@@ -58,6 +60,18 @@ signing outside the local macOS development environment.
 - Configure Mermaid with strict security and render failures as inert reader
   error blocks.
 - Build the vault index in Go and render only indexed wikilinks as navigable.
+- Use the reviewed Maakdown design system as the visual source of truth from P8
+  onward: warm paper/ink themes, semantic tokens, restrained blue interaction
+  accent, hairline borders, Inter, JetBrains Mono, and minimal motion.
+- Implement design-system primitives natively in Svelte; the exported React
+  prototype is reference-only.
+- Use a pinned local `lucide-svelte` package; do not load production icons or
+  UI dependencies from a CDN.
+- Use a two-row toolbar/tab composition, visible watch states, semantic
+  metadata badges/tags, unified command palette, and approved empty state.
+- Treat the square `M` mark as provisional and replaceable.
+- Do not ship the exported font files until license/provenance and distinct
+  weight files are verified.
 
 ## Planned Tasks
 
@@ -89,6 +103,10 @@ See `docs/task-tracker.md`.
 - 2026-06-05: Reopened the 10,726-line evaluation dossier through the Wails
   development bridge and visually verified Mermaid, KaTeX, highlight.js, Shiki,
   themes, metadata, TOC state, and late-anchor navigation.
+- 2026-06-06: Reviewed the exported UX mock and design system, preserved the
+  relevant handoff artifacts under `docs/design-system/`, updated the product
+  and implementation specs to v0.5, and inserted P8 as the immediate design
+  foundation phase before P9-P11 feature work.
 
 ## Verification Commands
 
@@ -112,6 +130,9 @@ scripts/release-check.sh
 - P7.5 requires Windows and Linux runners plus the user's external macOS and
   Windows signing credentials. The workflow and scripts are implemented, but
   those external checks cannot be completed in this local macOS session.
+- P8 font integration is blocked on obtaining genuine licensed, weight-specific
+  Inter and JetBrains Mono assets; the exported files are duplicated across
+  nominal weights.
 
 ## Verification Notes
 

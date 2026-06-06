@@ -1,15 +1,17 @@
 # Markdown Viewer - Product and Technical Design Specification
 
 **Status:** Draft  
-**Version:** 0.3  
-**Date:** 2026-06-05  
+**Version:** 0.5
+**Date:** 2026-06-06
 **Companion:** `docs/markdown-viewer-implementation-plan.md`
 
 ## 1. Overview
 
 Maakdown is a cross-platform desktop Markdown **viewer** for technical documents and personal notes. It opens local Markdown files and renders CommonMark/GFM plus math, diagrams, code, frontmatter, callouts, local images, internal anchors, and notes-style wikilinks.
 
-It is not an editor. There is no live preview loop, collaboration, cloud sync, mobile target, or full Pandoc/academic feature set in v1.
+The next release evolves the renderer into a reader-first, native-editorial desktop workspace. It supports multiple documents in tabs, restores reading sessions, and adds practical retrieval and output tools without becoming an editor.
+
+It is not an editor. There is no live preview loop, collaboration, cloud sync, mobile target, or full Pandoc/academic feature set.
 
 ## 2. Goals
 
@@ -18,8 +20,11 @@ It is not an editor. There is no live preview loop, collaboration, cloud sync, m
 - Keep memory bounded for large documents by limiting live DOM size.
 - Use existing rendering libraries instead of writing parsers/renderers from scratch.
 - Ship on Windows, macOS, and Linux from one codebase.
+- Make opening, switching, finding, navigating, and printing documents feel native to a desktop reader.
+- Preserve a quiet, document-first interface with strong typography and restrained application chrome.
+- Establish and enforce one reusable design system before adding workspace features.
 
-## 3. V1 Scope
+## 3. Product Scope
 
 | Capability | Priority | Notes |
 |---|---:|---|
@@ -34,8 +39,20 @@ It is not an editor. There is no live preview loop, collaboration, cloud sync, m
 | Sidebar TOC | Must | click-to-scroll and scroll-spy |
 | Internal `#anchor` links | Must | virtualizer-aware |
 | Wikilinks `[[Note Name]]` | Should | notes phase; explicit resolver/index |
+| Tabbed documents | Must | one window; canonical paths are unique |
+| Session restoration | Must | tabs, active document, and reading positions |
+| Recent files and drag-and-drop | Must | desktop file-opening workflows |
+| Current-document search | Must | virtualizer-aware match navigation |
+| Navigation history | Must | file and anchor transitions per tab |
+| Command palette and shortcuts | Must | keyboard access to reader commands |
+| Print and system PDF output | Must | print-complete document, not virtualized slice |
+| Focus mode and typography controls | Must | global reader appearance settings |
+| Design-system foundation | Must | tokens, themes, fonts, icons, primitives, and visual QA land before workspace features |
 | Embeds/transclusion `![[Note]]` | Out | recursive resolution and cycle handling deferred |
-| Tags/search | Out | future notes index |
+| Vault-wide search and tags | Out | future notes index |
+| Editing and annotations | Out | viewer-only product boundary |
+| Durable bookmarks | Out | reading position only in this cycle |
+| Multiple native windows | Out | one tabbed workspace window |
 | Mobile | Out | desktop-only; changing this reopens platform choice |
 
 ## 4. Functional Requirements
@@ -48,6 +65,17 @@ It is not an editor. There is no live preview loop, collaboration, cloud sync, m
 - **F6 Themes:** support light/dark themes across document CSS, highlighter, KaTeX, and Mermaid.
 - **F7 Frontmatter:** show frontmatter in a configurable metadata panel or hide it.
 - **F8 Reload:** if the open file changes externally, debounce and reload while preserving reader position where possible.
+- **F9 Workspace:** open multiple documents as tabs in one window; activate an existing tab instead of duplicating a canonical path.
+- **F10 Session:** restore the previous tab order, active tab, and per-document reading position at launch; represent missing files as recoverable tabs.
+- **F11 Desktop open flows:** support the native file picker, recent files, file drag-and-drop, and reopen-closed-tab.
+- **F12 Document links:** local Markdown links and resolved wikilinks activate an existing target tab or open the target in a new tab.
+- **F13 Search:** find text in the active document with match count, next/previous navigation, case sensitivity, and whole-word matching.
+- **F14 History:** maintain per-tab back/forward history for file and anchor transitions.
+- **F15 Commands:** expose application commands through native menus, keyboard shortcuts, and an in-app command palette.
+- **F16 Reader tools:** support copying code and heading links, inspecting Mermaid diagrams, manual reload, and visible external-change status.
+- **F17 Print:** print the complete rendered document through the system print flow, including print-to-PDF where the operating system provides it.
+- **F18 Appearance:** support focus mode plus configurable reading font, font size, line height, and content measure.
+- **F19 Design system:** all application chrome and reader primitives use the approved semantic tokens, themes, typography, iconography, component states, and content voice.
 
 ## 5. Non-Functional Requirements
 
@@ -56,6 +84,11 @@ It is not an editor. There is no live preview loop, collaboration, cloud sync, m
 - **NF3 Snappiness:** parsing and expensive highlighting do not block scroll frames.
 - **NF4 Security:** all rendered HTML is sanitized; links and local assets are constrained.
 - **NF5 Cross-platform predictability:** the v1 feature set must avoid known unstable runtime paths in system WebViews.
+- **NF6 Active-tab isolation:** only the active tab mounts document blocks or performs asset, highlighting, math, and Mermaid enhancement work.
+- **NF7 Durable state:** settings and sessions are versioned and saved atomically in the operating system application-data directory.
+- **NF8 Accessibility:** all workspace and reader workflows are keyboard-operable, expose appropriate semantics, announce asynchronous state, and respect reduced-motion and high-contrast preferences.
+- **NF9 Responsive desktop layout:** the reader remains usable in narrow desktop windows by collapsing inspectors into drawers before reducing document readability.
+- **NF10 Visual consistency:** production UI contains no feature-local theme palettes or one-off control styling when an approved token or primitive exists.
 
 ## 6. Platform Decision
 
@@ -162,7 +195,120 @@ Reload preserves:
 - metadata panel state
 - theme/highlighter settings
 
-## 12. Performance Targets
+With multiple tabs, watchers are path-scoped. A file-change event identifies the canonical path so only the matching tab is reloaded. Closing a tab unregisters its watcher.
+
+## 12. Design System And Mock Authority
+
+The reviewed design system and UX mock are preserved under
+`docs/design-system/`. They establish the visual and interaction baseline for
+all work beginning with P8.
+
+The accepted direction is:
+
+- warm paper and ink surfaces in light mode
+- sage-tinted charcoal surfaces in dark mode
+- Inter for UI and default reading text
+- JetBrains Mono for code
+- one restrained ink-blue interaction accent
+- typed callout accents limited to callout/status contexts
+- flat surfaces separated by hairline borders
+- 4px, 6px, 10px, and pill radius tiers
+- shadows reserved for dialogs, popovers, and the command palette
+- Lucide line icons in compact controls
+- 120-180 ms functional motion with reduced-motion overrides
+- terse, literal UI copy with no emoji or marketing language
+
+Semantic CSS custom properties are the production API. Components consume
+semantic aliases rather than raw palette values. Light, dark, and system themes
+must cover application chrome, reader content, status states, syntax
+highlighting, KaTeX, and Mermaid.
+
+The initial primitive set includes buttons, icon buttons, segmented controls,
+badges, tags, TOC items, callouts, code-block chrome, wikilinks, dialogs,
+popovers, tabs, toolbars, and status indicators. Every primitive must define
+hover, pressed, focus, active, disabled, error, and relevant loading states.
+
+The React mock is interaction and composition reference only. Production uses
+Svelte components, the existing parser/virtualizer, real Mermaid output, and a
+pinned local Lucide package. Runtime CDN dependencies and prototype inline-style
+architecture are prohibited.
+
+The mock makes these product details explicit:
+
+- the top chrome is a compact toolbar plus a separate tab strip
+- the outline rail carries a provisional square `M` mark and wordmark
+- the active document title and watch status appear in the toolbar
+- tabs show active, watching, missing, and close states
+- metadata renders status as a badge and tags as chips
+- command search covers commands, open tabs, recents, and headings
+- the empty workspace combines a drop target, open action, recents, and missing-file treatment
+- focus mode leaves explicit find and exit controls available
+- code blocks expose language and copy controls
+- Mermaid figures expose captions and a zoom affordance
+
+The supplied font files must not be shipped without validation because the
+export contains duplicate bytes across nominal weights. P8 must source genuine,
+licensed, weight-specific font files and record their provenance.
+
+## 13. Workspace And Session Model
+
+Maakdown uses one native window with a tabbed workspace.
+
+- A canonical file path may appear in at most one open tab.
+- Opening an already-open file activates its tab.
+- Local Markdown links and resolved wikilinks reuse an existing target tab or open a new tab.
+- Closing the active tab selects the nearest remaining tab.
+- Closed tabs may be reopened during the current session.
+- Only the active tab renders document DOM and performs progressive enhancements.
+- Inactive tabs retain their parsed model when practical, navigation history, reading position, and error state without mounting document blocks.
+
+The persisted session contains:
+
+- ordered open document paths
+- active tab path
+- per-document anchor/block position and relative offset
+- recent file paths ordered by last successful open
+- global appearance and reader settings
+
+Session state is versioned and written by atomic replacement. Missing files do not abort restoration; they appear as recoverable error tabs that can be closed or relocated.
+
+## 14. Search, Commands, And Output
+
+Current-document search operates on block plain text rather than the mounted DOM:
+
+- matching runs over the active document model
+- results identify block id plus text offsets
+- next/previous navigation materializes and stabilizes the target block through the virtualizer
+- only mounted result content receives temporary visual marks
+- changing tabs keeps each tab's search state independent
+
+The command palette covers application commands, open tabs, recent files, document headings, and settings. Native menus and palette commands share the same command registry and enabled-state rules.
+
+Printing temporarily switches the active document into a complete print representation, waits for images, KaTeX, code, and Mermaid output to settle, invokes the system print flow, then restores the bounded interactive view and reading position. Maakdown does not implement a separate PDF renderer.
+
+## 15. Editorial Interface And Accessibility
+
+The visual direction is native editorial: quiet desktop chrome, excellent document typography, restrained color, and a centered reading surface.
+
+- The tab strip has stable dimensions, horizontal overflow, file status, and close controls.
+- The toolbar and tab strip remain visually distinct rows, matching the approved mock composition.
+- The toolbar uses familiar icons with tooltips for commands and compact controls for settings.
+- TOC and metadata panels are independently collapsible and resizable.
+- At narrow widths, metadata collapses before the TOC; remaining side panels become drawers.
+- Focus mode hides tabs, navigation, metadata, and secondary controls while retaining search and an explicit exit control.
+- Reader appearance settings offer sans-serif or serif text, stepped font sizes, compact/normal/relaxed line height, and narrow/standard/wide measure.
+- Code, tables, callouts, task lists, footnotes, diagrams, broken assets, and unresolved wikilinks receive deliberate light and dark presentation.
+- Metadata status values use semantic badges, tags use chips, and file watch state is visible without dominating the document.
+
+Accessibility requirements:
+
+- ARIA tab, dialog, toolbar, search, and status semantics
+- visible keyboard focus and complete keyboard navigation
+- focus trapping and restoration for dialogs and the command palette
+- screen-reader announcements for loading, reloads, search results, copy completion, and errors
+- reduced-motion support and high-contrast-compatible design tokens
+
+## 16. Performance Targets
 
 Targets are validation criteria, not promises:
 
@@ -176,16 +322,26 @@ Targets are validation criteria, not promises:
 
 The measurement harness records open-to-text, open-to-enhanced-visible-range, visible highlight latency, Mermaid render latency, scroll frame timing, process RSS, and per-engine timing. Highlighter memory comparison is process-level and approximate unless the platform exposes finer data.
 
-## 13. Testing Requirements
+Tabbed-workspace performance validation additionally records inactive-tab memory, active-tab switch latency, session restoration time, search latency, and print preparation time. Opening several documents must not multiply mounted block or enhancement work because only the active tab renders.
+
+## 17. Testing Requirements
 
 - Unit fixtures for Markdown features, frontmatter extraction, anchors, footnotes, wikilinks, and callouts.
 - Security fixtures for raw HTML, dangerous links, SVG payloads, asset path traversal, symlink escape, and oversized files.
 - Virtualizer tests for TOC clicks, `#anchor`, footnote backlinks, reload position restore, and scroll-spy.
 - Watcher tests for write, rename, remove/create, and editor safe-save bursts.
+- Workspace tests for canonical-path deduplication, tab ordering, close/reopen behavior, inactive-tab isolation, and missing restored files.
+- Session tests for schema migration, atomic replacement, recent-file ordering, and per-document position restoration.
+- Search tests for options, match ordering, virtualized navigation, tab isolation, and no-result behavior.
+- Command tests for native menu, shortcut, and palette parity.
+- Print tests for complete-document preparation and restoration of the virtualized reader.
+- Accessibility tests for keyboard workflows, focus management, semantics, announcements, reduced motion, and narrow-window layouts.
+- Design-system tests for token completeness, light/dark state coverage, primitive interaction states, font loading, icon accessibility, and visual drift from approved references.
 - Cross-platform smoke tests on Windows, macOS, and Linux before release, with Linux WebKitGTK treated as the likely performance floor.
 
-## 14. External Decision Evidence
+## 18. External Decision Evidence
 
 - Wails v2.11 documentation describes `AssetServer`/dynamic asset handling and notes that Wails v2 dynamic asset handling does not work with Vite 5+.
 - Wails GitHub releases identify Wails v3 as alpha/pre-release.
 - Shiki documents both the default Oniguruma WebAssembly engine and the JavaScript RegExp engine; v1 chooses the JavaScript engine for optional Shiki evaluation to avoid the WASM/CSP path.
+- The reviewed Maakdown mock and design-system handoff are preserved under `docs/design-system/` as the P8 visual source material.

@@ -1,8 +1,8 @@
 # Markdown Viewer - Implementation Plan
 
 **Status:** Draft  
-**Version:** 0.3  
-**Date:** 2026-06-05  
+**Version:** 0.5
+**Date:** 2026-06-06
 **Companion:** `docs/markdown-viewer-design-spec.md`
 
 ## 1. Pinned Technical Choices
@@ -20,6 +20,9 @@
 | Local assets | Go `AssetService` + loopback-only HTTP asset server with tokenized URLs |
 | Dynamic Wails asset handler | Not used for Markdown document assets in v1 |
 | Wails v3 | Not used until it reaches stable and is scheduled as a migration |
+| Design language | Maakdown design system under `docs/design-system/` |
+| UI icons | pinned `lucide-svelte`; no runtime CDN |
+| UI fonts | self-hosted licensed Inter and JetBrains Mono with verified weight files |
 
 This plan deliberately removes the prior "evaluate Wails v3 later" ambiguity. P0 starts on Wails v2.11.x, Svelte 5.x, and Vite 8.x, then records exact versions in `go.mod`, `wails.json`, and `frontend/package.json`.
 
@@ -66,7 +69,12 @@ maakdown/
             ├── sanitize/
             ├── assets/
             ├── theme/
-            └── workers/
+            ├── workers/
+            ├── design-system/
+            ├── workspace/
+            ├── search/
+            ├── commands/
+            └── print/
 ```
 
 ## 3. Backend Constructs
@@ -85,7 +93,13 @@ Wails lifecycle owner. Constructs services once, binds service facades, and rele
 
 ### `WatcherService`
 
-Watches the parent directory of the open file. It handles:
+Maintains path-scoped watchers for all open documents. Public operations are:
+
+- `WatchDocument(path string)`
+- `UnwatchDocument(path string)`
+- `UnwatchAll()`
+
+Each registration watches the parent directory of its canonical file path. It handles:
 
 - write events
 - remove/create
@@ -93,7 +107,7 @@ Watches the parent directory of the open file. It handles:
 - event burst debounce
 - rearming after rename
 
-It emits `file-changed` only after coalescing and verifying the target is readable.
+It emits `file-changed` with the canonical path only after coalescing and verifying the target is readable. Parent directories shared by multiple documents may share one underlying `fsnotify` watcher, but registrations and events remain file-specific.
 
 ### `AssetService` and loopback asset server
 
@@ -142,11 +156,83 @@ The worker cannot call Wails bindings, so the resolver contract is snapshot-base
 
 The worker stores the latest `VaultIndex` in worker-global memory. Individual `parseDocument` calls pass only a vault index version id, not the full index.
 
-### `ConfigService`
+### `SettingsService`
 
-Persists theme, frontmatter display mode, highlighter engine, trusted-folder preferences, and performance/debug settings.
+Persists settings and workspace session state as versioned JSON in the operating system application-data directory.
 
-## 4. Frontend Core Constructs
+Stored settings include theme, frontmatter display mode, highlighter engine, typography, panel dimensions, trusted-folder preferences, and performance/debug settings.
+
+Stored session state includes ordered tab paths, active tab, per-document reading positions, and recent files. Writes use a temporary file, sync/close, and atomic rename. Invalid or unsupported data falls back to defaults without preventing startup.
+
+### `DesktopService`
+
+Owns native desktop integration:
+
+- registers file-drop handling and emits canonical dropped paths
+- updates the active window title
+- invokes system printing
+- exposes application-data paths needed by settings persistence
+- bridges native menu callbacks into the shared frontend command registry
+
+## 4. Design System Foundation
+
+P8 lands before workspace features and creates the production visual API.
+
+### Source material
+
+- `docs/design-system/README.md` contains adoption rules and caveats.
+- `docs/design-system/reference/tokens/` contains the exported token baseline.
+- `docs/design-system/reference/mock/` contains composition and interaction references.
+- `docs/design-system/reference/screenshots/` contains visual acceptance references.
+
+The exported React code is not copied into the Svelte runtime. It is used to
+derive component contracts, dimensions, states, and interaction intent.
+
+### Token architecture
+
+Production styles are split into:
+
+- raw light/dark palette
+- semantic colors
+- typography and font faces
+- spacing and layout rails
+- radius, borders, elevation, and motion
+- reader appearance aliases
+- component-level tokens only when a shared semantic token is insufficient
+
+Feature CSS consumes semantic variables. Token names are stable APIs and changes
+require light/dark visual regression updates.
+
+### Fonts and icons
+
+- Add genuine, licensed, weight-specific Inter 400/500/600/700 files.
+- Add genuine, licensed JetBrains Mono 400/500 files.
+- Store fonts in the frontend asset tree and load them locally with
+  `font-display: swap`.
+- Record source, license, hashes, and subset coverage.
+- Install and pin `lucide-svelte`; do not use CDN scripts or manually copied SVG
+  paths.
+
+### Svelte primitives
+
+Implement typed, accessible Svelte primitives for:
+
+- `Button`, `IconButton`, and `SegmentedControl`
+- `Badge`, `Tag`, and `StatusIndicator`
+- `TocItem`, `Callout`, `CodeBlockChrome`, and `Wikilink`
+- `Dialog`, `Popover`, `Toolbar`, and `Tab`
+
+Primitives own dimensions, interaction states, focus treatment, icons, and
+token usage. Feature components compose them instead of reproducing their CSS.
+
+### Foundation acceptance harness
+
+Create a development-only design-system gallery that renders every primitive
+and state in light and dark themes. Playwright captures fixed desktop and narrow
+viewport screenshots and checks for overflow, missing fonts/icons, inaccessible
+names, and token/state regressions.
+
+## 5. Frontend Core Constructs
 
 ### `core/pipeline`
 
@@ -169,6 +255,13 @@ Types:
 - `FootnoteTarget`
 - `AssetReference`
 - `EnhancementState`
+- `WorkspaceState`
+- `DocumentTab`
+- `PersistedSession`
+- `RecentDocument`
+- `NavigationHistoryEntry`
+- `DocumentSearchState`
+- `SearchResult`
 
 `buildDocumentModel(parsed)` creates:
 
@@ -178,6 +271,17 @@ Types:
 - footnote/backlink map
 - asset reference map
 - list of languages used by visible code blocks
+
+Workspace model requirements:
+
+- `WorkspaceState` owns ordered tabs, active tab id, recently closed tabs, recents, and restoration state.
+- `DocumentTab` owns canonical path, display name, load/error state, parsed model, reader position, navigation history, search state, and file-change status.
+- `PersistedSession` stores paths and serializable reader state only; parsed models and enhancement caches are not persisted.
+- `RecentDocument` records canonical path, display name, and last-opened timestamp.
+- `NavigationHistoryEntry` identifies a path, optional anchor/block, and relative offset.
+- `SearchResult` identifies a block id, block-local text offsets, and preview text.
+
+The canonical path is the document identity. Opening an existing identity activates its tab rather than creating another model or watcher.
 
 ### `core/navigation`
 
@@ -189,6 +293,39 @@ Owns virtualized document navigation:
 - `restorePosition(previousPosition, newModel)`
 
 No component should use native hash scrolling directly.
+
+Navigation history is per tab. File and anchor transitions push entries unless they are caused by back/forward replay or passive scroll-spy updates. History traversal may activate another tab or open the target path if it is no longer open.
+
+### `core/workspace`
+
+Owns tab and session orchestration:
+
+- open, activate, close, and reopen tabs
+- deduplicate canonical paths
+- select the nearest tab after close
+- maintain per-tab reader and search state
+- serialize and restore session state
+- coordinate watcher registration and cleanup
+- ensure only the active tab is mounted and enhanced
+
+Tabs restored from missing files remain recoverable error tabs. A relocate action replaces the missing path after the user selects the moved document.
+
+### `core/search`
+
+Builds a lightweight search projection from each block's plain text.
+
+- Matching supports case-sensitive and whole-word options.
+- Results preserve document order and use block-local offsets.
+- Next/previous wraps within the active document.
+- Selecting a result routes through virtualized block navigation and anchor stabilization.
+- Mounted result blocks receive temporary `<mark>` output without changing parser-produced sanitized HTML.
+- Search state is retained independently per tab.
+
+### `core/commands`
+
+Defines one registry for native menus, keyboard shortcuts, toolbar actions, and the command palette.
+
+Each command provides id, label, optional shortcut, enabled predicate, keywords, and execute callback. Initial commands cover open, close/reopen tab, next/previous tab, reload, find, command palette, navigation back/forward, print, focus mode, panel visibility, theme, and reader appearance.
 
 ### `core/virtualizer`
 
@@ -246,19 +383,46 @@ Theme change:
 3. rerender visible Mermaid diagrams
 4. do not reparse Markdown
 
-## 5. UI Constructs
+### `core/print`
+
+Coordinates complete-document print preparation:
+
+1. capture active tab position and interactive virtualizer state
+2. mount a print-only complete document representation
+3. complete asset, code, KaTeX, and Mermaid rendering
+4. invoke the backend system-print command
+5. remove print representation and restore the interactive view and position
+
+Print styles hide all application chrome and format links, tables, code, callouts, diagrams, images, and page breaks for paper/PDF output.
+
+## 6. UI Constructs
 
 - `AppShell`: shell layout.
-- `Toolbar`: open file, theme, highlighter display, reload.
+- `TabStrip`: ordered tabs, active state, file status, close controls, and horizontal overflow.
+- `Toolbar`: icon commands for open, navigation, reload, find, focus, and panel visibility.
+- `CommandPalette`: searchable commands, open tabs, recent files, headings, and settings.
+- `SearchBar`: current-document query, options, result count, and previous/next controls.
 - `TocSidebar`: uses `navigation.scrollToAnchor`.
 - `DocumentView`: owns virtualizer and visible range.
 - `BlockView`: renders sanitized block HTML and starts asset/highlight/diagram enhancement.
 - `MetadataPanel`: frontmatter.
+- `RecentDocuments`: empty-state recent files and missing-file cleanup.
+- `DiagramDialog`: zoomable Mermaid inspection with modal focus management.
+- `ReaderAppearancePopover`: font, size, line height, and measure controls.
 - `StatusBar`: path, reload state, enhancement progress, blocked asset count.
 
 Svelte components are presentation and orchestration only. Parsing, sanitizing, resolving, highlighting, and diagram rendering stay in `core/`.
 
-## 6. Data Flow
+The shell uses a native-editorial visual system. Panels are resizable and collapsible; metadata collapses before the TOC at narrow widths, after which side panels become drawers. Focus mode hides tabs and secondary chrome without destroying their state.
+
+The approved composition uses two top rows: the toolbar and a 38px tab strip.
+The toolbar carries outline visibility, active document identity, watch status,
+command entry, find, reading display, theme, metadata, and focus actions. The
+metadata inspector uses badges for semantic status and chips for tags. The
+empty state uses the provisional `M` mark, file drop, open action, recents, and
+missing-file state.
+
+## 7. Data Flow
 
 Open:
 
@@ -270,6 +434,16 @@ Open:
 6. `buildDocumentModel` creates navigation indexes.
 7. `DocumentView` renders visible base text through the virtualizer.
 8. Visible blocks request assets/highlighting/Mermaid as needed.
+
+Open into workspace:
+
+1. file picker, file drop, recent item, local Markdown link, or wikilink produces a path
+2. backend canonicalizes and opens the document
+3. workspace activates an existing canonical-path tab or inserts a new tab
+4. new tabs register a path watcher and update recents
+5. the previous active tab records its reader position and unmounts
+6. the new active tab mounts its document view and restores its position
+7. local Markdown links and wikilinks keep the source tab available by opening or activating the target tab
 
 Anchor navigation:
 
@@ -287,7 +461,32 @@ Watch reload:
 4. parse pipeline reruns.
 5. `restorePosition` maps old anchor/block to the new model.
 
-## 7. IPC Contract
+Session restoration:
+
+1. backend loads and validates the versioned persisted session
+2. frontend creates ordered loading tabs and selects the saved active tab
+3. documents are opened with bounded concurrency
+4. missing documents become recoverable error tabs
+5. only the active restored tab mounts its reader
+6. successful opens register watchers and refresh recents
+7. each tab restores its anchor/block position when first activated
+
+Search:
+
+1. active tab query/options update
+2. search core scans block plain text and emits ordered results
+3. selecting a result navigates to its block through the virtualizer
+4. mounted target content marks the matching text and receives focus context
+
+Print:
+
+1. print command freezes the active tab's reader position
+2. complete print representation mounts outside the interactive virtualizer
+3. all printable enhancements settle or produce safe fallbacks
+4. backend invokes the system print dialog
+5. print representation is removed and the reader position is restored
+
+## 8. IPC Contract
 
 All Wails generated calls are wrapped in `frontend/src/ipc`.
 
@@ -296,19 +495,25 @@ Required wrappers:
 - `openDocument`
 - `openDocumentAt`
 - `readDocument`
-- `startWatch`
-- `stopWatch`
+- `watchDocument`
+- `unwatchDocument`
+- `unwatchAllDocuments`
 - `onFileChanged`
 - `resolveAsset`
 - `revokeAsset`
 - `openExternal`
 - `getConfig`
 - `setConfig`
+- `getSession`
+- `setSession`
+- `onFilesDropped`
+- `setWindowTitle`
+- `printWindow`
 - `getVaultIndex`
 
 Generated `wailsjs/` imports are forbidden outside `ipc/`.
 
-## 8. Milestones
+## 9. Milestones
 
 | Phase | Goal | Deliverables | Exit Criteria |
 |---|---|---|---|
@@ -320,11 +525,17 @@ Generated `wailsjs/` imports are forbidden outside `ipc/`.
 | P5 | Virtualized large docs | virtualizer, anchor-aware scroll, restore position, visible enhancement scheduling | 10k-line fixture has bounded DOM and working anchors/TOC |
 | P6 | Notes support | vault index, wikilink resolution, open target note | wikilinks navigate within configured vault; unresolved state is clear |
 | P7 | Release hardening | cross-platform packaging, perf harness, security fixtures, docs | targets recorded on Windows/macOS/Linux; blockers resolved |
+| P8 | Design system foundation | canonical tokens/themes, verified fonts, Lucide, Svelte primitives, component gallery | existing reader can consume the design API; light/dark primitive acceptance passes |
+| P9 | Desktop workspace | tabs, multi-path watchers, persisted sessions, recents, drag-and-drop, native commands | tabs restore and switch safely; inactive tabs do not render or enhance |
+| P10 | Reading productivity | current-document search, navigation history, command palette, copy tools, diagram inspection, print/PDF | long-document search/navigation and complete printing pass integration tests |
+| P11 | Editorial experience | approved mock composition, typography, focus mode, responsive panels, accessibility | visual, keyboard, narrow-window, light/dark, and accessibility acceptance passes |
 
-## 9. Test Plan
+## 10. Test Plan
 
 Unit:
 
+- token schema and semantic alias completeness
+- design primitive props and interaction states
 - pipeline feature fixtures
 - sanitize allowlist and malicious HTML
 - anchor/footnote index construction
@@ -334,12 +545,23 @@ Unit:
 
 Integration:
 
+- design-system gallery in light, dark, and system themes
+- production reader migration to shared primitives without behavior regressions
 - open representative README
 - open docs with parent-directory images
 - click TOC/internal anchor/footnotes in virtualized mode
 - external link interception
 - theme switch with visible code and Mermaid
 - safe-save reload and position restore
+- open, deduplicate, reorder, close, and reopen tabs
+- restore sessions with valid and missing documents
+- drag files into the application and open recent documents
+- follow local Markdown links and wikilinks across tabs
+- search and navigate matches in virtualized documents
+- invoke commands through native menus, shortcuts, and palette
+- copy code/heading links and inspect Mermaid diagrams
+- prepare and print the complete document, then restore the reader
+- switch focus mode and reader appearance without reparsing
 
 Performance:
 
@@ -348,6 +570,10 @@ Performance:
 - 10k-line synthetic doc
 - code-heavy doc
 - Mermaid-heavy doc
+- several large open tabs with one active renderer
+- restored multi-tab session
+- search-heavy large document
+- complete-document print preparation
 
 Metrics:
 
@@ -358,8 +584,23 @@ Metrics:
 - mounted block count
 - process RSS before/after large docs
 - scroll frame timing
+- inactive-tab memory
+- active-tab switch latency
+- session restoration time
+- search latency
+- print preparation time
 
-## 10. Release Constraints
+Accessibility and visual:
+
+- approved mock-reference comparison for toolbar, tab strip, outline, metadata, reader, empty state, palette, and focus mode
+- ARIA tab, toolbar, search, dialog, and status semantics
+- full keyboard workflow and visible focus
+- command palette and diagram-dialog focus trap/restoration
+- screen-reader announcements for async reader state
+- reduced-motion and high-contrast behavior
+- light/dark, empty, single-tab, multi-tab, search, focus, and narrow-window screenshots
+
+## 11. Release Constraints
 
 - No Wails v3 in v1.
 - No Shiki Oniguruma/WASM in v1 product path.
@@ -368,3 +609,10 @@ Metrics:
 - No image byte/base64 transfer over Wails IPC for normal document rendering.
 - No generated Wails imports outside `ipc/`.
 - No full-document live DOM for large documents.
+- No simultaneous mounted document readers for inactive tabs.
+- No multiple native windows in P9-P11.
+- No editing, annotations, durable bookmarks, vault-wide search, tags, or transclusion in P9-P11.
+- No custom PDF renderer; PDF output uses the platform print flow.
+- No React prototype code, runtime CDN, generated global design-system bundle, or inline-style architecture in production.
+- No unverified font exports; production font files require recorded source, license, and distinct expected hashes.
+- No feature-local control styling when an approved P8 primitive covers the behavior.
