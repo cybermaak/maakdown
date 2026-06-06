@@ -4,4 +4,8 @@ import {config} from '../models';
 
 export function GetConfig():Promise<config.AppConfig>;
 
+export function GetSession():Promise<config.PersistedSession>;
+
 export function SetConfig(arg1:config.AppConfig):Promise<config.AppConfig>;
+
+export function SetSession(arg1:config.PersistedSession):Promise<config.PersistedSession>;

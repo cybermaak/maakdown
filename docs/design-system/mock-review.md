@@ -30,15 +30,15 @@ runtime loading model are prototype-only.
 - Recreate components in Svelte; do not copy React state or inline styles.
 - Continue using real parsed Markdown and Mermaid instead of prototype block
   data and custom diagram SVGs.
-- Install a pinned local `lucide-svelte` package; do not load icons from a CDN.
+- Install the pinned local `@lucide/svelte` package; do not load icons from a CDN.
 - Implement shared semantic tokens and primitives before feature-specific UI.
 - Keep platform shortcuts rendered from platform-aware command metadata rather
   than hard-coding macOS glyphs everywhere.
 
 ## Risks And Follow-Up
 
-- Exported font files are duplicated across nominal weights. Validate licenses
-  and obtain genuine weight-specific assets before P8 font integration.
+- Exported font files are duplicated across nominal weights and remain
+  reference-only. Production uses licensed, weight-specific Fontsource assets.
 - The square `M` mark is provisional and must remain replaceable.
 - The mock does not implement print, navigation history, panel resizing,
   responsive drawers, session persistence, or real multi-path file watching;

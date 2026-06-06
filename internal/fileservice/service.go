@@ -66,7 +66,7 @@ func (s *Service) OpenDocument() (OpenDocumentResult, error) {
 }
 
 func (s *Service) OpenDocumentAt(path string) (OpenDocumentResult, error) {
-	abs, err := filepath.Abs(path)
+	abs, err := canonicalPath(path)
 	if err != nil {
 		return OpenDocumentResult{}, err
 	}
@@ -96,7 +96,7 @@ func (s *Service) OpenDocumentAt(path string) (OpenDocumentResult, error) {
 }
 
 func (s *Service) ReadDocument(path string) (DocumentBytes, error) {
-	abs, err := filepath.Abs(path)
+	abs, err := canonicalPath(path)
 	if err != nil {
 		return DocumentBytes{}, err
 	}
@@ -116,6 +116,17 @@ func (s *Service) ReadDocument(path string) (DocumentBytes, error) {
 		Contents: string(bytes),
 		ModTime:  formatTime(info.ModTime()),
 	}, nil
+}
+
+func canonicalPath(path string) (string, error) {
+	abs, err := filepath.Abs(path)
+	if err != nil {
+		return "", err
+	}
+	if evaluated, evalErr := filepath.EvalSymlinks(abs); evalErr == nil {
+		abs = evaluated
+	}
+	return filepath.Clean(abs), nil
 }
 
 func formatTime(t time.Time) string {

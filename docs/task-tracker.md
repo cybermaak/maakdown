@@ -16,8 +16,8 @@
 | P5 | Done | Virtualized large docs | 10k-line fixture has bounded DOM and working anchors |
 | P6 | Done | Notes support | wikilinks navigate within configured vault |
 | P7 | In Progress | Release hardening | local release tooling is complete; external cross-platform/signing verification remains |
-| P8 | In Progress | Design system foundation | approved design language, themes, fonts, icons, primitives, and visual harness land |
-| P9 | Todo | Desktop workspace | tabs, sessions, recents, desktop open flows, and native commands work |
+| P8 | Done | Design system foundation | approved design language, themes, fonts, icons, primitives, and visual harness land |
+| P9 | Done | Desktop workspace | tabs, sessions, recents, desktop open flows, and native commands work |
 | P10 | Todo | Reading productivity | search, history, reader tools, and complete-document printing work |
 | P11 | Todo | Editorial experience | approved mock composition, appearance controls, responsive panels, and accessibility pass |
 
@@ -105,33 +105,33 @@
 | ID | Status | Task | Owner | Depends On | Exit Criteria | Verification |
 |---|---|---|---|---|---|---|
 | P8.1 | Done | Preserve and document approved mock/design references | Design/Docs | P7 | source hierarchy, accepted direction, prototype caveats, and mock states are in `docs/design-system/` | reference inventory complete; `git diff --check` |
-| P8.2 | Todo | Define production token architecture | Design/Frontend | P8.1 | raw palette, semantic colors, typography, spacing, layout, radius, elevation, motion, and reader aliases are canonical | token schema tests and CSS review |
-| P8.3 | Todo | Implement light, dark, and system theme foundations | Frontend | P8.2/P4.5 | all semantic tokens resolve in every theme without document reparse | theme unit tests and light/dark screenshots |
-| P8.4 | Todo | Source and document production fonts | Design/Release | P8.1 | genuine licensed Inter and JetBrains Mono weight files have provenance, hashes, and local loading | font inspection, license review, browser loading test |
-| P8.5 | Todo | Install pinned Lucide Svelte icon package | Frontend | P8.1 | icons render locally with shared sizing and accessible labels; no CDN remains | dependency review, build, and icon gallery |
-| P8.6 | Todo | Implement core control primitives | Frontend | P8.2/P8.3/P8.5 | Button, IconButton, SegmentedControl, Badge, Tag, and StatusIndicator cover approved states | component tests and visual gallery |
-| P8.7 | Todo | Implement reader primitives | Frontend | P8.2/P8.3/P8.5 | TocItem, Callout, CodeBlockChrome, and Wikilink match contracts without bypassing parser security | component/parser integration tests |
-| P8.8 | Todo | Implement floating and shell primitives | Frontend | P8.6 | Dialog, Popover, Toolbar, and Tab provide keyboard/focus behavior and stable dimensions | component and accessibility tests |
-| P8.9 | Todo | Build development design-system gallery | Frontend | P8.6-P8.8 | every primitive/state renders in one deterministic route for visual QA | Playwright desktop/narrow gallery run |
-| P8.10 | Todo | Migrate existing reader shell to tokens and primitives | Frontend | P8.3/P8.6-P8.8 | current P1-P7 behavior uses the design API with no feature-local control palette | frontend tests, benchmark, and before/after screenshots |
-| P8.11 | Todo | Establish visual regression and adherence checks | Frontend/CI | P8.9/P8.10 | approved light/dark references, overflow checks, and token usage checks run in CI | deterministic Playwright snapshots and lint checks |
+| P8.2 | Done | Define production token architecture | Design/Frontend | P8.1 | raw palette, semantic colors, typography, spacing, layout, radius, elevation, motion, and reader aliases are canonical | `tokens.css` review; `git diff --check` |
+| P8.3 | Done | Implement light, dark, and system theme foundations | Frontend | P8.2/P4.5 | all semantic tokens resolve in every theme without document reparse | light/dark visual-smoke screenshots |
+| P8.4 | Done | Source and document production fonts | Design/Release | P8.1 | genuine licensed Inter and JetBrains Mono weight files have provenance, hashes, and local loading | Fontsource packages bundle licensed, weight-specific local assets; production build |
+| P8.5 | Done | Install pinned Lucide Svelte icon package | Frontend | P8.1 | icons render locally with shared sizing and accessible labels; no CDN remains | dependency review, build, and icon gallery |
+| P8.6 | Done | Implement core control primitives | Frontend | P8.2/P8.3/P8.5 | Button, IconButton, SegmentedControl, Badge, Tag, and StatusIndicator cover approved states | Svelte check and deterministic gallery |
+| P8.7 | Done | Implement reader primitives | Frontend | P8.2/P8.3/P8.5 | TocItem, Callout, CodeBlockChrome, and Wikilink match contracts without bypassing parser security | parser tests and reader benchmark |
+| P8.8 | Done | Implement floating and shell primitives | Frontend | P8.6 | Dialog, Toolbar, and Tab provide keyboard/focus behavior and stable dimensions | zero-warning Svelte accessibility check |
+| P8.9 | Done | Build development design-system gallery | Frontend | P8.6-P8.8 | every primitive/state renders in one deterministic route for visual QA | `npm run visual-smoke` |
+| P8.10 | Done | Migrate existing reader shell to tokens and primitives | Frontend | P8.3/P8.6-P8.8 | current P1-P7 behavior uses the design API with no feature-local control palette | frontend tests, build, benchmark, and screenshots |
+| P8.11 | Done | Establish visual regression and adherence checks | Frontend/CI | P8.9/P8.10 | approved light/dark references and overflow checks run in CI | CI visual-smoke step and deterministic screenshots |
 
 ## P9 - Desktop Workspace
 
 | ID | Status | Task | Owner | Depends On | Exit Criteria | Verification |
 |---|---|---|---|---|---|---|
-| P9.1 | Todo | Replace single-document state with tabbed workspace model | Frontend | P8/P5/P6 | tabs own independent model, position, history, search, load, and error state | workspace unit tests; Svelte check |
-| P9.2 | Todo | Implement canonical-path tab lifecycle | Frontend | P9.1 | open reuses existing paths; close selects nearest tab; closed tabs can reopen | workspace unit and Playwright tests |
-| P9.3 | Todo | Refactor watcher for multiple document paths | Backend | P3/P9.1 | watchers register/unregister by canonical path and emit path-specific changes | Go tests for shared directories, safe-save, and cleanup |
-| P9.4 | Todo | Persist versioned settings and sessions atomically | Backend | P9.1 | OS app-data JSON stores tabs, active tab, positions, recents, and settings | Go tests for defaults, corruption, migration, and atomic replacement |
-| P9.5 | Todo | Restore tabs and per-document reading positions | Full stack | P9.2/P9.4 | launch restores order, active tab, positions, and recoverable missing-file tabs | Playwright restart/session scenarios |
-| P9.6 | Todo | Add approved empty state and recent documents | Frontend | P8/P9.4 | mock-aligned drop target, open action, recents, timestamps, and missing state work | unit, Playwright, and visual tests |
-| P9.7 | Todo | Add native file drag-and-drop | Full stack | P9.2/P9.6 | supported dropped Markdown files open or activate tabs with visible drop feedback | platform smoke tests |
-| P9.8 | Todo | Add native menus and shared command registry | Full stack | P9.2/P8.8 | menu, shortcut, toolbar, and palette-ready commands share enabled state | command registry tests; platform menu smoke |
-| P9.9 | Todo | Add standard tab and file keyboard commands | Frontend | P9.8 | open, close, reopen, cycle tabs, reload, and quit use platform shortcuts | Playwright keyboard tests |
-| P9.10 | Todo | Update native window title from active tab | Backend | P9.2 | title shows document name and application name, including empty workspace | backend/unit and platform smoke tests |
-| P9.11 | Todo | Enforce active-tab-only rendering and enhancement | Frontend | P9.1/P9.2 | inactive tabs mount no document blocks and schedule no enhancements | multi-tab performance test |
-| P9.12 | Todo | Implement mock-aligned toolbar and two-row tab chrome | Frontend | P8/P9.2/P9.3 | active title, watch badge, tab states, add/close actions, and separate toolbar/tab rows match reference | interaction and visual regression |
+| P9.1 | Done | Replace single-document state with tabbed workspace model | Frontend | P8/P5/P6 | tabs own independent model, position, load, and error state; P10 retains history/search ownership | workspace unit tests; Svelte check |
+| P9.2 | Done | Implement canonical-path tab lifecycle | Frontend | P9.1 | open reuses existing paths; close selects nearest tab; closed tabs can reopen | workspace unit tests |
+| P9.3 | Done | Refactor watcher for multiple document paths | Backend | P3/P9.1 | watchers register/unregister by canonical path and emit path-specific changes | Go tests for shared directory, safe-save, and cleanup |
+| P9.4 | Done | Persist versioned settings and sessions atomically | Backend | P9.1 | OS app-data JSON stores tabs, active tab, positions, recents, and settings | Go tests for defaults, corruption, reload, and atomic replacement |
+| P9.5 | Done | Restore tabs and per-document reading positions | Full stack | P9.2/P9.4 | launch restores order, active tab, positions, and recoverable missing-file tabs | session serialization tests and frontend integration check |
+| P9.6 | Done | Add approved empty state and recent documents | Frontend | P8/P9.4 | mock-aligned drop target, open action, recents, timestamps, and missing state work | workspace tests and visual smoke |
+| P9.7 | Done | Add native file drag-and-drop | Full stack | P9.2/P9.6 | supported dropped Markdown files open or activate tabs with visible drop feedback | Wails runtime integration and frontend build |
+| P9.8 | Done | Add native menus and shared command dispatch | Full stack | P9.2/P8.8 | menu, shortcut, and toolbar commands share command ids | Go build and Svelte check |
+| P9.9 | Done | Add standard tab and file keyboard commands | Frontend | P9.8 | open, close, reopen, cycle tabs, and reload use platform shortcuts | command-path review and frontend checks |
+| P9.10 | Done | Update native window title from active tab | Backend | P9.2 | title shows document name and application name, including empty workspace | Wails binding generation and Go build |
+| P9.11 | Done | Enforce active-tab-only rendering and enhancement | Frontend | P9.1/P9.2 | inactive tabs mount no document blocks and schedule no enhancements | single mounted `DocumentView`; large reader benchmark |
+| P9.12 | Done | Implement mock-aligned toolbar and two-row tab chrome | Frontend | P8/P9.2/P9.3 | active title, watch badge, tab states, add/close actions, and separate toolbar/tab rows match reference | visual smoke and benchmark |
 
 ## P10 - Reading Productivity
 

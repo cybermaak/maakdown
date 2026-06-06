@@ -6,6 +6,14 @@ export function GetConfig() {
   return window['go']['config']['Service']['GetConfig']();
 }
 
+export function GetSession() {
+  return window['go']['config']['Service']['GetSession']();
+}
+
 export function SetConfig(arg1) {
   return window['go']['config']['Service']['SetConfig'](arg1);
+}
+
+export function SetSession(arg1) {
+  return window['go']['config']['Service']['SetSession'](arg1);
 }

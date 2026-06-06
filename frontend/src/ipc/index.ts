@@ -1,12 +1,15 @@
 import { OpenDocument, OpenDocumentAt, ReadDocument } from '../../wailsjs/go/fileservice/Service';
-import { GetConfig, SetConfig } from '../../wailsjs/go/config/Service';
+import { GetConfig, GetSession, SetConfig, SetSession } from '../../wailsjs/go/config/Service';
 import { ResolveAsset, RevokeAsset } from '../../wailsjs/go/assetservice/Service';
 import { OpenExternal } from '../../wailsjs/go/linkservice/Service';
-import { StartWatch, StopWatch } from '../../wailsjs/go/watcher/Service';
+import { UnwatchDocument, WatchDocument } from '../../wailsjs/go/watcher/Service';
+import { Quit, SetWindowTitle } from '../../wailsjs/go/main/App';
 import { GetVaultIndex } from '../../wailsjs/go/vault/Service';
 import { EventsOn } from '../../wailsjs/runtime/runtime';
-import type { assetservice, config, fileservice, vault } from '../../wailsjs/go/models';
+import { config } from '../../wailsjs/go/models';
+import type { assetservice, fileservice, vault } from '../../wailsjs/go/models';
 import type { AppConfig } from '../stores/configStore';
+import type { PersistedSession } from '../core/workspace/workspace';
 
 export async function openDocument(): Promise<fileservice.OpenDocumentResult> {
   return OpenDocument();
@@ -54,16 +57,51 @@ export async function getVaultIndex(root: string): Promise<vault.VaultIndex> {
   return GetVaultIndex(root);
 }
 
-export async function startWatch(path: string): Promise<void> {
-  await StartWatch(path);
+export async function getSession(): Promise<PersistedSession> {
+  const result = await GetSession();
+  return {
+    tabs: (result.tabs ?? []).map((tab) => ({
+      path: tab.path,
+      position: {
+        scrollTop: tab.position?.scrollTop ?? 0,
+        ...(tab.position?.activeHeadingId ? { activeHeadingId: tab.position.activeHeadingId } : {})
+      }
+    })),
+    ...(result.activePath ? { activePath: result.activePath } : {}),
+    recents: result.recents ?? []
+  };
 }
 
-export async function stopWatch(): Promise<void> {
-  await StopWatch();
+export async function setSession(next: PersistedSession): Promise<void> {
+  await SetSession(config.PersistedSession.createFrom(next));
+}
+
+export async function watchDocument(path: string): Promise<void> {
+  await WatchDocument(path);
+}
+
+export async function unwatchDocument(path: string): Promise<void> {
+  await UnwatchDocument(path);
+}
+
+export async function setWindowTitle(path: string): Promise<void> {
+  await SetWindowTitle(path);
+}
+
+export async function quitApp(): Promise<void> {
+  await Quit();
 }
 
 export function onFileChanged(callback: (path: string) => void): () => void {
   return EventsOn('file-changed', (path: string) => callback(path));
+}
+
+export function onFilesDropped(callback: (paths: string[]) => void): () => void {
+  return EventsOn('files-dropped', (paths: string[]) => callback(paths));
+}
+
+export function onAppCommand(callback: (command: string) => void): () => void {
+  return EventsOn('app-command', (command: string) => callback(command));
 }
 
 function normalizeTheme(value: string): AppConfig['theme'] {

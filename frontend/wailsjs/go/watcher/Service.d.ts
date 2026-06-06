@@ -6,8 +6,10 @@ export function Changes():Promise<any>;
 
 export function SetContext(arg1:context.Context):Promise<void>;
 
-export function StartWatch(arg1:string):Promise<void>;
+export function UnwatchAllDocuments():Promise<void>;
 
-export function StopWatch():Promise<void>;
+export function UnwatchDocument(arg1:string):Promise<void>;
 
-export function WatchedPath():Promise<string>;
+export function WatchDocument(arg1:string):Promise<void>;
+
+export function WatchedPaths():Promise<Array<string>>;

@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	"github.com/wailsapp/wails/v2"
+	"github.com/wailsapp/wails/v2/pkg/menu"
+	"github.com/wailsapp/wails/v2/pkg/menu/keys"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 )
@@ -14,11 +16,33 @@ var assets embed.FS
 
 func main() {
 	app := NewApp()
+	appMenu := menu.NewMenu()
+	fileMenu := appMenu.AddSubmenu("File")
+	fileMenu.AddText("Open...", keys.CmdOrCtrl("o"), func(_ *menu.CallbackData) { app.EmitCommand("open") })
+	fileMenu.AddText("Close Tab", keys.CmdOrCtrl("w"), func(_ *menu.CallbackData) { app.EmitCommand("close-tab") })
+	fileMenu.AddText("Reopen Closed Tab", keys.Combo("t", keys.CmdOrCtrlKey, keys.ShiftKey), func(_ *menu.CallbackData) {
+		app.EmitCommand("reopen-tab")
+	})
+	fileMenu.AddSeparator()
+	fileMenu.AddText("Reload", keys.CmdOrCtrl("r"), func(_ *menu.CallbackData) { app.EmitCommand("reload") })
+	fileMenu.AddSeparator()
+	fileMenu.AddText("Quit Maakdown", keys.CmdOrCtrl("q"), func(_ *menu.CallbackData) { app.Quit() })
+	viewMenu := appMenu.AddSubmenu("View")
+	viewMenu.AddText("Next Tab", keys.Control("tab"), func(_ *menu.CallbackData) {
+		app.EmitCommand("next-tab")
+	})
+	viewMenu.AddText("Previous Tab", keys.Combo("tab", keys.CmdOrCtrlKey, keys.ShiftKey), func(_ *menu.CallbackData) {
+		app.EmitCommand("previous-tab")
+	})
 
 	err := wails.Run(&options.App{
 		Title:  "Maakdown",
 		Width:  1200,
 		Height: 800,
+		Menu:   appMenu,
+		DragAndDrop: &options.DragAndDrop{
+			EnableFileDrop: true,
+		},
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},

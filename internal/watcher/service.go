@@ -13,18 +13,22 @@ import (
 
 const debounceWindow = 150 * time.Millisecond
 
-type Service struct {
-	mu      sync.Mutex
-	ctx     context.Context
-	path    string
+type registration struct {
 	watcher *fsnotify.Watcher
 	done    chan struct{}
-	changes chan string
+}
+
+type Service struct {
+	mu            sync.Mutex
+	ctx           context.Context
+	registrations map[string]*registration
+	changes       chan string
 }
 
 func New() *Service {
 	return &Service{
-		changes: make(chan string, 8),
+		registrations: make(map[string]*registration),
+		changes:       make(chan string, 16),
 	}
 }
 
@@ -34,88 +38,94 @@ func (s *Service) SetContext(ctx context.Context) {
 	s.ctx = ctx
 }
 
-func (s *Service) StartWatch(path string) error {
-	abs, err := filepath.Abs(path)
+func (s *Service) WatchDocument(path string) error {
+	target, err := canonicalPath(path)
 	if err != nil {
 		return err
 	}
-
-	info, err := os.Stat(abs)
-	if err != nil {
-		return err
+	s.mu.Lock()
+	if _, exists := s.registrations[target]; exists {
+		s.mu.Unlock()
+		return nil
 	}
-	if info.IsDir() {
-		abs = filepath.Join(abs, ".")
-	}
+	s.mu.Unlock()
 
-	parent := filepath.Dir(abs)
 	w, err := fsnotify.NewWatcher()
 	if err != nil {
 		return err
 	}
-	if err := w.Add(parent); err != nil {
+	if err := w.Add(filepath.Dir(target)); err != nil {
 		_ = w.Close()
 		return err
 	}
-
-	s.StopWatch()
-
+	reg := &registration{watcher: w, done: make(chan struct{})}
 	s.mu.Lock()
-	s.path = abs
-	s.watcher = w
-	s.done = make(chan struct{})
-	done := s.done
+	if existing := s.registrations[target]; existing != nil {
+		s.mu.Unlock()
+		_ = w.Close()
+		return nil
+	}
+	s.registrations[target] = reg
 	s.mu.Unlock()
-
-	go s.loop(w, done, abs)
+	go s.loop(reg, target)
 	return nil
 }
 
-func (s *Service) StopWatch() {
-	s.mu.Lock()
-	w := s.watcher
-	done := s.done
-	s.watcher = nil
-	s.done = nil
-	s.path = ""
-	s.mu.Unlock()
-
-	if done != nil {
-		close(done)
+func (s *Service) UnwatchDocument(path string) {
+	target, err := canonicalPath(path)
+	if err != nil {
+		return
 	}
-	if w != nil {
-		_ = w.Close()
+	s.mu.Lock()
+	reg := s.registrations[target]
+	delete(s.registrations, target)
+	s.mu.Unlock()
+	if reg != nil {
+		close(reg.done)
+		_ = reg.watcher.Close()
 	}
 }
 
-func (s *Service) WatchedPath() string {
+func (s *Service) UnwatchAllDocuments() {
+	s.mu.Lock()
+	registrations := s.registrations
+	s.registrations = make(map[string]*registration)
+	s.mu.Unlock()
+	for _, reg := range registrations {
+		close(reg.done)
+		_ = reg.watcher.Close()
+	}
+}
+
+func (s *Service) WatchedPaths() []string {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	return s.path
+	paths := make([]string, 0, len(s.registrations))
+	for path := range s.registrations {
+		paths = append(paths, path)
+	}
+	return paths
 }
 
 func (s *Service) Changes() <-chan string {
 	return s.changes
 }
 
-func (s *Service) loop(w *fsnotify.Watcher, done <-chan struct{}, target string) {
+func (s *Service) loop(reg *registration, target string) {
 	var timer *time.Timer
 	var timerC <-chan time.Time
-	pending := false
-
 	for {
 		select {
-		case <-done:
+		case <-reg.done:
 			if timer != nil {
 				timer.Stop()
 			}
 			return
-		case event, ok := <-w.Events:
+		case event, ok := <-reg.watcher.Events:
 			if !ok {
 				return
 			}
 			if eventMatchesTarget(event, target) {
-				pending = true
 				if timer != nil {
 					timer.Stop()
 				}
@@ -123,12 +133,11 @@ func (s *Service) loop(w *fsnotify.Watcher, done <-chan struct{}, target string)
 				timerC = timer.C
 			}
 		case <-timerC:
-			if pending && fileReadable(target) {
+			if fileReadable(target) {
 				s.emitChange(target)
 			}
-			pending = false
 			timerC = nil
-		case _, ok := <-w.Errors:
+		case _, ok := <-reg.watcher.Errors:
 			if !ok {
 				return
 			}
@@ -141,7 +150,6 @@ func (s *Service) emitChange(path string) {
 	case s.changes <- path:
 	default:
 	}
-
 	s.mu.Lock()
 	ctx := s.ctx
 	s.mu.Unlock()
@@ -150,12 +158,20 @@ func (s *Service) emitChange(path string) {
 	}
 }
 
+func canonicalPath(path string) (string, error) {
+	abs, err := filepath.Abs(path)
+	if err != nil {
+		return "", err
+	}
+	if evaluated, evalErr := filepath.EvalSymlinks(abs); evalErr == nil {
+		abs = evaluated
+	}
+	return filepath.Clean(abs), nil
+}
+
 func eventMatchesTarget(event fsnotify.Event, target string) bool {
 	eventPath, err := filepath.Abs(event.Name)
-	if err != nil {
-		return false
-	}
-	return filepath.Clean(eventPath) == filepath.Clean(target)
+	return err == nil && filepath.Clean(eventPath) == target
 }
 
 func fileReadable(path string) bool {
@@ -163,6 +179,5 @@ func fileReadable(path string) bool {
 	if err != nil {
 		return false
 	}
-	_ = file.Close()
-	return true
+	return file.Close() == nil
 }

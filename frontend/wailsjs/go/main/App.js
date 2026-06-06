@@ -5,3 +5,15 @@
 export function AppName() {
   return window['go']['main']['App']['AppName']();
 }
+
+export function EmitCommand(arg1) {
+  return window['go']['main']['App']['EmitCommand'](arg1);
+}
+
+export function Quit() {
+  return window['go']['main']['App']['Quit']();
+}
+
+export function SetWindowTitle(arg1) {
+  return window['go']['main']['App']['SetWindowTitle'](arg1);
+}

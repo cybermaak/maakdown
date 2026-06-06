@@ -10,14 +10,18 @@ export function SetContext(arg1) {
   return window['go']['watcher']['Service']['SetContext'](arg1);
 }
 
-export function StartWatch(arg1) {
-  return window['go']['watcher']['Service']['StartWatch'](arg1);
+export function UnwatchAllDocuments() {
+  return window['go']['watcher']['Service']['UnwatchAllDocuments']();
 }
 
-export function StopWatch() {
-  return window['go']['watcher']['Service']['StopWatch']();
+export function UnwatchDocument(arg1) {
+  return window['go']['watcher']['Service']['UnwatchDocument'](arg1);
 }
 
-export function WatchedPath() {
-  return window['go']['watcher']['Service']['WatchedPath']();
+export function WatchDocument(arg1) {
+  return window['go']['watcher']['Service']['WatchDocument'](arg1);
+}
+
+export function WatchedPaths() {
+  return window['go']['watcher']['Service']['WatchedPaths']();
 }

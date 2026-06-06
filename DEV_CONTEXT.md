@@ -8,9 +8,9 @@ The app is a viewer, not an editor. It renders CommonMark/GFM, code, KaTeX math,
 
 ## Current Phase
 
-**Phase:** P8 design system foundation in progress; P7.5 remains externally blocked
-**Active focus:** establish the approved design language, themes, fonts, icons,
-Svelte primitives, and visual regression harness before workspace features.
+**Phase:** P8 and P9 complete; P7.5 remains externally blocked
+**Active focus:** P10 reading productivity: document search, history, command
+palette, copy/diagram tools, reload status, and print/PDF.
 
 ## Major Files And Directories
 
@@ -32,6 +32,9 @@ Svelte primitives, and visual regression harness before workspace features.
 - `frontend/src/core/enhancement/`: progressive code and Mermaid enhancement scheduling.
 - `frontend/src/core/virtualizer/`: dynamic-height block virtualizer.
 - `frontend/src/core/workers/`: parser worker and browser-facing worker client.
+- `frontend/src/core/workspace/`: tab lifecycle, canonical identity, recents,
+  durable session projection, and workspace tests.
+- `frontend/src/design-system/`: production Svelte primitives and deterministic gallery.
 - `frontend/src/components/`: reader surface, table of contents, and metadata panel.
 - `fixtures/`: deterministic Markdown evaluation documents and local fixture assets.
 - `tools/generate-reader-evaluation-fixture.mjs`: regenerates the large reader evaluation dossier.
@@ -65,13 +68,17 @@ Svelte primitives, and visual regression harness before workspace features.
   accent, hairline borders, Inter, JetBrains Mono, and minimal motion.
 - Implement design-system primitives natively in Svelte; the exported React
   prototype is reference-only.
-- Use a pinned local `lucide-svelte` package; do not load production icons or
+- Use a pinned local `@lucide/svelte` package; do not load production icons or
   UI dependencies from a CDN.
 - Use a two-row toolbar/tab composition, visible watch states, semantic
   metadata badges/tags, unified command palette, and approved empty state.
 - Treat the square `M` mark as provisional and replaceable.
-- Do not ship the exported font files until license/provenance and distinct
-  weight files are verified.
+- Load licensed, weight-specific Inter and JetBrains Mono assets locally through
+  pinned Fontsource packages; do not use the duplicated prototype font exports.
+- Store versioned settings/session state under the OS application-data directory
+  using an fsynced temporary file followed by atomic rename.
+- Use canonical filesystem paths as tab identities and watcher registration keys.
+- Keep inactive tab models in memory but mount and enhance only the active tab.
 
 ## Planned Tasks
 
@@ -107,6 +114,13 @@ See `docs/task-tracker.md`.
   relevant handoff artifacts under `docs/design-system/`, updated the product
   and implementation specs to v0.5, and inserted P8 as the immediate design
   foundation phase before P9-P11 feature work.
+- 2026-06-06: Completed P8 with semantic tokens, local Inter/JetBrains Mono,
+  `@lucide/svelte`, production controls, migrated reader styling, a deterministic
+  component gallery, and CI visual-smoke screenshots.
+- 2026-06-06: Completed P9 with tabbed workspace state, canonical-path
+  deduplication, close/reopen/cycle behavior, multi-document watchers, atomic
+  session/config persistence, session restoration, recents, native drops and
+  menus, keyboard commands, active titles, and active-tab-only rendering.
 
 ## Verification Commands
 
@@ -130,22 +144,19 @@ scripts/release-check.sh
 - P7.5 requires Windows and Linux runners plus the user's external macOS and
   Windows signing credentials. The workflow and scripts are implemented, but
   those external checks cannot be completed in this local macOS session.
-- P8 font integration is blocked on obtaining genuine licensed, weight-specific
-  Inter and JetBrains Mono assets; the exported files are duplicated across
-  nominal weights.
 
 ## Verification Notes
 
-- `scripts/verify.sh` passes 12 frontend tests, Svelte checks, frontend build, Go
+- `scripts/verify.sh` passes 15 frontend tests, Svelte checks, frontend build, Go
   tests, and a production Wails build.
 - The initial application chunk is approximately 213 kB. Parser, Mermaid, Shiki,
   and language payloads remain in worker or lazy chunks; Vite still warns about
   some optional chunks above 500 kB.
 - The macOS Chromium baseline is 641 ms for the small fixture, 226 ms for the
   medium fixture, and 1,318 ms for the 10,726-line fixture.
-- The large fixture kept 38 blocks mounted in the benchmark and 12 blocks near
+- The P9 large fixture kept 40 blocks mounted in the benchmark and 12 blocks near
   the final visual navigation target.
-- Final-anchor error measured 0.19 px after multi-pass stabilization.
+- Final-anchor error measured 0.34 px after the P9 workspace migration.
 
 ## Signing Context
 

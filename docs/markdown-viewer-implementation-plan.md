@@ -21,7 +21,7 @@
 | Dynamic Wails asset handler | Not used for Markdown document assets in v1 |
 | Wails v3 | Not used until it reaches stable and is scheduled as a migration |
 | Design language | Maakdown design system under `docs/design-system/` |
-| UI icons | pinned `lucide-svelte`; no runtime CDN |
+| UI icons | pinned `@lucide/svelte`; no runtime CDN |
 | UI fonts | self-hosted licensed Inter and JetBrains Mono with verified weight files |
 
 This plan deliberately removes the prior "evaluate Wails v3 later" ambiguity. P0 starts on Wails v2.11.x, Svelte 5.x, and Vite 8.x, then records exact versions in `go.mod`, `wails.json`, and `frontend/package.json`.
@@ -210,7 +210,7 @@ require light/dark visual regression updates.
 - Store fonts in the frontend asset tree and load them locally with
   `font-display: swap`.
 - Record source, license, hashes, and subset coverage.
-- Install and pin `lucide-svelte`; do not use CDN scripts or manually copied SVG
+- Install and pin `@lucide/svelte`; do not use CDN scripts or manually copied SVG
   paths.
 
 ### Svelte primitives

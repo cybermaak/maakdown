@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { tick } from 'svelte';
+  import { tick, untrack } from 'svelte';
   import BlockView from './BlockView.svelte';
   import { enhancementManager } from '../core/enhancement/enhancementManager';
   import type { DocumentModel } from '../core/model/types';
@@ -7,26 +7,38 @@
   import { BlockVirtualizer, type VirtualRange } from '../core/virtualizer/virtualizer';
   import { shouldResolveAsset } from '../core/assets/assets';
   import { openExternal, resolveAsset } from '../ipc';
-  import { uiStore } from '../stores/uiStore';
   import { appConfig } from '../stores/configStore';
 
   interface Props {
     model: DocumentModel;
     documentPath: string;
     onOpenDocument?: (path: string) => void;
+    initialScrollTop?: number;
+    onPositionChange?: (scrollTop: number, activeHeadingId: string | null) => void;
   }
 
-  let { model, documentPath, onOpenDocument }: Props = $props();
+  let { model, documentPath, onOpenDocument, initialScrollTop = 0, onPositionChange }: Props = $props();
   let surface = $state<HTMLElement | undefined>();
   let virtualizer = new BlockVirtualizer(0);
   let range = $state<VirtualRange>({ start: 0, end: 0, top: 0, bottom: 0 });
   let measurementFrame = 0;
+  let restoredPath = '';
 
   $effect(() => {
     model;
     documentPath;
     virtualizer = new BlockVirtualizer(model.blocks.length);
-    range = virtualizer.range(0, surface?.clientHeight ?? 900);
+    const viewportHeight = untrack(() => surface?.clientHeight ?? 900);
+    range = virtualizer.range(0, viewportHeight);
+    const currentScroll = untrack(() => surface?.scrollTop ?? 0);
+    const restoreTop = restoredPath === documentPath ? currentScroll : untrack(() => initialScrollTop);
+    restoredPath = documentPath;
+    queueMicrotask(() => {
+      if (surface) {
+        surface.scrollTop = restoreTop;
+        updateRange();
+      }
+    });
     void resolveVisibleImages();
   });
 
@@ -65,7 +77,7 @@
       surface.scrollTop += delta;
       updateRange();
     }
-    uiStore.update((state) => ({ ...state, activeHeadingId: anchorId }));
+    onPositionChange?.(surface.scrollTop, anchorId);
   }
 
   function handleClick(event: MouseEvent) {
@@ -101,7 +113,7 @@
       startBlockId: startBlock?.id ?? null,
       endBlockId: model.blocks[Math.max(range.end - 1, range.start)]?.id ?? null
     });
-    uiStore.update((state) => ({ ...state, activeHeadingId }));
+    onPositionChange?.(surface?.scrollTop ?? 0, activeHeadingId);
   }
 
   export function scrollToAnchor(anchorId: string) {
