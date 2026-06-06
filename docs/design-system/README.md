@@ -12,6 +12,8 @@ Use the sources in this order:
 3. `reference/design-guide.md` and `reference/tokens/` for visual values.
 4. `reference/mock/` and `reference/screenshots/` for composition and interaction
    intent.
+5. `reviews/Maakdown-Design-Product-Review.pdf` for the accepted supplemental
+   product/UX critique incorporated into specification v0.6.
 
 The mock is a React prototype. Its state shape, inline styles, SVG diagram
 placeholder, and CDN dependencies are not production architecture. Production
@@ -74,8 +76,8 @@ an accessible name, disabled handling, and light/dark coverage.
   use Mermaid.
 - The supplied Inter files for weights 400, 500, 600, and 700 have identical
   SHA-256 hashes. The supplied JetBrains Mono 400 and 500 files are also
-  identical. P8 must verify licenses and replace these with genuine,
-  weight-specific self-hosted assets before production use.
+  identical. They remain reference-only; production uses genuine,
+  weight-specific assets from pinned local Fontsource packages.
 - The square `M` mark is accepted as a provisional application mark, not a
   finalized logo. Keep it easy to replace.
 - The two exported `01-diagram.png` and `02-diagram.png` images were identical;
@@ -92,3 +94,5 @@ an accessible name, disabled handling, and light/dark coverage.
 - `reference/screenshots/palette-light.png`: reviewed light command palette.
 - `reference/screenshots/palette-dark.png`: reviewed dark command palette.
 - `mock-review.md`: incorporated decisions, adaptation rules, and open risks.
+- `reviews/Maakdown-Design-Product-Review.pdf`: supplemental product and UX
+  review covering chrome, formatting, search, print, accessibility, and sequencing.

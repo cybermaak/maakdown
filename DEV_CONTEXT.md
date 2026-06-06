@@ -9,8 +9,9 @@ The app is a viewer, not an editor. It renders CommonMark/GFM, code, KaTeX math,
 ## Current Phase
 
 **Phase:** P8 and P9 complete; P7.5 remains externally blocked
-**Active focus:** P10 reading productivity: document search, history, command
-palette, copy/diagram tools, reload status, and print/PDF.
+**Active focus:** P10 reading productivity begins with the supplemental
+product-surface correction pass, formatting/error contracts, and a thin command
+palette before search, history, reader tools, and guarded print/PDF.
 
 ## Major Files And Directories
 
@@ -79,6 +80,13 @@ palette, copy/diagram tools, reload status, and print/PDF.
   using an fsynced temporary file followed by atomic rename.
 - Use canonical filesystem paths as tab identities and watcher registration keys.
 - Keep inactive tab models in memory but mount and enhance only the active tab.
+- Use highlight.js as the production default without exposing engine selection
+  in normal chrome; Shiki remains a development/evaluation setting.
+- Compute search totals over the full document model while marking only mounted blocks.
+- Route human-readable dates, sizes, counts, and durations through one formatting layer.
+- Treat print expansion as cancellable, memory-sensitive work with guaranteed cleanup.
+- Keep tested multi-path watchers for all open documents; the supplemental
+  review's active-only watcher staging suggestion is superseded by completed P9.
 
 ## Planned Tasks
 
@@ -121,6 +129,11 @@ See `docs/task-tracker.md`.
   deduplication, close/reopen/cycle behavior, multi-document watchers, atomic
   session/config persistence, session restoration, recents, native drops and
   menus, keyboard commands, active titles, and active-tab-only rendering.
+- 2026-06-06: Accepted the supplemental Maakdown Design & Product Review,
+  preserved it under `docs/design-system/reviews/`, and updated specification
+  v0.6, the implementation plan, and P10/P11 tracker work for toolbar cleanup,
+  formatting, errors, command-palette sequencing, truthful search counts,
+  guarded print expansion, accessibility, and multi-tab performance gates.
 
 ## Verification Commands
 

@@ -1,7 +1,7 @@
 # Markdown Viewer - Implementation Plan
 
 **Status:** Draft  
-**Version:** 0.5
+**Version:** 0.6
 **Date:** 2026-06-06
 **Companion:** `docs/markdown-viewer-design-spec.md`
 
@@ -15,7 +15,7 @@
 | Markdown pipeline | unified/remark/rehype |
 | Math | KaTeX |
 | Default highlighter | highlight.js |
-| Optional highlighter evaluation | Shiki with JavaScript RegExp engine only |
+| Optional highlighter evaluation | Shiki with JavaScript RegExp engine only, development/evaluation UI only |
 | Diagrams | Mermaid, lazy-loaded |
 | Local assets | Go `AssetService` + loopback-only HTTP asset server with tokenized URLs |
 | Dynamic Wails asset handler | Not used for Markdown document assets in v1 |
@@ -68,6 +68,8 @@ maakdown/
             ├── math/
             ├── sanitize/
             ├── assets/
+            ├── formatting/
+            ├── errors/
             ├── theme/
             ├── workers/
             ├── design-system/
@@ -162,6 +164,10 @@ Persists settings and workspace session state as versioned JSON in the operating
 
 Stored settings include theme, frontmatter display mode, highlighter engine, typography, panel dimensions, trusted-folder preferences, and performance/debug settings.
 
+The production settings surface exposes theme, frontmatter mode, typography,
+panel behavior, and other reader preferences. The Shiki engine selector remains
+behind a development/evaluation flag and is not normal reader chrome.
+
 Stored session state includes ordered tab paths, active tab, per-document reading positions, and recent files. Writes use a temporary file, sync/close, and atomic rename. Invalid or unsupported data falls back to defaults without preventing startup.
 
 ### `DesktopService`
@@ -205,11 +211,11 @@ require light/dark visual regression updates.
 
 ### Fonts and icons
 
-- Add genuine, licensed, weight-specific Inter 400/500/600/700 files.
-- Add genuine, licensed JetBrains Mono 400/500 files.
-- Store fonts in the frontend asset tree and load them locally with
-  `font-display: swap`.
-- Record source, license, hashes, and subset coverage.
+- Use pinned Fontsource packages for genuine, licensed, weight-specific Inter
+  400/500/600/700 and JetBrains Mono 400/500 assets.
+- Bundle and load the required subsets locally with `font-display: swap`;
+  production must not depend on a font CDN.
+- Record package source, license, version, and subset coverage.
 - Install and pin `@lucide/svelte`; do not use CDN scripts or manually copied SVG
   paths.
 
@@ -315,11 +321,29 @@ Tabs restored from missing files remain recoverable error tabs. A relocate actio
 Builds a lightweight search projection from each block's plain text.
 
 - Matching supports case-sensitive and whole-word options.
+- The result count is computed over every block in the active document model;
+  virtualization affects marks and navigation, not count accuracy.
 - Results preserve document order and use block-local offsets.
 - Next/previous wraps within the active document.
 - Selecting a result routes through virtualized block navigation and anchor stabilization.
 - Mounted result blocks receive temporary `<mark>` output without changing parser-produced sanitized HTML.
 - Search state is retained independently per tab.
+
+### `core/formatting`
+
+Owns locale-aware presentation for dates and local date-times, file and asset
+sizes, counts and result summaries, and durations/performance values.
+Formatting functions accept explicit locale and time-zone options for
+deterministic tests. UI components do not call raw `Date.toString()` or
+duplicate formatting rules.
+
+### `core/errors`
+
+Maps backend, parser, and watcher failures to a typed reader error taxonomy:
+missing file, permission denied, oversized file or asset, unsupported type,
+parse failure, watcher lost, blocked asset, and unresolved wikilink. Each type
+defines severity, user-facing message, recovery commands, presentation scope,
+and optional diagnostic detail.
 
 ### `core/commands`
 
@@ -365,6 +389,8 @@ Scheduling:
 - visible code blocks are prioritized
 - offscreen highlight requests are cancellable
 - raw code remains readable if highlighting is delayed
+- highlighter selection is available only in development/evaluation settings;
+  production chrome treats highlighting as an implementation detail
 
 ### `core/mermaid`
 
@@ -389,9 +415,11 @@ Coordinates complete-document print preparation:
 
 1. capture active tab position and interactive virtualizer state
 2. mount a print-only complete document representation
-3. complete asset, code, KaTeX, and Mermaid rendering
-4. invoke the backend system-print command
-5. remove print representation and restore the interactive view and position
+3. show cancellable preparation progress and force printable enhancement work
+4. complete asset, code, KaTeX, and Mermaid rendering or safe fallback output
+5. invoke the backend system-print command
+6. remove print representation and restore the interactive view and position
+   from a `finally`-style cleanup path on success, cancellation, or error
 
 Print styles hide all application chrome and format links, tables, code, callouts, diagrams, images, and page breaks for paper/PDF output.
 
@@ -399,13 +427,16 @@ Print styles hide all application chrome and format links, tables, code, callout
 
 - `AppShell`: shell layout.
 - `TabStrip`: ordered tabs, active state, file status, close controls, and horizontal overflow.
-- `Toolbar`: icon commands for open, navigation, reload, find, focus, and panel visibility.
+- `Toolbar`: stable navigation, document-identity, and reader-control zones with
+  icon commands for open, navigation, reload, palette/find, focus, and panel visibility.
 - `CommandPalette`: searchable commands, open tabs, recent files, headings, and settings.
 - `SearchBar`: current-document query, options, result count, and previous/next controls.
 - `TocSidebar`: uses `navigation.scrollToAnchor`.
 - `DocumentView`: owns virtualizer and visible range.
 - `BlockView`: renders sanitized block HTML and starts asset/highlight/diagram enhancement.
 - `MetadataPanel`: frontmatter.
+- `SettingsSurface`: theme, metadata mode, typography, panel, and
+  development/evaluation settings reached through the palette.
 - `RecentDocuments`: empty-state recent files and missing-file cleanup.
 - `DiagramDialog`: zoomable Mermaid inspection with modal focus management.
 - `ReaderAppearancePopover`: font, size, line height, and measure controls.
@@ -421,6 +452,12 @@ command entry, find, reading display, theme, metadata, and focus actions. The
 metadata inspector uses badges for semantic status and chips for tags. The
 empty state uses the provisional `M` mark, file drop, open action, recents, and
 missing-file state.
+
+The toolbar never shows the active highlighter engine in production. The
+sidebar renders identity first, then a labelled `Outline` group. Reader CSS
+caps prose at the selected measure while allowing diagrams, wide tables, and
+code blocks to opt into a wider measure. Heading links are ink-colored and
+expose copy-link affordances only on hover or keyboard focus.
 
 ## 7. Data Flow
 
@@ -444,6 +481,8 @@ Open into workspace:
 5. the previous active tab records its reader position and unmounts
 6. the new active tab mounts its document view and restores its position
 7. local Markdown links and wikilinks keep the source tab available by opening or activating the target tab
+8. unresolved wikilinks remain inline and do not enter the tab lifecycle
+9. folder drops emit an unsupported-drop status; vault/folder opening remains out of scope
 
 Anchor navigation:
 
@@ -470,11 +509,13 @@ Session restoration:
 5. only the active restored tab mounts its reader
 6. successful opens register watchers and refresh recents
 7. each tab restores its anchor/block position when first activated
+8. local asset references resolve again against the current process token; no
+   persisted loopback URL is reused
 
 Search:
 
 1. active tab query/options update
-2. search core scans block plain text and emits ordered results
+2. search core scans all block plain text and emits the truthful total plus ordered results
 3. selecting a result navigates to its block through the virtualizer
 4. mounted target content marks the matching text and receives focus context
 
@@ -482,9 +523,18 @@ Print:
 
 1. print command freezes the active tab's reader position
 2. complete print representation mounts outside the interactive virtualizer
-3. all printable enhancements settle or produce safe fallbacks
-4. backend invokes the system print dialog
-5. print representation is removed and the reader position is restored
+3. UI reports cancellable preparation progress
+4. all printable enhancements settle or produce safe fallbacks
+5. backend invokes the system print dialog
+6. a guaranteed cleanup path removes the print representation and restores the reader
+
+### P10 execution order
+
+1. Remove evaluation internals from product chrome and land the shared formatting/error contracts.
+2. Ship a thin command palette over the existing P9 command ids.
+3. Add full-model search projection and virtualizer-aware result navigation.
+4. Add history, copy tools, Mermaid inspection, and reload state.
+5. Add guarded complete-document print preparation and native print.
 
 ## 8. IPC Contract
 
@@ -527,7 +577,7 @@ Generated `wailsjs/` imports are forbidden outside `ipc/`.
 | P7 | Release hardening | cross-platform packaging, perf harness, security fixtures, docs | targets recorded on Windows/macOS/Linux; blockers resolved |
 | P8 | Design system foundation | canonical tokens/themes, verified fonts, Lucide, Svelte primitives, component gallery | existing reader can consume the design API; light/dark primitive acceptance passes |
 | P9 | Desktop workspace | tabs, multi-path watchers, persisted sessions, recents, drag-and-drop, native commands | tabs restore and switch safely; inactive tabs do not render or enhance |
-| P10 | Reading productivity | current-document search, navigation history, command palette, copy tools, diagram inspection, print/PDF | long-document search/navigation and complete printing pass integration tests |
+| P10 | Reading productivity | surface corrections, formatting/errors, command palette, current-document search, navigation history, copy tools, diagram inspection, guarded print/PDF | long-document search/navigation and complete printing pass integration tests |
 | P11 | Editorial experience | approved mock composition, typography, focus mode, responsive panels, accessibility | visual, keyboard, narrow-window, light/dark, and accessibility acceptance passes |
 
 ## 10. Test Plan
@@ -561,6 +611,9 @@ Integration:
 - invoke commands through native menus, shortcuts, and palette
 - copy code/heading links and inspect Mermaid diagrams
 - prepare and print the complete document, then restore the reader
+- cancel print preparation and verify cleanup/restoration
+- format metadata under fixed locale/time-zone fixtures
+- render and recover from every reader error category
 - switch focus mode and reader appearance without reparsing
 
 Performance:
@@ -589,6 +642,7 @@ Metrics:
 - session restoration time
 - search latency
 - print preparation time
+- total mounted blocks and enhancement work across several open tabs
 
 Accessibility and visual:
 
@@ -604,6 +658,7 @@ Accessibility and visual:
 
 - No Wails v3 in v1.
 - No Shiki Oniguruma/WASM in v1 product path.
+- No highlighter-engine selector in normal production chrome.
 - No native hash scrolling in document content.
 - No raw `file://` image loading.
 - No image byte/base64 transfer over Wails IPC for normal document rendering.

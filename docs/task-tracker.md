@@ -137,16 +137,22 @@
 
 | ID | Status | Task | Owner | Depends On | Exit Criteria | Verification |
 |---|---|---|---|---|---|---|
+| P10.0 | Todo | Apply supplemental product-surface corrections | Frontend/Design | P8/P9 | production toolbar uses stable icon zones, highlighter selection is dev-only, sidebar labels `Outline`, and prose/heading-link treatment matches the accepted review | Svelte check, light/dark/narrow screenshots, product-mode assertion |
 | P10.1 | Todo | Add block plain-text search projection | Frontend core | P9.1 | every searchable block exposes stable text without DOM scraping | unit tests across Markdown fixtures |
-| P10.2 | Todo | Implement current-document search engine and state | Frontend core | P10.1 | query, case, whole-word, counts, ordering, and wrapping work per tab | search unit tests |
+| P10.2 | Todo | Implement current-document search engine and state | Frontend core | P10.1 | query, case, whole-word, truthful full-model counts, ordering, and wrapping work per tab | search unit tests including virtualized count accuracy |
 | P10.3 | Todo | Integrate search with virtualized navigation and marking | Frontend | P5/P10.2 | next/previous lands on offscreen results and marks only mounted content | Playwright 10k-line search tests |
 | P10.4 | Todo | Implement per-tab file and anchor navigation history | Frontend core | P9.1/P2 | back/forward restores path, anchor/block, and relative offset | unit and Playwright navigation tests |
-| P10.5 | Todo | Build unified command palette | Frontend | P9.8/P10.4 | palette groups commands, tabs, recents, and headings with approved keyboard interaction | component, Playwright, and visual tests |
+| P10.5 | Todo | Build command-palette-first command spine | Frontend | P9.8/P10.0 | thin palette ships first for commands/tabs/recents/headings, then adds settings and history with approved keyboard interaction | command parity, focus trap/restoration, Playwright and visual tests |
 | P10.6 | Todo | Add code-copy and heading-link copy tools | Frontend | P4/P8/P9.8 | code chrome shows language/copy state and copy actions announce success/failure | clipboard mocks and Playwright tests |
 | P10.7 | Todo | Add zoomable Mermaid inspection dialog | Frontend | P4.4/P8.8 | captioned diagrams open with zoom, pan, reset, close, and focus restoration | component, accessibility, and visual tests |
 | P10.8 | Todo | Add manual reload and external-change status | Full stack | P9.3 | toolbar/tab states expose watching, changed, reload progress, and recoverable errors | watcher integration tests |
-| P10.9 | Todo | Implement complete-document print preparation | Frontend | P5/P4 | print representation includes all blocks and settled printable enhancements | Playwright print-preparation test |
+| P10.9 | Todo | Implement guarded complete-document print preparation | Frontend | P5/P4 | progress/cancel flow renders all blocks and printable enhancements, then guaranteed cleanup restores the bounded reader | Playwright completion, cancellation, error, and memory tests |
 | P10.10 | Todo | Invoke native print and system PDF flow | Backend | P10.9 | print command opens platform dialog and restores bounded reader afterward | macOS/Windows/Linux smoke tests |
+| P10.11 | Todo | Add shared formatting and locale layer | Frontend core | P10.0 | metadata, dates, sizes, counts, and durations use one tested formatter with no raw runtime strings | fixed-locale/time-zone unit tests and metadata screenshots |
+| P10.12 | Todo | Define reader error taxonomy and recovery presentations | Full stack | P9/P10.0 | missing, permission, oversized, unsupported, parse, watcher, asset, and unresolved-link states have typed messages and actions | unit fixtures plus Playwright recovery scenarios |
+| P10.13 | Todo | Add unified Settings surface through the palette | Frontend | P10.5/P9.4 | theme, metadata, reader, panel, and dev/evaluation settings have one persistent home; Shiki remains dev-only | persistence, keyboard, and visual tests |
+| P10.14 | Todo | Add standing multi-tab active-render benchmark | Frontend/CI | P9.11 | several large open tabs retain one mounted reader and bounded enhancement work after P10 changes | benchmark report and CI threshold |
+| P10.15 | Todo | Keep the accessibility baseline continuously green | Frontend/CI | P8/P9 | existing and new controls retain visible focus, names, semantics, reduced-motion behavior, and dialog/palette focus management before P11 async-announcement completion | automated accessibility checks plus manual keyboard smoke per P10 milestone |
 
 ## P11 - Editorial Experience
 
@@ -158,7 +164,7 @@
 | P11.4 | Todo | Add reader typography and measure controls | Frontend | P9.4/P8/P11.1 | sans/serif, 13-22px size, three line heights, and three measures update without reparsing and persist | config, visual, and regression tests |
 | P11.5 | Todo | Implement mock-aligned focus mode | Frontend | P11.1/P10.3 | secondary chrome hides while explicit find and exit controls remain usable | keyboard and visual tests |
 | P11.6 | Todo | Refine metadata status badges and tag chips | Frontend | P8/P11.1 | status values use semantic tones, tags wrap cleanly, and paths remain readable | fixture and narrow-panel visual tests |
-| P11.7 | Todo | Refine document element presentation | Frontend | P8/P11.1 | tables, tasks, callouts, footnotes, code, diagrams, assets, and wikilinks match approved treatments in both themes | fixture visual regression |
+| P11.7 | Todo | Refine document element presentation | Frontend | P8/P10.0/P11.1 | ink headings with hover anchors, capped prose plus wide diagrams/tables/code, tasks, callouts, footnotes, assets, and wikilinks match approved treatments in both themes | fixture visual regression |
 | P11.8 | Todo | Finalize provisional brand mark usage | Design/Frontend | P8.1/P11.1 | square `M` mark is consistently applied and remains replaceable without layout changes | brand review and icon-size screenshots |
 | P11.9 | Todo | Complete keyboard and semantic accessibility | Frontend | P10/P11.1-P11.7 | tabs, toolbars, search, palette, dialogs, drawers, and reader are keyboard/screen-reader operable | automated accessibility and manual keyboard pass |
 | P11.10 | Todo | Add reduced-motion, high-contrast, and async announcements | Frontend | P8/P11.9 | system preferences are respected and loading/reload/search/copy/error state is announced | media-query and accessibility tests |
