@@ -8,10 +8,10 @@ The app is a viewer, not an editor. It renders CommonMark/GFM, code, KaTeX math,
 
 ## Current Phase
 
-**Phase:** P8 and P9 complete; P7.5 remains externally blocked
-**Active focus:** P10 reading productivity begins with the supplemental
-product-surface correction pass, formatting/error contracts, and a thin command
-palette before search, history, reader tools, and guarded print/PDF.
+**Phase:** P10 and P11 in progress; P7.5 remains externally blocked
+**Active focus:** complete navigation history, copy and diagram inspection,
+resizable responsive panels, guarded print cancellation, and remaining
+accessibility announcements.
 
 ## Major Files And Directories
 
@@ -82,6 +82,9 @@ palette before search, history, reader tools, and guarded print/PDF.
 - Keep inactive tab models in memory but mount and enhance only the active tab.
 - Use highlight.js as the production default without exposing engine selection
   in normal chrome; Shiki remains a development/evaluation setting.
+- Theme rendered Markdown through a dedicated semantic reader contract. It owns
+  prose, headings, links, syntax, selection, and Mermaid palettes independently
+  from application chrome and supports future user-selectable themes.
 - Compute search totals over the full document model while marking only mounted blocks.
 - Route human-readable dates, sizes, counts, and durations through one formatting layer.
 - Treat print expansion as cancellable, memory-sensitive work with guaranteed cleanup.
@@ -134,6 +137,10 @@ See `docs/task-tracker.md`.
   v0.6, the implementation plan, and P10/P11 tracker work for toolbar cleanup,
   formatting, errors, command-palette sequencing, truthful search counts,
   guarded print expansion, accessibility, and multi-tab performance gates.
+- 2026-06-06: Began P10/P11 with the semantic reader theme, full-model
+  virtualized search, command palette, native print/PDF expansion, persistent
+  typography/measure/focus controls, metadata formatting, responsive collapse,
+  reduced-motion/high-contrast rules, and native menu parity.
 
 ## Verification Commands
 
@@ -160,7 +167,9 @@ scripts/release-check.sh
 
 ## Verification Notes
 
-- `scripts/verify.sh` passes 15 frontend tests, Svelte checks, frontend build, Go
+- The current P10/P11 slice passes zero-warning Svelte checks, 17 frontend
+  tests, the frontend production build, and all Go tests.
+- `scripts/verify.sh` previously passed 15 frontend tests, Svelte checks, frontend build, Go
   tests, and a production Wails build.
 - The initial application chunk is approximately 213 kB. Parser, Mermaid, Shiki,
   and language payloads remain in worker or lazy chunks; Vite still warns about

@@ -3,7 +3,7 @@ import { GetConfig, GetSession, SetConfig, SetSession } from '../../wailsjs/go/c
 import { ResolveAsset, RevokeAsset } from '../../wailsjs/go/assetservice/Service';
 import { OpenExternal } from '../../wailsjs/go/linkservice/Service';
 import { UnwatchDocument, WatchDocument } from '../../wailsjs/go/watcher/Service';
-import { Quit, SetWindowTitle } from '../../wailsjs/go/main/App';
+import { Print, Quit, SetWindowTitle } from '../../wailsjs/go/main/App';
 import { GetVaultIndex } from '../../wailsjs/go/vault/Service';
 import { EventsOn } from '../../wailsjs/runtime/runtime';
 import { config } from '../../wailsjs/go/models';
@@ -28,7 +28,13 @@ export async function getConfig(): Promise<AppConfig> {
   return {
     theme: normalizeTheme(result.theme),
     highlighterEngine: result.highlighterEngine === 'shiki-js-regex' ? 'shiki-js-regex' : 'highlightjs',
-    frontmatterDisplay: result.frontmatterDisplay === 'hidden' ? 'hidden' : 'panel'
+    frontmatterDisplay: result.frontmatterDisplay === 'hidden' ? 'hidden' : 'panel',
+    readerTheme: 'editorial',
+    readerFont: result.readerFont === 'serif' ? 'serif' : 'sans',
+    readerFontSize: result.readerFontSize >= 13 && result.readerFontSize <= 22 ? result.readerFontSize : 15,
+    readerLineHeight: result.readerLineHeight === 'compact' || result.readerLineHeight === 'relaxed' ? result.readerLineHeight : 'comfortable',
+    readerMeasure: result.readerMeasure === 'narrow' || result.readerMeasure === 'wide' ? result.readerMeasure : 'standard',
+    focusMode: Boolean(result.focusMode)
   };
 }
 
@@ -37,7 +43,13 @@ export async function setConfig(next: AppConfig): Promise<AppConfig> {
   return {
     theme: normalizeTheme(result.theme),
     highlighterEngine: result.highlighterEngine === 'shiki-js-regex' ? 'shiki-js-regex' : 'highlightjs',
-    frontmatterDisplay: result.frontmatterDisplay === 'hidden' ? 'hidden' : 'panel'
+    frontmatterDisplay: result.frontmatterDisplay === 'hidden' ? 'hidden' : 'panel',
+    readerTheme: 'editorial',
+    readerFont: result.readerFont === 'serif' ? 'serif' : 'sans',
+    readerFontSize: result.readerFontSize >= 13 && result.readerFontSize <= 22 ? result.readerFontSize : 15,
+    readerLineHeight: result.readerLineHeight === 'compact' || result.readerLineHeight === 'relaxed' ? result.readerLineHeight : 'comfortable',
+    readerMeasure: result.readerMeasure === 'narrow' || result.readerMeasure === 'wide' ? result.readerMeasure : 'standard',
+    focusMode: Boolean(result.focusMode)
   };
 }
 
@@ -90,6 +102,10 @@ export async function setWindowTitle(path: string): Promise<void> {
 
 export async function quitApp(): Promise<void> {
   await Quit();
+}
+
+export async function printWindow(): Promise<void> {
+  await Print();
 }
 
 export function onFileChanged(callback: (path: string) => void): () => void {

@@ -7,6 +7,9 @@
   import TocSidebar from './components/TocSidebar.svelte';
   import WorkspaceEmptyState from './components/WorkspaceEmptyState.svelte';
   import WorkspaceToolbar from './components/WorkspaceToolbar.svelte';
+  import SearchBar from './components/SearchBar.svelte';
+  import ReaderSettings from './components/ReaderSettings.svelte';
+  import CommandPalette from './components/CommandPalette.svelte';
   import { disposeParserWorker, parseInWorker } from './core/workers/parserClient';
   import {
     activateOrAddTab,
@@ -30,6 +33,7 @@
     openDocumentAt,
     readDocument,
     quitApp,
+    printWindow,
     setConfig,
     setSession,
     setWindowTitle,
@@ -38,6 +42,8 @@
   } from './ipc';
   import { appConfig } from './stores/configStore';
   import { applyTheme } from './core/theme/theme';
+  import { applyReaderTheme, resolveTheme } from './core/theme/readerTheme';
+  import { searchDocument } from './core/search/search';
 
   const query = new URLSearchParams(window.location.search);
   const showDesignSystem = import.meta.env.DEV && query.has('design-system');
@@ -48,8 +54,16 @@
   let persistTimer = 0;
   let dragActive = $state(false);
   let activeHeadingId = $state<string | null>(null);
+  let searchOpen = $state(false);
+  let searchQuery = $state('');
+  let searchIndex = $state(0);
+  let searchCaseSensitive = $state(false);
+  let settingsOpen = $state(false);
+  let paletteOpen = $state(false);
+  let printing = $state(false);
   const livePositions = new Map<string, ReaderPosition>();
   let activeTab = $derived(workspace.tabs.find((tab) => tab.id === workspace.activeTabId) ?? null);
+  let searchMatches = $derived(activeTab?.model ? searchDocument(activeTab.model, searchQuery, { caseSensitive: searchCaseSensitive }) : []);
 
   function sessionSnapshot() {
     return serializeSession({
@@ -209,6 +223,38 @@
     if (!fixture) void setConfig(next);
   }
 
+  function updateConfig(next: typeof $appConfig) {
+    appConfig.set(next);
+    if (!fixture) void setConfig(next);
+  }
+
+  function toggleFocus() {
+    updateConfig({ ...$appConfig, focusMode: !$appConfig.focusMode });
+  }
+
+  function showSearch() {
+    searchOpen = true;
+    settingsOpen = false;
+  }
+
+  function moveSearch(offset: number) {
+    if (!searchMatches.length) return;
+    searchIndex = (searchIndex + offset + searchMatches.length) % searchMatches.length;
+    void documentView?.scrollToBlock(searchMatches[searchIndex].blockId);
+  }
+
+  async function printDocument() {
+    if (!documentView || printing) return;
+    printing = true;
+    try {
+      await documentView.preparePrint();
+      await printWindow();
+    } finally {
+      documentView.restoreAfterPrint();
+      printing = false;
+    }
+  }
+
   function handleCommand(command: string) {
     if (command === 'open') void handleOpen();
     if (command === 'close-tab' && workspace.activeTabId) handleClose(workspace.activeTabId);
@@ -216,6 +262,11 @@
     if (command === 'next-tab') cycleTab(1);
     if (command === 'previous-tab') cycleTab(-1);
     if (command === 'reload' && activeTab) void reloadDocument(activeTab.path);
+    if (command === 'find') showSearch();
+    if (command === 'focus') toggleFocus();
+    if (command === 'print') void printDocument();
+    if (command === 'palette') paletteOpen = true;
+    if (command === 'settings') settingsOpen = true;
     if (command === 'quit') void quitApp();
   }
 
@@ -226,9 +277,13 @@
     if (event.key.toLowerCase() === 'o') command = 'open';
     if (event.key.toLowerCase() === 'w') command = 'close-tab';
     if (event.key.toLowerCase() === 'r') command = 'reload';
+    if (event.key.toLowerCase() === 'f') command = 'find';
+    if (event.shiftKey && event.key.toLowerCase() === 'f') command = 'focus';
     if (event.key === 'Tab') command = event.shiftKey ? 'previous-tab' : 'next-tab';
     if (event.shiftKey && event.key.toLowerCase() === 't') command = 'reopen-tab';
     if (event.key.toLowerCase() === 'q') command = 'quit';
+    if (event.key.toLowerCase() === 'p') command = 'print';
+    if (event.key.toLowerCase() === 'k') command = 'palette';
     if (command) {
       event.preventDefault();
       handleCommand(command);
@@ -247,6 +302,8 @@
 
   onMount(() => {
     window.addEventListener('keydown', handleKeydown);
+    const openPalette = () => (paletteOpen = true);
+    window.addEventListener('maakdown:palette', openPalette);
     window.addEventListener('dragenter', () => (dragActive = true));
     window.addEventListener('dragleave', () => (dragActive = false));
     window.addEventListener('drop', () => (dragActive = false));
@@ -273,10 +330,17 @@
       onFilesDropped((paths) => paths.filter((path) => /\.md(?:own|arkdown)?$/i.test(path)).forEach((path) => void openPath(path))),
       onAppCommand(handleCommand)
     ];
+    removeListeners.push(() => window.removeEventListener('maakdown:palette', openPalette));
   });
 
   $effect(() => {
+    const mode = resolveTheme($appConfig.theme);
     applyTheme($appConfig.theme);
+    applyReaderTheme($appConfig.readerTheme, mode);
+    document.documentElement.style.setProperty('--font-reader', $appConfig.readerFont === 'serif' ? 'var(--font-serif)' : 'var(--font-sans)');
+    document.documentElement.style.setProperty('--reader-font-size', `${$appConfig.readerFontSize}px`);
+    document.documentElement.style.setProperty('--reader-line-height', $appConfig.readerLineHeight === 'compact' ? '1.45' : $appConfig.readerLineHeight === 'relaxed' ? '1.85' : '1.65');
+    document.documentElement.style.setProperty('--reading-measure', $appConfig.readerMeasure === 'narrow' ? '680px' : $appConfig.readerMeasure === 'wide' ? '1040px' : '860px');
   });
 
   $effect(() => {
@@ -294,7 +358,7 @@
 {#if showDesignSystem}
   <DesignSystemGallery />
 {:else}
-  <main class="workspace-shell" class:drop-active={dragActive}>
+  <main class="workspace-shell" class:drop-active={dragActive} class:focus-mode={$appConfig.focusMode}>
     <aside class="sidebar" aria-label="Table of contents">
       <div class="sidebar-brand"><span class="brand-mark" aria-hidden="true">M</span><strong>Maakdown</strong></div>
       {#if activeTab?.model}
@@ -312,9 +376,38 @@
         onOpen={handleOpen}
         onTheme={cycleTheme}
         onMetadata={toggleMetadata}
-        onHighlighter={toggleHighlighter}
+        onSearch={showSearch}
+        onSettings={() => (settingsOpen = !settingsOpen)}
+        onFocus={toggleFocus}
       />
       <TabStrip tabs={workspace.tabs} activeTabId={workspace.activeTabId} onActivate={activateTab} onClose={handleClose} onAdd={handleOpen} />
+      {#if searchOpen}
+        <SearchBar
+          query={searchQuery}
+          index={searchIndex}
+          total={searchMatches.length}
+          caseSensitive={searchCaseSensitive}
+          onQuery={(value) => { searchQuery = value; searchIndex = 0; }}
+          onCase={() => { searchCaseSensitive = !searchCaseSensitive; searchIndex = 0; }}
+          onPrevious={() => moveSearch(-1)}
+          onNext={() => moveSearch(1)}
+          onClose={() => { searchOpen = false; searchQuery = ''; }}
+        />
+      {/if}
+      {#if settingsOpen}
+        <ReaderSettings config={$appConfig} onChange={updateConfig} onClose={() => (settingsOpen = false)} />
+      {/if}
+      {#if paletteOpen}
+        <CommandPalette
+          tabs={workspace.tabs}
+          recents={workspace.recents}
+          headings={activeTab?.model?.headings ?? []}
+          onCommand={handleCommand}
+          onOpenPath={(path) => void openPath(path)}
+          onHeading={navigate}
+          onClose={() => (paletteOpen = false)}
+        />
+      {/if}
 
       {#if activeTab?.error}
         <article class="document-surface error"><h1>Could not open document</h1><p>{activeTab.error}</p></article>
@@ -327,6 +420,9 @@
             initialScrollTop={livePositions.get(activeTab.id)?.scrollTop ?? activeTab.position.scrollTop}
             onPositionChange={updatePosition}
             onOpenDocument={openPath}
+            searchQuery={searchOpen ? searchQuery : ''}
+            searchBlockId={searchMatches[searchIndex]?.blockId ?? null}
+            searchCaseSensitive={searchCaseSensitive}
           />
           {#if $appConfig.frontmatterDisplay === 'panel'}
             <MetadataPanel frontmatter={activeTab.model.frontmatter} />

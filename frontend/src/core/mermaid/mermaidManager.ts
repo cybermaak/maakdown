@@ -1,8 +1,8 @@
-export type MermaidTheme = 'default' | 'dark';
+import { mermaidThemeVariables, type ResolvedTheme } from '../theme/readerTheme';
 
 export class MermaidManager {
   private module: typeof import('mermaid').default | null = null;
-  private theme: MermaidTheme = 'default';
+  private theme: ResolvedTheme = 'light';
   private generation = 0;
 
   async render(blockId: string, source: string): Promise<string> {
@@ -17,7 +17,7 @@ export class MermaidManager {
   }
 
   async setTheme(theme: string): Promise<void> {
-    const next = theme === 'dark' ? 'dark' : 'default';
+    const next = theme === 'dark' ? 'dark' : 'light';
     if (next === this.theme && this.module) {
       return;
     }
@@ -39,9 +39,12 @@ export class MermaidManager {
     mermaid.initialize({
       startOnLoad: false,
       securityLevel: 'strict',
-      theme: this.theme,
+      theme: 'base',
+      themeVariables: mermaidThemeVariables(this.theme),
       suppressErrorRendering: true,
-      flowchart: { htmlLabels: false, useMaxWidth: true }
+      flowchart: { htmlLabels: false, useMaxWidth: true },
+      sequence: { useMaxWidth: true },
+      state: { useMaxWidth: true }
     });
   }
 }

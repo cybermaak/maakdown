@@ -13,6 +13,12 @@ type AppConfig struct {
 	Theme              string `json:"theme"`
 	HighlighterEngine  string `json:"highlighterEngine"`
 	FrontmatterDisplay string `json:"frontmatterDisplay"`
+	ReaderTheme        string `json:"readerTheme"`
+	ReaderFont         string `json:"readerFont"`
+	ReaderFontSize     int    `json:"readerFontSize"`
+	ReaderLineHeight   string `json:"readerLineHeight"`
+	ReaderMeasure      string `json:"readerMeasure"`
+	FocusMode          bool   `json:"focusMode"`
 }
 
 type ReaderPosition struct {
@@ -70,6 +76,11 @@ func defaultState() stateFile {
 			Theme:              "system",
 			HighlighterEngine:  "highlightjs",
 			FrontmatterDisplay: "panel",
+			ReaderTheme:        "editorial",
+			ReaderFont:         "sans",
+			ReaderFontSize:     15,
+			ReaderLineHeight:   "comfortable",
+			ReaderMeasure:      "standard",
 		},
 		Session: PersistedSession{Tabs: []SessionTab{}, Recents: []RecentDocument{}},
 	}
@@ -84,7 +95,7 @@ func (s *Service) GetConfig() AppConfig {
 func (s *Service) SetConfig(next AppConfig) AppConfig {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.current.Config = next
+	s.current.Config = normalizeConfig(next)
 	_ = s.persistLocked()
 	return s.current.Config
 }
@@ -113,6 +124,7 @@ func (s *Service) load() error {
 		return err
 	}
 	s.current = loaded
+	s.current.Config = normalizeConfig(s.current.Config)
 	if s.current.Session.Tabs == nil {
 		s.current.Session.Tabs = []SessionTab{}
 	}
@@ -120,6 +132,35 @@ func (s *Service) load() error {
 		s.current.Session.Recents = []RecentDocument{}
 	}
 	return nil
+}
+
+func normalizeConfig(value AppConfig) AppConfig {
+	defaults := defaultState().Config
+	if value.Theme != "light" && value.Theme != "dark" && value.Theme != "system" {
+		value.Theme = defaults.Theme
+	}
+	if value.HighlighterEngine != "shiki-js-regex" {
+		value.HighlighterEngine = defaults.HighlighterEngine
+	}
+	if value.FrontmatterDisplay != "hidden" {
+		value.FrontmatterDisplay = defaults.FrontmatterDisplay
+	}
+	if value.ReaderTheme != "editorial" {
+		value.ReaderTheme = defaults.ReaderTheme
+	}
+	if value.ReaderFont != "serif" {
+		value.ReaderFont = defaults.ReaderFont
+	}
+	if value.ReaderFontSize < 13 || value.ReaderFontSize > 22 {
+		value.ReaderFontSize = defaults.ReaderFontSize
+	}
+	if value.ReaderLineHeight != "compact" && value.ReaderLineHeight != "relaxed" {
+		value.ReaderLineHeight = defaults.ReaderLineHeight
+	}
+	if value.ReaderMeasure != "narrow" && value.ReaderMeasure != "wide" {
+		value.ReaderMeasure = defaults.ReaderMeasure
+	}
+	return value
 }
 
 func (s *Service) persistLocked() error {

@@ -25,9 +25,19 @@ func main() {
 	})
 	fileMenu.AddSeparator()
 	fileMenu.AddText("Reload", keys.CmdOrCtrl("r"), func(_ *menu.CallbackData) { app.EmitCommand("reload") })
+	fileMenu.AddText("Print...", keys.CmdOrCtrl("p"), func(_ *menu.CallbackData) { app.EmitCommand("print") })
 	fileMenu.AddSeparator()
 	fileMenu.AddText("Quit Maakdown", keys.CmdOrCtrl("q"), func(_ *menu.CallbackData) { app.Quit() })
 	viewMenu := appMenu.AddSubmenu("View")
+	viewMenu.AddText("Command Palette", keys.CmdOrCtrl("k"), func(_ *menu.CallbackData) {
+		app.EmitCommand("palette")
+	})
+	viewMenu.AddText("Find in Document", keys.CmdOrCtrl("f"), func(_ *menu.CallbackData) {
+		app.EmitCommand("find")
+	})
+	viewMenu.AddText("Focus Mode", keys.Combo("f", keys.CmdOrCtrlKey, keys.ShiftKey), func(_ *menu.CallbackData) {
+		app.EmitCommand("focus")
+	})
 	viewMenu.AddText("Next Tab", keys.Control("tab"), func(_ *menu.CallbackData) {
 		app.EmitCommand("next-tab")
 	})

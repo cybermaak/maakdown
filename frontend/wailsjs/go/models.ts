@@ -27,6 +27,12 @@ export namespace config {
 	    theme: string;
 	    highlighterEngine: string;
 	    frontmatterDisplay: string;
+	    readerTheme: string;
+	    readerFont: string;
+	    readerFontSize: number;
+	    readerLineHeight: string;
+	    readerMeasure: string;
+	    focusMode: boolean;
 
 	    static createFrom(source: any = {}) {
 	        return new AppConfig(source);
@@ -37,6 +43,12 @@ export namespace config {
 	        this.theme = source["theme"];
 	        this.highlighterEngine = source["highlighterEngine"];
 	        this.frontmatterDisplay = source["frontmatterDisplay"];
+	        this.readerTheme = source["readerTheme"];
+	        this.readerFont = source["readerFont"];
+	        this.readerFontSize = source["readerFontSize"];
+	        this.readerLineHeight = source["readerLineHeight"];
+	        this.readerMeasure = source["readerMeasure"];
+	        this.focusMode = source["focusMode"];
 	    }
 	}
 	export class RecentDocument {

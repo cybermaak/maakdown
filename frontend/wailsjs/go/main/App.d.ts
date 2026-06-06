@@ -5,6 +5,8 @@ export function AppName():Promise<string>;
 
 export function EmitCommand(arg1:string):Promise<void>;
 
+export function Print():Promise<void>;
+
 export function Quit():Promise<void>;
 
 export function SetWindowTitle(arg1:string):Promise<void>;

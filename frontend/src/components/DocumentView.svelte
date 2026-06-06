@@ -15,14 +15,18 @@
     onOpenDocument?: (path: string) => void;
     initialScrollTop?: number;
     onPositionChange?: (scrollTop: number, activeHeadingId: string | null) => void;
+    searchQuery?: string;
+    searchBlockId?: string | null;
+    searchCaseSensitive?: boolean;
   }
 
-  let { model, documentPath, onOpenDocument, initialScrollTop = 0, onPositionChange }: Props = $props();
+  let { model, documentPath, onOpenDocument, initialScrollTop = 0, onPositionChange, searchQuery = '', searchBlockId = null, searchCaseSensitive = false }: Props = $props();
   let surface = $state<HTMLElement | undefined>();
   let virtualizer = new BlockVirtualizer(0);
   let range = $state<VirtualRange>({ start: 0, end: 0, top: 0, bottom: 0 });
   let measurementFrame = 0;
   let restoredPath = '';
+  let printRange: VirtualRange | null = null;
 
   $effect(() => {
     model;
@@ -120,6 +124,30 @@
     void navigateTo(anchorId);
   }
 
+  export async function scrollToBlock(blockId: string) {
+    const index = model.blocks.findIndex((block) => block.id === blockId);
+    if (index < 0 || !surface) return;
+    surface.scrollTop = virtualizer.offsetFor(index);
+    updateRange();
+    await tick();
+    document.getElementById(blockId)?.scrollIntoView({ block: 'center' });
+  }
+
+  export async function preparePrint() {
+    if (!surface || printRange) return;
+    printRange = range;
+    range = { start: 0, end: model.blocks.length, top: 0, bottom: 0 };
+    await tick();
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+  }
+
+  export function restoreAfterPrint() {
+    if (!printRange) return;
+    range = printRange;
+    printRange = null;
+    updateRange();
+  }
+
   async function resolveVisibleImages() {
     await tick();
     if (!surface) {
@@ -202,7 +230,13 @@
 >
   <div class="virtual-spacer" style={`height: ${range.top}px`} aria-hidden="true"></div>
   {#each model.blocks.slice(range.start, range.end) as block (block.id)}
-    <BlockView {block} onMeasure={handleMeasure} />
+    <BlockView
+      {block}
+      onMeasure={handleMeasure}
+      {searchQuery}
+      caseSensitive={searchCaseSensitive}
+      currentSearchBlockId={searchBlockId}
+    />
   {/each}
   <div class="virtual-spacer" style={`height: ${range.bottom}px`} aria-hidden="true"></div>
 </div>

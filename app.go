@@ -73,6 +73,12 @@ func (a *App) Quit() {
 	}
 }
 
+func (a *App) Print() {
+	if a.ctx != nil {
+		runtime.WindowPrint(a.ctx)
+	}
+}
+
 func (a *App) AppName() string {
 	return "Maakdown"
 }

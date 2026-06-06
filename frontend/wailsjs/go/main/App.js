@@ -10,6 +10,10 @@ export function EmitCommand(arg1) {
   return window['go']['main']['App']['EmitCommand'](arg1);
 }
 
+export function Print() {
+  return window['go']['main']['App']['Print']();
+}
+
 export function Quit() {
   return window['go']['main']['App']['Quit']();
 }
