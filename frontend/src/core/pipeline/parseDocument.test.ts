@@ -48,4 +48,29 @@ describe('parseDocument', () => {
 
     expect(model.unresolvedWikilinks).toEqual(['Daily Log', 'Other Note']);
   });
+
+  it('maps headings to their actual block after preceding prose', async () => {
+    const model = await parseDocument({
+      path: '/tmp/note.md',
+      source: 'Intro paragraph.\n\n# Later heading'
+    });
+
+    expect(model.headings[0]?.blockId).toBe('block-2');
+    expect(model.anchors['later-heading']?.blockId).toBe('block-2');
+  });
+
+  it('resolves indexed wikilinks and marks missing notes', async () => {
+    const model = await parseDocument({
+      source: 'Open [[Known Note]] and [[Missing Note]].',
+      path: '/tmp/test.md',
+      vaultIndex: {
+        version: 'v1',
+        notes: { 'known note': '/vault/Known Note.md' }
+      }
+    });
+
+    expect(model.blocks[0]?.html).toContain('data-note-path="/vault/Known Note.md"');
+    expect(model.blocks[0]?.html).toContain('wikilink-unresolved');
+    expect(model.unresolvedWikilinks).toEqual(['Missing Note']);
+  });
 });

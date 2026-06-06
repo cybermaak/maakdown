@@ -11,3 +11,16 @@ Expected secret inputs for a future release workflow:
 - `MAAKDOWN_WINDOWS_TIMESTAMP_URL`
 
 The app manifest keeps the app at normal user privileges (`asInvoker`) and opts into DPI awareness for desktop rendering.
+
+## Release Procedure
+
+1. Build on Windows with `wails build -platform windows/amd64`.
+2. Package the executable with the approved installer tool.
+3. Set certificate path, password, and RFC 3161 timestamp URL through secrets.
+4. Run `scripts/sign-windows.ps1 -ArtifactPath <artifact>`.
+5. Verify the signature on a clean Windows system and run the SmartScreen smoke test.
+6. Publish checksums and retain symbols outside git.
+
+Sign both the application executable and installer when they are separate
+artifacts. Timestamping is required so the signature survives certificate
+expiration.

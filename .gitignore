@@ -10,6 +10,7 @@ Thumbs.db
 .playwright-cli/
 cache/
 output/playwright/
+output/performance/
 
 # Go
 bin/

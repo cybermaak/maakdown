@@ -16,13 +16,14 @@ import { unified } from 'unified';
 import { visit } from 'unist-util-visit';
 import type { Element, Nodes, Root, Text } from 'hast';
 import type { Plugin } from 'unified';
-import type { DocumentModel, Block, BlockKind, EnhancementKind, Heading } from '../model/types';
+import type { DocumentModel, Block, BlockKind, EnhancementKind, Heading, VaultIndexSnapshot } from '../model/types';
 import { sanitizeSchema } from '../sanitize/schema';
 
 export interface ParseRequest {
   source: string;
   path: string;
   vaultIndexVersion?: string;
+  vaultIndex?: VaultIndexSnapshot;
 }
 
 interface FrontmatterResult {
@@ -48,7 +49,7 @@ export async function parseDocument(request: ParseRequest): Promise<DocumentMode
     unresolvedWikilinks: new Set()
   };
 
-  const processor = buildProcessor(data);
+  const processor = buildProcessor(data, request.vaultIndex);
   const result = await processor.run(processor.parse(frontmatter.body));
   const root = result as Root;
   const blocks = buildBlocks(root, data);
@@ -78,12 +79,13 @@ export function extractFrontmatter(source: string): FrontmatterResult {
   };
 }
 
-function buildProcessor(data: ProcessorData) {
+function buildProcessor(data: ProcessorData, vaultIndex?: VaultIndexSnapshot) {
   const processor = unified();
   processor.use(remarkParse);
   processor.use(remarkGfm);
   processor.use(remarkFrontmatter, ['yaml']);
   processor.use(remarkMath);
+  processor.use(remarkWikilinks(data, vaultIndex));
   processor.use(collectMarkdownMetadata(data));
   processor.use(remarkRehype, { allowDangerousHtml: true });
   processor.use(rehypeRaw as never);
@@ -95,6 +97,50 @@ function buildProcessor(data: ProcessorData) {
   processor.use(rehypeSanitize as never, sanitizeSchema);
   processor.use(rehypeStringify as never);
   return processor;
+}
+
+function remarkWikilinks(data: ProcessorData, vaultIndex?: VaultIndexSnapshot): Plugin<[], Nodes> {
+  return () => (tree: Nodes) => {
+    visit(tree, 'text', (node: { value?: string }, index, parent: { children?: unknown[] } | undefined) => {
+      if (!node.value || index === undefined || !parent?.children || !node.value.includes('[[')) {
+        return;
+      }
+      const replacements: unknown[] = [];
+      let cursor = 0;
+      for (const match of node.value.matchAll(/\[\[([^\]|]+)(?:\|([^\]]+))?]]/g)) {
+        const start = match.index ?? 0;
+        if (start > cursor) {
+          replacements.push({ type: 'text', value: node.value.slice(cursor, start) });
+        }
+        const noteName = match[1].trim();
+        const label = (match[2] ?? noteName).trim();
+        const path = vaultIndex?.notes[noteName.toLowerCase()];
+        if (path) {
+          replacements.push({
+            type: 'link',
+            url: '#',
+            data: { hProperties: { className: ['wikilink'], dataNotePath: path } },
+            children: [{ type: 'text', value: label }]
+          });
+        } else {
+          data.unresolvedWikilinks.add(noteName);
+          replacements.push({
+            type: 'html',
+            value: `<span class="wikilink wikilink-unresolved" data-note-name="${escapeHtmlAttribute(noteName)}">${escapeHtmlAttribute(label)}</span>`
+          });
+        }
+        cursor = start + match[0].length;
+      }
+      if (cursor === 0) {
+        return;
+      }
+      if (cursor < node.value.length) {
+        replacements.push({ type: 'text', value: node.value.slice(cursor) });
+      }
+      parent.children.splice(index, 1, ...replacements);
+      return index + replacements.length;
+    });
+  };
 }
 
 function collectMarkdownMetadata(data: ProcessorData): Plugin<[], Nodes> {
@@ -127,9 +173,7 @@ function collectHtmlMetadata(data: ProcessorData): Plugin<[], Root> {
         const text = textContent(child).trim();
         const id = String(child.properties?.id ?? slugger.slug(text));
         child.properties = { ...child.properties, id };
-        const blockId = `block-${data.headings.length + 1}`;
-        data.headings.push({ id, blockId, depth: headingLevel, text });
-        data.anchors[id] = { id, blockId, kind: 'heading' };
+        data.headings.push({ id, blockId: '', depth: headingLevel, text });
       }
     }
 
@@ -169,15 +213,17 @@ function buildBlocks(root: Root, data: ProcessorData): Block[] {
     }
 
     const headingLevel = headingDepth(child);
-    const id = headingLevel ? data.headings[headingIndex++]?.blockId ?? `block-${blocks.length + 1}` : `block-${blocks.length + 1}`;
+    const id = `block-${blocks.length + 1}`;
     const kind = blockKind(child);
     const enhancement = enhancementFor(child);
+    const language = kind === 'code' || kind === 'mermaid' ? codeLanguage(child) ?? undefined : undefined;
     const html = toHtml(child);
     const text = textContent(child).trim();
 
     if (headingLevel) {
-      const heading = data.headings.find((item) => item.blockId === id);
+      const heading = data.headings[headingIndex++];
       if (heading) {
+        heading.blockId = id;
         data.anchors[heading.id] = { id: heading.id, blockId: id, kind: 'heading' };
       }
     }
@@ -188,6 +234,7 @@ function buildBlocks(root: Root, data: ProcessorData): Block[] {
       html,
       enhancement,
       text,
+      language,
       level: headingLevel ?? undefined
     });
   }
@@ -264,8 +311,17 @@ function headingDepth(node: Element): number | null {
 }
 
 function findBlockIdForElement(root: Root, target: Element): string {
-  const index = root.children.findIndex((child) => child === target || (isElement(child) && containsElement(child, target)));
-  return `block-${Math.max(index + 1, 1)}`;
+  let blockIndex = 0;
+  for (const child of root.children) {
+    if (isWhitespaceText(child)) {
+      continue;
+    }
+    blockIndex += 1;
+    if (child === target || (isElement(child) && containsElement(child, target))) {
+      return `block-${blockIndex}`;
+    }
+  }
+  return 'block-1';
 }
 
 function containsElement(parent: Element, target: Element): boolean {
@@ -318,4 +374,8 @@ function normalizeClassName(value: unknown): string[] {
     return value.split(/\s+/);
   }
   return [];
+}
+
+function escapeHtmlAttribute(value: string): string {
+  return value.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
 }

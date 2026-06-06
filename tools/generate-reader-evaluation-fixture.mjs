@@ -5,6 +5,9 @@ import { fileURLToPath } from 'node:url';
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const fixtureDir = resolve(repoRoot, 'fixtures');
 const outputPath = resolve(fixtureDir, 'maakdown-reader-evaluation.md');
+const smallPath = resolve(fixtureDir, 'small-readme.md');
+const mediumPath = resolve(fixtureDir, 'medium-technical-doc.md');
+const largePath = resolve(fixtureDir, 'large-10k-lines.md');
 
 const chapters = [
   {
@@ -486,11 +489,16 @@ realistic document and finding that the software stays quiet, quick, and
 trustworthy around it.
 `;
 
-const body = Array.from({ length: 10 }, (_, cycle) =>
-  chapters.map((chapter, index) => chapterSection(chapter, index, cycle)).join('\n')
-).join('\n');
+function generatedBody(cycles) {
+  return Array.from({ length: cycles }, (_, cycle) =>
+    chapters.map((chapter, index) => chapterSection(chapter, index, cycle)).join('\n')
+  ).join('\n');
+}
 
 await mkdir(fixtureDir, { recursive: true });
-await writeFile(outputPath, `${header}${diagrams}${body}${footer}`, 'utf8');
+await writeFile(smallPath, `${header}${chapterSection(chapters[0], 0, 0)}${footer}`, 'utf8');
+await writeFile(mediumPath, `${header}${diagrams}${generatedBody(1)}${footer}`, 'utf8');
+await writeFile(largePath, `${header}${diagrams}${generatedBody(14)}${footer}`, 'utf8');
+await writeFile(outputPath, `${header}${diagrams}${generatedBody(14)}${footer}`, 'utf8');
 
 console.log(outputPath);

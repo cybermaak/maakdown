@@ -1,37 +1,81 @@
 <script lang="ts">
   import { tick } from 'svelte';
+  import BlockView from './BlockView.svelte';
+  import { enhancementManager } from '../core/enhancement/enhancementManager';
   import type { DocumentModel } from '../core/model/types';
   import { anchorIdFromHref, getActiveHeading, isInternalHref, resolveAnchor } from '../core/navigation/navigation';
+  import { BlockVirtualizer, type VirtualRange } from '../core/virtualizer/virtualizer';
   import { shouldResolveAsset } from '../core/assets/assets';
   import { openExternal, resolveAsset } from '../ipc';
   import { uiStore } from '../stores/uiStore';
+  import { appConfig } from '../stores/configStore';
 
   interface Props {
     model: DocumentModel;
     documentPath: string;
+    onOpenDocument?: (path: string) => void;
   }
 
-  let { model, documentPath }: Props = $props();
-  let surface: HTMLElement | undefined;
+  let { model, documentPath, onOpenDocument }: Props = $props();
+  let surface = $state<HTMLElement | undefined>();
+  let virtualizer = new BlockVirtualizer(0);
+  let range = $state<VirtualRange>({ start: 0, end: 0, top: 0, bottom: 0 });
+  let measurementFrame = 0;
 
   $effect(() => {
     model;
     documentPath;
+    virtualizer = new BlockVirtualizer(model.blocks.length);
+    range = virtualizer.range(0, surface?.clientHeight ?? 900);
     void resolveVisibleImages();
   });
 
-  function navigateTo(anchorId: string) {
+  $effect(() => {
+    void enhancementManager.configure(
+      $appConfig.highlighterEngine,
+      resolvedTheme($appConfig.theme),
+      model.languages
+    );
+  });
+
+  async function navigateTo(anchorId: string) {
     const target = resolveAnchor(model, anchorId);
     if (!target) {
       return;
     }
 
-    document.getElementById(target.blockId)?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    const index = model.blocks.findIndex((block) => block.id === target.blockId);
+    if (index < 0 || !surface) {
+      return;
+    }
+
+    surface.scrollTop = virtualizer.offsetFor(index);
+    updateRange();
+    for (let attempt = 0; attempt < 4; attempt += 1) {
+      await tick();
+      const element = document.getElementById(target.blockId);
+      if (!element) {
+        updateRange();
+        continue;
+      }
+      const delta = element.getBoundingClientRect().top - surface.getBoundingClientRect().top;
+      if (Math.abs(delta) <= 2) {
+        break;
+      }
+      surface.scrollTop += delta;
+      updateRange();
+    }
     uiStore.update((state) => ({ ...state, activeHeadingId: anchorId }));
   }
 
   function handleClick(event: MouseEvent) {
     const link = (event.target as HTMLElement).closest('a');
+    const notePath = link?.dataset.notePath;
+    if (notePath) {
+      event.preventDefault();
+      onOpenDocument?.(notePath);
+      return;
+    }
     const href = link?.getAttribute('href');
     if (!href) {
       return;
@@ -47,22 +91,21 @@
     }
 
     event.preventDefault();
-    navigateTo(anchorIdFromHref(href));
+    void navigateTo(anchorIdFromHref(href));
   }
 
-  function handleScroll(event: Event) {
-    const container = event.currentTarget as HTMLElement;
-    const blocks = Array.from(container.querySelectorAll<HTMLElement>('[data-block-id]'));
-    const visible = blocks.find((block) => block.offsetTop + block.offsetHeight >= container.scrollTop);
+  function handleScroll() {
+    updateRange();
+    const startBlock = model.blocks[virtualizer.indexAt(surface?.scrollTop ?? 0)];
     const activeHeadingId = getActiveHeading(model, {
-      startBlockId: visible?.dataset.blockId ?? null,
-      endBlockId: visible?.dataset.blockId ?? null
+      startBlockId: startBlock?.id ?? null,
+      endBlockId: model.blocks[Math.max(range.end - 1, range.start)]?.id ?? null
     });
     uiStore.update((state) => ({ ...state, activeHeadingId }));
   }
 
   export function scrollToAnchor(anchorId: string) {
-    navigateTo(anchorId);
+    void navigateTo(anchorId);
   }
 
   async function resolveVisibleImages() {
@@ -108,6 +151,30 @@
       handleClick(event as unknown as MouseEvent);
     }
   }
+
+  function resolvedTheme(theme: 'system' | 'light' | 'dark'): string {
+    if (theme !== 'system') {
+      return theme;
+    }
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+
+  function updateRange() {
+    if (!surface) {
+      return;
+    }
+    range = virtualizer.range(surface.scrollTop, surface.clientHeight);
+  }
+
+  function handleMeasure(blockId: string, height: number) {
+    const index = model.blocks.findIndex((block) => block.id === blockId);
+    if (index < 0) {
+      return;
+    }
+    virtualizer.measure(index, height);
+    cancelAnimationFrame(measurementFrame);
+    measurementFrame = requestAnimationFrame(updateRange);
+  }
 </script>
 
 <!-- svelte-ignore a11y_no_noninteractive_tabindex, a11y_no_noninteractive_element_interactions - document surface delegates sanitized internal anchor clicks from rendered Markdown -->
@@ -121,9 +188,9 @@
   onkeydown={handleKeydown}
   onscroll={handleScroll}
 >
-  {#each model.blocks as block}
-    <div id={block.id} class={`doc-block doc-block-${block.kind}`} data-block-id={block.id}>
-      {@html block.html}
-    </div>
+  <div class="virtual-spacer" style={`height: ${range.top}px`} aria-hidden="true"></div>
+  {#each model.blocks.slice(range.start, range.end) as block (block.id)}
+    <BlockView {block} onMeasure={handleMeasure} />
   {/each}
+  <div class="virtual-spacer" style={`height: ${range.bottom}px`} aria-hidden="true"></div>
 </div>

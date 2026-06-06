@@ -8,13 +8,17 @@
     "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json",
-    "test": "vitest run"
+    "test": "vitest run",
+    "benchmark": "node scripts/benchmark-reader.mjs"
   },
   "dependencies": {
     "@sveltejs/vite-plugin-svelte": "^7.1.2",
     "github-slugger": "^2.0.0",
     "hast-util-to-html": "^9.0.5",
+    "highlight.js": "^11.11.1",
     "js-yaml": "^4.2.0",
+    "linkedom": "^0.18.12",
+    "mermaid": "^11.15.0",
     "rehype-autolink-headings": "^7.1.0",
     "rehype-katex": "^7.0.1",
     "rehype-raw": "^7.0.0",
@@ -26,6 +30,7 @@
     "remark-math": "^6.0.0",
     "remark-parse": "^11.0.0",
     "remark-rehype": "^11.1.2",
+    "shiki": "^4.2.0",
     "svelte": "^5.56.2",
     "unified": "^11.0.5",
     "unist-util-visit": "^5.1.0",
@@ -37,6 +42,7 @@
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^25.0.0",
     "jsdom": "^29.1.1",
+    "playwright": "^1.60.0",
     "svelte-check": "^4.6.0",
     "typescript": "^6.0.3",
     "vitest": "^4.1.8"

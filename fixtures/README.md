@@ -1,6 +1,7 @@
 # Reader Evaluation Fixtures
 
-`maakdown-reader-evaluation.md` is a deterministic large-document fixture built
+`maakdown-reader-evaluation.md` and `large-10k-lines.md` are deterministic
+large-document fixtures built
 from the Maakdown product specification and implementation plan. It includes
 frontmatter, callouts, tables, task lists, footnotes, internal anchors, local
 images, KaTeX formulas, complex Mermaid diagrams, wikilinks, and code fences for
@@ -11,6 +12,12 @@ Regenerate it from the repository root:
 ```bash
 node tools/generate-reader-evaluation-fixture.mjs
 ```
+
+The generator also produces:
+
+- `small-readme.md`
+- `medium-technical-doc.md`
+- `large-10k-lines.md`
 
 For browser-based renderer QA, start the frontend and open the development-only
 fixture URL:

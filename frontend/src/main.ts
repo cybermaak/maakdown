@@ -1,4 +1,6 @@
 import App from './App.svelte';
+import 'katex/dist/katex.min.css';
+import 'highlight.js/styles/github.css';
 import './styles/global.css';
 import { mount } from 'svelte';
 

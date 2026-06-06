@@ -16,7 +16,9 @@ const classNames = [
   'callout-tip',
   'callout-important',
   'callout-warning',
-  'callout-caution'
+  'callout-caution',
+  'wikilink',
+  'wikilink-unresolved'
 ];
 
 export const sanitizeSchema = {
@@ -36,8 +38,10 @@ export const sanitizeSchema = {
       ['href'],
       ['title'],
       ['ariaLabel'],
-      ['dataAnchorId']
+      ['dataAnchorId'],
+      ['dataNotePath']
     ],
+    span: [...(defaultSchema.attributes?.span ?? []), ['dataNoteName']],
     code: [...(defaultSchema.attributes?.code ?? []), ['className', 'language-*']],
     img: [
       ...(defaultSchema.attributes?.img ?? []),

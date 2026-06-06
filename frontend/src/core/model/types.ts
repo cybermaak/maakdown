@@ -17,6 +17,7 @@ export interface Block {
   html: string;
   enhancement: EnhancementKind;
   text?: string;
+  language?: string;
   level?: number;
   sourceStart?: number;
   sourceEnd?: number;
@@ -43,4 +44,9 @@ export interface DocumentModel {
   frontmatter: Record<string, unknown>;
   languages: string[];
   unresolvedWikilinks: string[];
+}
+
+export interface VaultIndexSnapshot {
+  version: string;
+  notes: Record<string, string>;
 }

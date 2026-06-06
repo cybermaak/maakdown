@@ -1,33 +1,123 @@
+import hljs from 'highlight.js/lib/common';
+
+export interface HighlightTiming {
+  blockId: string;
+  engine: string;
+  language: string;
+  durationMs: number;
+}
+
 export interface Highlighter {
   init(languages: string[], theme: string): Promise<void>;
   highlight(blockId: string, code: string, lang: string): Promise<string>;
   setTheme(theme: string): Promise<void>;
   dispose(): Promise<void>;
+  timings(): HighlightTiming[];
 }
 
 export function createHighlighter(engine: 'highlightjs' | 'shiki-js-regex'): Highlighter {
-  if (engine === 'shiki-js-regex') {
-    return new PlainTextHighlighter();
-  }
-  return new PlainTextHighlighter();
+  const implementation = engine === 'shiki-js-regex' ? new ShikiJsRegexHighlighter() : new HighlightJsHighlighter();
+  return new InstrumentedHighlighter(engine, implementation);
 }
 
-class PlainTextHighlighter implements Highlighter {
+class HighlightJsHighlighter implements Highlighter {
   async init(): Promise<void> {}
 
   async highlight(blockId: string, code: string, lang: string): Promise<string> {
-    return `<pre data-block-id="${blockId}"><code class="language-${lang}">${escapeHtml(code)}</code></pre>`;
+    const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+    const result = hljs.highlight(code, { language, ignoreIllegals: true });
+    return `<pre data-highlight-engine="highlightjs" data-block-id="${escapeAttribute(blockId)}"><code class="hljs language-${escapeAttribute(language)}">${result.value}</code></pre>`;
   }
 
   async setTheme(): Promise<void> {}
-
   async dispose(): Promise<void> {}
+  timings(): HighlightTiming[] {
+    return [];
+  }
 }
 
-function escapeHtml(value: string): string {
-  return value
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;');
+class ShikiJsRegexHighlighter implements Highlighter {
+  private highlighter: import('shiki').Highlighter | null = null;
+  private theme = 'github-light';
+
+  async init(languages: string[], theme: string): Promise<void> {
+    const shiki = await import('shiki');
+    this.theme = theme === 'dark' ? 'github-dark' : 'github-light';
+    const supported = languages.filter((language) => language in shiki.bundledLanguages);
+    this.highlighter = await shiki.createHighlighter({
+      themes: ['github-light', 'github-dark'],
+      langs: supported.length > 0 ? supported : ['text'],
+      engine: shiki.createJavaScriptRegexEngine()
+    });
+  }
+
+  async highlight(blockId: string, code: string, lang: string): Promise<string> {
+    if (!this.highlighter) {
+      await this.init([lang], 'light');
+    }
+    const loaded = this.highlighter!.getLoadedLanguages();
+    const language = loaded.includes(lang) ? lang : 'text';
+    const html = this.highlighter!.codeToHtml(code, {
+      lang: language,
+      theme: this.theme
+    });
+    return html.replace(
+      '<pre',
+      `<pre data-block-id="${escapeAttribute(blockId)}" data-highlight-engine="shiki-js-regex"`
+    );
+  }
+
+  async setTheme(theme: string): Promise<void> {
+    this.theme = theme === 'dark' ? 'github-dark' : 'github-light';
+  }
+
+  async dispose(): Promise<void> {
+    this.highlighter?.dispose();
+    this.highlighter = null;
+  }
+
+  timings(): HighlightTiming[] {
+    return [];
+  }
+}
+
+class InstrumentedHighlighter implements Highlighter {
+  private samples: HighlightTiming[] = [];
+
+  constructor(
+    private engine: string,
+    private delegate: Highlighter
+  ) {}
+
+  init(languages: string[], theme: string): Promise<void> {
+    return this.delegate.init(languages, theme);
+  }
+
+  async highlight(blockId: string, code: string, lang: string): Promise<string> {
+    const started = performance.now();
+    const html = await this.delegate.highlight(blockId, code, lang);
+    this.samples.push({
+      blockId,
+      engine: this.engine,
+      language: lang,
+      durationMs: performance.now() - started
+    });
+    return html;
+  }
+
+  setTheme(theme: string): Promise<void> {
+    return this.delegate.setTheme(theme);
+  }
+
+  dispose(): Promise<void> {
+    return this.delegate.dispose();
+  }
+
+  timings(): HighlightTiming[] {
+    return [...this.samples];
+  }
+}
+
+function escapeAttribute(value: string): string {
+  return value.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
 }

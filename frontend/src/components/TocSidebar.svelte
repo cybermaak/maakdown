@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { tick } from 'svelte';
   import type { Heading } from '../core/model/types';
 
   interface Props {
@@ -8,6 +9,13 @@
   }
 
   let { headings, activeHeadingId, onNavigate }: Props = $props();
+
+  $effect(() => {
+    activeHeadingId;
+    void tick().then(() => {
+      document.querySelector<HTMLElement>('.toc button.active')?.scrollIntoView({ block: 'nearest' });
+    });
+  });
 </script>
 
 <nav class="toc" aria-label="Table of contents">
@@ -18,6 +26,7 @@
       <button
         type="button"
         class:active={heading.id === activeHeadingId}
+        aria-current={heading.id === activeHeadingId ? 'location' : undefined}
         style={`--depth: ${heading.depth}`}
         onclick={() => onNavigate(heading.id)}
       >
