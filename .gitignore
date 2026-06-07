@@ -31,6 +31,8 @@ yarn-debug.log*
 # Wails/build outputs
 build/bin/
 /dist/
+frontend/package.json.md5
+frontend/wailsjs/**/*.ts
 *.app
 *.dmg
 *.pkg
