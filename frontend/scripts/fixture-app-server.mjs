@@ -42,6 +42,11 @@ export async function startFixtureApp({ frontendRoot, repoRoot, outputDir, port,
   const server = createServer(async (request, response) => {
     try {
       const requestUrl = new URL(request.url ?? '/', `http://${request.headers.host ?? `127.0.0.1:${port}`}`);
+      if (requestUrl.pathname === '/favicon.ico') {
+        response.statusCode = 204;
+        response.end();
+        return;
+      }
       const fixturePrefix = '/__maakdown_fixture/';
       if (requestUrl.pathname.startsWith(fixturePrefix)) {
         const relativePath = decodeURIComponent(requestUrl.pathname.slice(fixturePrefix.length));
@@ -51,8 +56,13 @@ export async function startFixtureApp({ frontendRoot, repoRoot, outputDir, port,
 
       const relativePath = decodeURIComponent(requestUrl.pathname).replace(/^\/+/, '') || 'index.html';
       const filePath = resolveContained(outputDir, relativePath);
-      const fileStat = await stat(filePath);
-      await serveFile(response, fileStat.isDirectory() ? resolve(filePath, 'index.html') : filePath);
+      try {
+        const fileStat = await stat(filePath);
+        await serveFile(response, fileStat.isDirectory() ? resolve(filePath, 'index.html') : filePath);
+      } catch (error) {
+        if (!relativePath.startsWith('assets/')) throw error;
+        await serveFile(response, resolveContained(fixtureRoot, relativePath));
+      }
     } catch {
       response.statusCode = 404;
       response.end('Not found');

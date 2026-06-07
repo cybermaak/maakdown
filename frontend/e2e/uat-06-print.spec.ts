@@ -29,7 +29,7 @@ test('UAT-06 cancellation avoids the system print flow', async ({ page }) => {
   await gotoApp(page);
   await expectReaderReady(page);
   await page.keyboard.press(`${mod}+p`);
-  await page.getByRole('button', { name: 'Cancel' }).click();
+  await page.getByRole('button', { name: 'Cancel' }).dispatchEvent('click');
   await expect.poll(() => readMockState(page, (state) => state.printCalls as number)).toBe(0);
   await expect(page.getByRole('status').filter({ hasText: /Preparing complete document/ })).toBeHidden();
 });

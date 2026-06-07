@@ -6,7 +6,8 @@ const baseURL = `http://127.0.0.1:${port}`;
 
 /**
  * UI-driven UAT suite (see docs/uat-test-plan.md). Runs the real Svelte app via
- * `vite --mode uat`, which swaps the Wails IPC boundary for a deterministic mock.
+ * a production UAT-mode bundle, which swaps the Wails IPC boundary for a
+ * deterministic mock.
  */
 export default defineConfig({
   testDir: './e2e',
@@ -27,7 +28,7 @@ export default defineConfig({
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: {
-    command: 'npm run dev -- --mode uat',
+    command: 'node scripts/serve-uat.mjs',
     url: baseURL,
     reuseExistingServer: false,
     timeout: 120_000
