@@ -19,6 +19,9 @@ type AppConfig struct {
 	ReaderLineHeight   string `json:"readerLineHeight"`
 	ReaderMeasure      string `json:"readerMeasure"`
 	FocusMode          bool   `json:"focusMode"`
+	OutlineVisible     bool   `json:"outlineVisible"`
+	OutlineWidth       int    `json:"outlineWidth"`
+	MetadataWidth      int    `json:"metadataWidth"`
 }
 
 type ReaderPosition struct {
@@ -81,6 +84,9 @@ func defaultState() stateFile {
 			ReaderFontSize:     15,
 			ReaderLineHeight:   "comfortable",
 			ReaderMeasure:      "standard",
+			OutlineVisible:     true,
+			OutlineWidth:       280,
+			MetadataWidth:      260,
 		},
 		Session: PersistedSession{Tabs: []SessionTab{}, Recents: []RecentDocument{}},
 	}
@@ -136,6 +142,7 @@ func (s *Service) load() error {
 
 func normalizeConfig(value AppConfig) AppConfig {
 	defaults := defaultState().Config
+	legacyOutlineSetting := value.OutlineWidth == 0
 	if value.Theme != "light" && value.Theme != "dark" && value.Theme != "system" {
 		value.Theme = defaults.Theme
 	}
@@ -159,6 +166,15 @@ func normalizeConfig(value AppConfig) AppConfig {
 	}
 	if value.ReaderMeasure != "narrow" && value.ReaderMeasure != "wide" {
 		value.ReaderMeasure = defaults.ReaderMeasure
+	}
+	if value.OutlineWidth < 200 || value.OutlineWidth > 480 {
+		value.OutlineWidth = defaults.OutlineWidth
+	}
+	if value.MetadataWidth < 220 || value.MetadataWidth > 480 {
+		value.MetadataWidth = defaults.MetadataWidth
+	}
+	if legacyOutlineSetting {
+		value.OutlineVisible = true
 	}
 	return value
 }

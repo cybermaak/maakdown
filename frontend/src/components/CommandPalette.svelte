@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import type { DocumentTab, RecentDocument } from '../core/workspace/workspace';
 
   interface CommandItem { id: string; label: string; hint?: string; }
@@ -13,6 +14,7 @@
   }
   let { tabs, recents, headings, onCommand, onOpenPath, onHeading, onClose }: Props = $props();
   let query = $state('');
+  let input = $state<HTMLInputElement | undefined>();
   const commands: CommandItem[] = [
     { id: 'open', label: 'Open document', hint: 'Cmd O' },
     { id: 'find', label: 'Find in document', hint: 'Cmd F' },
@@ -24,11 +26,20 @@
   let visibleCommands = $derived(commands.filter((item) => item.label.toLowerCase().includes(query.toLowerCase())));
   let visibleTabs = $derived(tabs.filter((tab) => tab.title.toLowerCase().includes(query.toLowerCase())));
   let visibleHeadings = $derived(headings.filter((heading) => heading.text.toLowerCase().includes(query.toLowerCase())).slice(0, 8));
+
+  onMount(() => input?.focus());
+
+  function handleKeydown(event: KeyboardEvent) {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      onClose();
+    }
+  }
 </script>
 
-<div class="palette-scrim" role="presentation" onclick={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+<div class="palette-scrim" role="presentation" onclick={(event) => { if (event.target === event.currentTarget) onClose(); }} onkeydown={handleKeydown}>
   <div class="command-palette" role="dialog" aria-modal="true" aria-label="Command palette">
-    <input aria-label="Search commands, tabs, and headings" placeholder="Search commands, tabs, and headings" bind:value={query} />
+    <input bind:this={input} aria-label="Search commands, tabs, and headings" placeholder="Search commands, tabs, and headings" bind:value={query} />
     <div class="palette-results">
       {#each visibleCommands as command}
         <button onclick={() => { onCommand(command.id); onClose(); }}><span>{command.label}</span><kbd>{command.hint ?? ''}</kbd></button>

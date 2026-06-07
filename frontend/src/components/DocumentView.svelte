@@ -8,6 +8,7 @@
   import { shouldResolveAsset } from '../core/assets/assets';
   import { openExternal, resolveAsset } from '../ipc';
   import { appConfig } from '../stores/configStore';
+  import DiagramDialog from './DiagramDialog.svelte';
 
   interface Props {
     model: DocumentModel;
@@ -27,6 +28,8 @@
   let measurementFrame = 0;
   let restoredPath = '';
   let printRange: VirtualRange | null = null;
+  let announcement = $state('');
+  let diagram = $state<{ title: string; html: string } | null>(null);
 
   $effect(() => {
     model;
@@ -220,6 +223,15 @@
     cancelAnimationFrame(measurementFrame);
     measurementFrame = requestAnimationFrame(updateRange);
   }
+
+  async function copyValue(label: string, value: string) {
+    try {
+      await navigator.clipboard.writeText(value);
+      announcement = label;
+    } catch {
+      announcement = 'Copy failed';
+    }
+  }
 </script>
 
 <!-- svelte-ignore a11y_no_noninteractive_tabindex, a11y_no_noninteractive_element_interactions - document surface delegates sanitized internal anchor clicks from rendered Markdown -->
@@ -241,7 +253,11 @@
       {searchQuery}
       caseSensitive={searchCaseSensitive}
       currentSearchBlockId={searchBlockId}
+      onCopy={copyValue}
+      onInspectDiagram={(title, html) => (diagram = { title, html })}
     />
   {/each}
   <div class="virtual-spacer" style={`height: ${range.bottom}px`} aria-hidden="true"></div>
 </div>
+<p class="sr-only" aria-live="polite">{announcement}</p>
+<DiagramDialog open={diagram !== null} html={diagram?.html ?? ''} title={diagram?.title ?? 'Diagram'} onClose={() => (diagram = null)} />

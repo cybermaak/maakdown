@@ -15,7 +15,7 @@
 | Markdown pipeline | unified/remark/rehype |
 | Math | KaTeX |
 | Default highlighter | highlight.js |
-| Optional highlighter evaluation | Shiki with JavaScript RegExp engine only, development/evaluation UI only |
+| Optional highlighter evaluation | Shiki with JavaScript RegExp engine, selectable in Reader Settings |
 | Diagrams | Mermaid, lazy-loaded |
 | Local assets | Go `AssetService` + loopback-only HTTP asset server with tokenized URLs |
 | Dynamic Wails asset handler | Not used for Markdown document assets in v1 |
@@ -389,8 +389,8 @@ Scheduling:
 - visible code blocks are prioritized
 - offscreen highlight requests are cancellable
 - raw code remains readable if highlighting is delayed
-- highlighter selection is available only in development/evaluation settings;
-  production chrome treats highlighting as an implementation detail
+- highlighter selection is persisted in Reader Settings; compact toolbar chrome
+  still treats highlighting as an implementation detail
 
 ### `core/mermaid`
 
@@ -658,7 +658,7 @@ Accessibility and visual:
 
 - No Wails v3 in v1.
 - No Shiki Oniguruma/WASM in v1 product path.
-- No highlighter-engine selector in normal production chrome.
+- No highlighter-engine selector in the compact toolbar; Reader Settings owns it.
 - No native hash scrolling in document content.
 - No raw `file://` image loading.
 - No image byte/base64 transfer over Wails IPC for normal document rendering.

@@ -29,8 +29,18 @@ const results = [];
 try {
   for (const fixture of fixtures) {
     const started = performance.now();
-    await page.goto(`http://127.0.0.1:${port}/?fixture=${fixture}`);
-    await page.getByRole('heading', { name: 'Maakdown Reader Evaluation Dossier', exact: true }).waitFor();
+    const fixtureUrl = `http://127.0.0.1:${port}/?fixture=${fixture}`;
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      await page.goto(fixtureUrl);
+      try {
+        await page.getByRole('heading', { name: 'Maakdown Reader Evaluation Dossier', exact: true }).waitFor({ timeout: 12_000 });
+        break;
+      } catch (error) {
+        if (attempt === 2) throw error;
+        // Vite may reload after optimizing worker-only parser dependencies.
+        await page.waitForTimeout(2_000);
+      }
+    }
     const openToTextMs = performance.now() - started;
     await page.getByRole('button', { name: 'System architecture', exact: true }).click();
     await page.locator('.mermaid-rendered svg, .mermaid-error').first().waitFor();
@@ -39,7 +49,8 @@ try {
     await page.getByRole('button', { name: 'typescript implementation sample', exact: true }).first().click();
     await page.locator('[data-highlight-engine]').first().waitFor();
     const highlightedBlocks = await page.locator('[data-highlight-engine]').count();
-    await page.getByRole('button', { name: 'highlightjs', exact: true }).click();
+    await page.getByRole('button', { name: 'Reader appearance', exact: true }).click();
+    await page.getByRole('button', { name: 'Shiki', exact: true }).click();
     await page.getByRole('button', { name: 'typescript implementation sample', exact: true }).first().click();
     await page.locator('[data-highlight-engine="shiki-js-regex"]').first().waitFor();
     const shikiBlocks = await page.locator('[data-highlight-engine="shiki-js-regex"]').count();
@@ -68,6 +79,7 @@ try {
         averageScrollAssignmentMs: frameSamples.reduce((sum, value) => sum + value, 0) / frameSamples.length
       };
     });
+    const mountedReaders = await page.getByRole('document', { name: 'Markdown document' }).count();
     let finalGateOffsetPx = null;
     if (fixture === 'large-10k-lines.md') {
       await page.getByRole('button', { name: 'Final release gate', exact: true }).click();
@@ -77,7 +89,7 @@ try {
         return surface ? Math.abs(heading.getBoundingClientRect().top - surface.getBoundingClientRect().top) : null;
       });
     }
-    results.push({ fixture, openToTextMs, ...metrics, ...enhancements, finalGateOffsetPx });
+    results.push({ fixture, openToTextMs, mountedReaders, ...metrics, ...enhancements, finalGateOffsetPx });
   }
 } finally {
   await browser.close();

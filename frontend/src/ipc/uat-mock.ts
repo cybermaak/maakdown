@@ -62,7 +62,10 @@ const defaultConfig: AppConfig = {
   readerFontSize: 15,
   readerLineHeight: 'comfortable',
   readerMeasure: 'standard',
-  focusMode: false
+  focusMode: false,
+  outlineVisible: true,
+  outlineWidth: 280,
+  metadataWidth: 260
 };
 
 const listeners: Record<EventName, Array<(payload: unknown) => void>> = {

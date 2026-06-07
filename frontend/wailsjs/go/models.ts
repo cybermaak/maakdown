@@ -33,6 +33,9 @@ export namespace config {
 	    readerLineHeight: string;
 	    readerMeasure: string;
 	    focusMode: boolean;
+	    outlineVisible: boolean;
+	    outlineWidth: number;
+	    metadataWidth: number;
 
 	    static createFrom(source: any = {}) {
 	        return new AppConfig(source);
@@ -49,6 +52,9 @@ export namespace config {
 	        this.readerLineHeight = source["readerLineHeight"];
 	        this.readerMeasure = source["readerMeasure"];
 	        this.focusMode = source["focusMode"];
+	        this.outlineVisible = source["outlineVisible"];
+	        this.outlineWidth = source["outlineWidth"];
+	        this.metadataWidth = source["metadataWidth"];
 	    }
 	}
 	export class RecentDocument {

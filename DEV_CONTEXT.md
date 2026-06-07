@@ -9,9 +9,9 @@ The app is a viewer, not an editor. It renders CommonMark/GFM, code, KaTeX math,
 ## Current Phase
 
 **Phase:** P10 and P11 in progress; P7.5 remains externally blocked
-**Active focus:** complete navigation history, copy and diagram inspection,
-resizable responsive panels, guarded print cancellation, and remaining
-accessibility announcements.
+**Active focus:** complete cross-file navigation history, command-palette focus
+navigation, guarded print cancellation, multi-tab performance automation, and
+the final accessibility announcement pass.
 
 ## Major Files And Directories
 
@@ -84,8 +84,8 @@ accessibility announcements.
   using an fsynced temporary file followed by atomic rename.
 - Use canonical filesystem paths as tab identities and watcher registration keys.
 - Keep inactive tab models in memory but mount and enhance only the active tab.
-- Use highlight.js as the production default without exposing engine selection
-  in normal chrome; Shiki remains a development/evaluation setting.
+- Use highlight.js as the default highlighter and expose highlight.js/Shiki
+  selection in Reader Settings for persisted user evaluation.
 - Theme rendered Markdown through a dedicated semantic reader contract. It owns
   prose, headings, links, syntax, selection, and Mermaid palettes independently
   from application chrome and supports future user-selectable themes.
@@ -156,6 +156,11 @@ See `docs/task-tracker.md`.
   release-check gate. The suite caught a real defect while building UAT-04:
   `DocumentView.handleScroll` dereferenced a null model when a scrolled tab was
   closed; it now bails on a detached surface.
+- 2026-06-06: Fixed the light-theme fenced-code flash by making the unenhanced
+  and highlight.js states share the light semantic code palette. Added a
+  persisted highlighter selector, per-tab anchor history, copy tools, Mermaid
+  inspection, reload status, reader error presentations, resizable panels,
+  responsive drawers, and wider editorial code/table/diagram treatments.
 
 ## Verification Commands
 
@@ -185,6 +190,10 @@ scripts/release-check.sh
 
 - The current P10/P11 slice passes zero-warning Svelte checks, 17 frontend
   tests, the frontend production build, and all Go tests.
+- Current verification passes zero-warning Svelte checks, 19 frontend tests,
+  the production frontend build, and all Go tests. Browser frame sampling
+  confirmed a stable light code background through highlight.js enhancement
+  and successful switching to Shiki.
 - `scripts/verify.sh` previously passed 15 frontend tests, Svelte checks, frontend build, Go
   tests, and a production Wails build.
 - The initial application chunk is approximately 213 kB. Parser, Mermaid, Shiki,

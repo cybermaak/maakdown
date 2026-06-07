@@ -22,13 +22,19 @@ a {
   height: 100vh;
   overflow: hidden;
 }
+.workspace-shell.no-outline { grid-template-columns: minmax(0, 1fr); }
 
 .sidebar {
+  position: relative;
   border-right: 1px solid var(--border);
   padding: 18px;
   background: var(--panel-bg);
   overflow: auto;
 }
+.panel-resizer { position: absolute; z-index: 5; top: 0; bottom: 0; width: 7px; border: 0; padding: 0; background: transparent; cursor: col-resize; }
+.panel-resizer.outline { right: -4px; }
+.metadata-wrap { position: relative; display: flex; min-width: 0; }
+.panel-resizer.metadata { left: -4px; }
 
 .brand {
   font-size: 18px;
@@ -229,9 +235,27 @@ a {
 }
 
 .doc-block {
+  position: relative;
   max-width: var(--reading-measure);
   margin-inline: auto;
 }
+.doc-block:is(.doc-block-code, .doc-block-table, .doc-block-mermaid) { max-width: min(1100px, calc(100vw - var(--sidebar-width) - var(--metadata-width) - 72px)); }
+.doc-block table { width: 100%; border-collapse: collapse; }
+.doc-block th, .doc-block td { border-bottom: 1px solid var(--reader-rule); padding: 8px 10px; text-align: left; }
+.doc-block tbody tr:hover { background: color-mix(in srgb, var(--reader-selection) 45%, transparent); }
+.doc-block input[type="checkbox"] { accent-color: var(--reader-link); }
+.doc-block .footnotes { color: var(--reader-muted); font-size: 0.9em; }
+.block-tools { display: flex; min-height: 30px; align-items: center; justify-content: space-between; border: 1px solid var(--reader-rule); border-bottom: 0; border-radius: 6px 6px 0 0; padding: 0 6px 0 10px; color: var(--reader-muted); background: var(--reader-code-bg); font-family: var(--font-mono); font-size: 11px; }
+.doc-block-code .block-tools + pre, .doc-block-mermaid .block-tools + .mermaid-rendered { margin-top: 0; border-radius: 0 0 6px 6px; }
+.heading-tools { position: absolute; right: -34px; top: 0; opacity: 0; }
+.doc-block-heading:hover .heading-tools, .heading-tools:focus-within { opacity: 1; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+.diagram-backdrop { position: fixed; inset: 0; z-index: 120; display: grid; place-items: center; background: var(--scrim); }
+.diagram-dialog { display: grid; width: min(1100px, calc(100vw - 48px)); height: min(760px, calc(100vh - 48px)); grid-template-rows: auto minmax(0, 1fr); border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface-bg); box-shadow: var(--shadow-pop); }
+.diagram-dialog > header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); padding: 8px 12px; }
+.diagram-tools { display: flex; gap: 4px; }
+.diagram-canvas { overflow: auto; padding: 48px; background: var(--reader-bg); }
+.diagram-zoom { min-width: max-content; transform-origin: top left; }
 
 .doc-block :is(h1, h2, h3, h4, h5, h6) {
   color: var(--reader-heading);
@@ -323,9 +347,12 @@ a {
 
 @media (max-width: 900px) {
   .workspace-shell { grid-template-columns: minmax(0, 1fr); }
-  .sidebar { display: none; }
-  .metadata-panel { display: none; }
+  .sidebar { position: fixed; z-index: 80; inset: 0 auto 0 0; display: none; width: min(82vw, var(--sidebar-width)); box-sizing: border-box; box-shadow: var(--shadow-pop); }
+  .workspace-shell.outline-open:not(.focus-mode) .sidebar { display: block; }
+  .metadata-wrap { position: fixed; z-index: 80; inset: calc(var(--toolbar-height) + var(--tabbar-height)) 0 0 auto; display: none; width: min(86vw, var(--metadata-width)); box-shadow: var(--shadow-pop); }
+  .workspace-shell.metadata-open:not(.focus-mode) .metadata-wrap { display: flex; }
   .document-scroll { padding: 28px 24px; }
+  .doc-block:is(.doc-block-code, .doc-block-table, .doc-block-mermaid) { max-width: 100%; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -383,6 +410,7 @@ a {
   overflow: auto;
   background: var(--metadata-bg);
 }
+.metadata-wrap .metadata-panel { height: 100%; }
 
 .workspace-loading {
   display: grid;
@@ -432,6 +460,7 @@ a {
   color: var(--link);
   font-weight: 600;
 }
+.print-status { position: absolute; z-index: 90; left: 50%; bottom: 24px; transform: translateX(-50%); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 10px 14px; background: var(--panel-bg); box-shadow: var(--shadow-pop); }
 
 .metadata-panel h2 {
   margin-top: 0;
@@ -474,6 +503,10 @@ a {
 .error {
   color: var(--danger);
 }
+.reader-error { margin: 48px auto; color: var(--text); }
+.reader-error small { color: var(--danger); text-transform: uppercase; }
+.error-actions { display: flex; gap: 8px; }
+.error-actions .ds-button { display: inline-flex; align-items: center; gap: 6px; }
 
 .ds-button,
 .ds-icon-button,

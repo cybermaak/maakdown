@@ -10,6 +10,9 @@ export interface AppConfig {
   readerLineHeight: 'compact' | 'comfortable' | 'relaxed';
   readerMeasure: 'narrow' | 'standard' | 'wide';
   focusMode: boolean;
+  outlineVisible: boolean;
+  outlineWidth: number;
+  metadataWidth: number;
 }
 
 export const appConfig = writable<AppConfig>({
@@ -21,5 +24,8 @@ export const appConfig = writable<AppConfig>({
   readerFontSize: 15,
   readerLineHeight: 'comfortable',
   readerMeasure: 'standard',
-  focusMode: false
+  focusMode: false,
+  outlineVisible: true,
+  outlineWidth: 280,
+  metadataWidth: 260
 });

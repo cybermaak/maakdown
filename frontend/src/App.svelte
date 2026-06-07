@@ -10,6 +10,7 @@
   import SearchBar from './components/SearchBar.svelte';
   import ReaderSettings from './components/ReaderSettings.svelte';
   import CommandPalette from './components/CommandPalette.svelte';
+  import ReaderError from './components/ReaderError.svelte';
   import { disposeParserWorker, parseInWorker } from './core/workers/parserClient';
   import {
     activateOrAddTab,
@@ -61,6 +62,11 @@
   let settingsOpen = $state(false);
   let paletteOpen = $state(false);
   let printing = $state(false);
+  let narrowWindow = $state(false);
+  let mobileOutlineOpen = $state(false);
+  let mobileMetadataOpen = $state(false);
+  const histories = new Map<string, { entries: string[]; index: number }>();
+  let historyVersion = $state(0);
   const livePositions = new Map<string, ReaderPosition>();
   let activeTab = $derived(workspace.tabs.find((tab) => tab.id === workspace.activeTabId) ?? null);
   let searchMatches = $derived(activeTab?.model ? searchDocument(activeTab.model, searchQuery, { caseSensitive: searchCaseSensitive }) : []);
@@ -140,7 +146,7 @@
   async function reloadDocument(path: string) {
     const tab = workspace.tabs.find((item) => canonicalIdentity(item.path) === canonicalIdentity(path));
     if (!tab) return;
-    commit(updateTab(workspace, tab.id, { changed: true }));
+    commit(updateTab(workspace, tab.id, { changed: true, reloading: true }));
     try {
       const opened = await readDocument(tab.path);
       const vaultIndex = await getVaultIndex(tab.trustedRoot);
@@ -150,11 +156,12 @@
         vaultIndexVersion: vaultIndex.version,
         vaultIndex
       });
-      commit(updateTab(workspace, tab.id, { model, error: null, changed: false }));
+      commit(updateTab(workspace, tab.id, { model, error: null, changed: false, reloading: false }));
     } catch (error) {
       commit(updateTab(workspace, tab.id, {
         error: error instanceof Error ? error.message : String(error),
-        changed: false
+        changed: false,
+        reloading: false
       }));
     }
   }
@@ -186,7 +193,27 @@
   }
 
   function navigate(anchorId: string) {
+    if (activeTab) {
+      const history = histories.get(activeTab.id) ?? { entries: [], index: -1 };
+      if (history.entries[history.index] !== anchorId) {
+        history.entries = [...history.entries.slice(0, history.index + 1), anchorId];
+        history.index = history.entries.length - 1;
+        histories.set(activeTab.id, history);
+        historyVersion += 1;
+      }
+    }
     documentView?.scrollToAnchor(anchorId);
+  }
+
+  function moveHistory(offset: number) {
+    if (!activeTab) return;
+    const history = histories.get(activeTab.id);
+    if (!history) return;
+    const next = history.index + offset;
+    if (next < 0 || next >= history.entries.length) return;
+    history.index = next;
+    historyVersion += 1;
+    documentView?.scrollToAnchor(history.entries[next]);
   }
 
   function updatePosition(scrollTop: number, headingId: string | null) {
@@ -204,12 +231,45 @@
   }
 
   function toggleMetadata() {
+    if (narrowWindow) {
+      mobileMetadataOpen = !mobileMetadataOpen;
+      mobileOutlineOpen = false;
+      return;
+    }
     const next = {
       ...$appConfig,
       frontmatterDisplay: $appConfig.frontmatterDisplay === 'panel' ? 'hidden' as const : 'panel' as const
     };
     appConfig.set(next);
     if (!fixture) void setConfig(next);
+  }
+
+  function toggleOutline() {
+    if (narrowWindow) {
+      mobileOutlineOpen = !mobileOutlineOpen;
+      mobileMetadataOpen = false;
+      return;
+    }
+    updateConfig({ ...$appConfig, outlineVisible: !$appConfig.outlineVisible });
+  }
+
+  function resizePanel(kind: 'outline' | 'metadata', event: PointerEvent) {
+    const start = event.clientX;
+    const initial = kind === 'outline' ? $appConfig.outlineWidth : $appConfig.metadataWidth;
+    const move = (next: PointerEvent) => {
+      const delta = next.clientX - start;
+      const width = Math.max(kind === 'outline' ? 200 : 220, Math.min(480, initial + (kind === 'outline' ? delta : -delta)));
+      document.documentElement.style.setProperty(kind === 'outline' ? '--sidebar-width' : '--metadata-width', `${width}px`);
+    };
+    const up = (next: PointerEvent) => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      const delta = next.clientX - start;
+      const width = Math.max(kind === 'outline' ? 200 : 220, Math.min(480, initial + (kind === 'outline' ? delta : -delta)));
+      updateConfig({ ...$appConfig, [kind === 'outline' ? 'outlineWidth' : 'metadataWidth']: width });
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
   }
 
   function toggleHighlighter() {
@@ -254,6 +314,11 @@
       printing = false;
     }
   }
+
+  let activeHistory = $derived.by(() => {
+    historyVersion;
+    return activeTab ? histories.get(activeTab.id) : undefined;
+  });
 
   function handleCommand(command: string) {
     if (command === 'open') void handleOpen();
@@ -301,6 +366,16 @@
   }
 
   onMount(() => {
+    const narrowQuery = window.matchMedia('(max-width: 900px)');
+    const updateNarrow = () => {
+      narrowWindow = narrowQuery.matches;
+      if (!narrowWindow) {
+        mobileOutlineOpen = false;
+        mobileMetadataOpen = false;
+      }
+    };
+    updateNarrow();
+    narrowQuery.addEventListener('change', updateNarrow);
     window.addEventListener('keydown', handleKeydown);
     const openPalette = () => (paletteOpen = true);
     window.addEventListener('maakdown:palette', openPalette);
@@ -331,6 +406,7 @@
       onAppCommand(handleCommand)
     ];
     removeListeners.push(() => window.removeEventListener('maakdown:palette', openPalette));
+    removeListeners.push(() => narrowQuery.removeEventListener('change', updateNarrow));
   });
 
   $effect(() => {
@@ -341,6 +417,8 @@
     document.documentElement.style.setProperty('--reader-font-size', `${$appConfig.readerFontSize}px`);
     document.documentElement.style.setProperty('--reader-line-height', $appConfig.readerLineHeight === 'compact' ? '1.45' : $appConfig.readerLineHeight === 'relaxed' ? '1.85' : '1.65');
     document.documentElement.style.setProperty('--reading-measure', $appConfig.readerMeasure === 'narrow' ? '680px' : $appConfig.readerMeasure === 'wide' ? '1040px' : '860px');
+    document.documentElement.style.setProperty('--sidebar-width', `${$appConfig.outlineWidth}px`);
+    document.documentElement.style.setProperty('--metadata-width', `${$appConfig.metadataWidth}px`);
   });
 
   $effect(() => {
@@ -358,20 +436,32 @@
 {#if showDesignSystem}
   <DesignSystemGallery />
 {:else}
-  <main class="workspace-shell" class:drop-active={dragActive} class:focus-mode={$appConfig.focusMode}>
-    <aside class="sidebar" aria-label="Table of contents">
+  <main
+    class="workspace-shell"
+    class:drop-active={dragActive}
+    class:focus-mode={$appConfig.focusMode}
+    class:no-outline={!$appConfig.outlineVisible}
+    class:outline-open={mobileOutlineOpen}
+    class:metadata-open={mobileMetadataOpen}
+  >
+    {#if $appConfig.outlineVisible}<aside class="sidebar" aria-label="Table of contents">
       <div class="sidebar-brand"><span class="brand-mark" aria-hidden="true">M</span><strong>Maakdown</strong></div>
       {#if activeTab?.model}
         <TocSidebar headings={activeTab.model.headings} {activeHeadingId} onNavigate={navigate} />
       {:else}
         <p class="muted">No document outline</p>
       {/if}
-    </aside>
+      <button class="panel-resizer outline" aria-label="Resize outline" onpointerdown={(event) => resizePanel('outline', event)}></button>
+    </aside>{/if}
 
     <section class="workspace-main">
       <WorkspaceToolbar
         title={activeTab?.title ?? ''}
         watching={activeTab?.watching ?? false}
+        changed={activeTab?.changed ?? false}
+        reloading={activeTab?.reloading ?? false}
+        canBack={(activeHistory?.index ?? -1) > 0}
+        canForward={Boolean(activeHistory && activeHistory.index < activeHistory.entries.length - 1)}
         config={$appConfig}
         onOpen={handleOpen}
         onTheme={cycleTheme}
@@ -379,6 +469,10 @@
         onSearch={showSearch}
         onSettings={() => (settingsOpen = !settingsOpen)}
         onFocus={toggleFocus}
+        onReload={() => activeTab && void reloadDocument(activeTab.path)}
+        onBack={() => moveHistory(-1)}
+        onForward={() => moveHistory(1)}
+        onOutline={toggleOutline}
       />
       <TabStrip tabs={workspace.tabs} activeTabId={workspace.activeTabId} onActivate={activateTab} onClose={handleClose} onAdd={handleOpen} />
       {#if searchOpen}
@@ -410,7 +504,7 @@
       {/if}
 
       {#if activeTab?.error}
-        <article class="document-surface error"><h1>Could not open document</h1><p>{activeTab.error}</p></article>
+        <ReaderError error={activeTab.error} onRetry={() => void openPath(activeTab.path)} onClose={() => handleClose(activeTab.id)} />
       {:else if activeTab?.model}
         <div class="reader-grid">
           <DocumentView
@@ -425,7 +519,10 @@
             searchCaseSensitive={searchCaseSensitive}
           />
           {#if $appConfig.frontmatterDisplay === 'panel'}
-            <MetadataPanel frontmatter={activeTab.model.frontmatter} />
+            <div class="metadata-wrap">
+              <button class="panel-resizer metadata" aria-label="Resize metadata" onpointerdown={(event) => resizePanel('metadata', event)}></button>
+              <MetadataPanel frontmatter={activeTab.model.frontmatter} />
+            </div>
           {/if}
         </div>
       {:else if activeTab?.loading || workspace.restoring}
@@ -434,6 +531,7 @@
         <WorkspaceEmptyState recents={workspace.recents} onOpen={handleOpen} onOpenRecent={openPath} />
       {/if}
       {#if dragActive}<div class="drop-overlay">Drop Markdown files to open</div>{/if}
+      {#if printing}<div class="print-status" role="status">Preparing complete document for print...</div>{/if}
     </section>
   </main>
 {/if}

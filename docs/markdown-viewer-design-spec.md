@@ -264,8 +264,8 @@ take precedence.
 The incorporated decisions are:
 
 - use a compact three-zone icon toolbar with stable dimensions and tooltips
-- remove the Shiki/highlighter-engine selector from normal product chrome;
-  highlight.js is the product default and Shiki remains development/evaluation-only
+- keep the highlighter selector out of the compact toolbar; expose persisted
+  highlight.js/Shiki selection in Reader Settings for normal-use evaluation
 - make the command palette the first P10 vertical slice and the main route to
   commands, tabs, recents, headings, and settings
 - format metadata and other human-readable values through one locale-aware layer

@@ -16,6 +16,7 @@ export interface DocumentTab {
   position: ReaderPosition;
   watching: boolean;
   changed: boolean;
+  reloading: boolean;
 }
 
 export interface RecentDocument {
@@ -75,7 +76,8 @@ export function activateOrAddTab(state: WorkspaceState, path: string, position?:
     trustedRoot: '',
     position: position ?? { scrollTop: 0, activeHeadingId: null },
     watching: false,
-    changed: false
+    changed: false,
+    reloading: false
   };
   return { ...state, tabs: [...state.tabs, tab], activeTabId: tab.id };
 }

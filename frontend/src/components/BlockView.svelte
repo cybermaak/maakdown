@@ -3,6 +3,8 @@
   import type { Block } from '../core/model/types';
   import { enhancementManager } from '../core/enhancement/enhancementManager';
   import { appConfig } from '../stores/configStore';
+  import { Copy, Maximize2 } from '@lucide/svelte';
+  import { IconButton } from '../design-system';
 
   interface Props {
     block: Block;
@@ -10,9 +12,11 @@
     searchQuery?: string;
     caseSensitive?: boolean;
     currentSearchBlockId?: string | null;
+    onCopy?: (label: string, value: string) => void;
+    onInspectDiagram?: (title: string, html: string) => void;
   }
 
-  let { block, onMeasure, searchQuery = '', caseSensitive = false, currentSearchBlockId = null }: Props = $props();
+  let { block, onMeasure, searchQuery = '', caseSensitive = false, currentSearchBlockId = null, onCopy, onInspectDiagram }: Props = $props();
   let element = $state<HTMLElement | undefined>();
   let html = $state('');
   let observer: IntersectionObserver | undefined;
@@ -122,5 +126,23 @@
   data-block-id={block.id}
   data-enhancement={block.enhancement}
 >
+  {#if block.kind === 'code'}
+    <div class="block-tools">
+      <span>{block.language ?? 'text'}</span>
+      <IconButton icon={Copy} label="Copy code" size="sm" onclick={() => onCopy?.('Code copied', block.text ?? '')} />
+    </div>
+  {:else if block.kind === 'heading'}
+    <div class="heading-tools">
+      <IconButton icon={Copy} label="Copy heading link" size="sm" onclick={() => {
+        const anchor = element?.querySelector('a')?.getAttribute('href') ?? '';
+        onCopy?.('Heading link copied', `${window.location.href.split('#')[0]}${anchor}`);
+      }} />
+    </div>
+  {:else if block.kind === 'mermaid'}
+    <div class="block-tools diagram">
+      <span>Diagram</span>
+      <IconButton icon={Maximize2} label="Inspect diagram" size="sm" onclick={() => onInspectDiagram?.('Mermaid diagram', html)} />
+    </div>
+  {/if}
   {@html html}
 </div>
