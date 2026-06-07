@@ -403,6 +403,10 @@
     if (command === 'reload' && activeTab) void reloadDocument(activeTab.path);
     if (command === 'find') showSearch();
     if (command === 'focus') toggleFocus();
+    // Outline/metadata toggles are no longer surfaced as toolbar buttons, but the
+    // wiring stays reachable for future advanced settings.
+    if (command === 'toggle-outline') toggleOutline();
+    if (command === 'toggle-metadata') toggleMetadata();
     if (command === 'print') void printDocument();
     if (command === 'palette') openPalette();
     if (command === 'settings') settingsOpen = true;
@@ -620,14 +624,12 @@
         config={$appConfig}
         onOpen={handleOpen}
         onTheme={cycleTheme}
-        onMetadata={toggleMetadata}
         onSearch={showSearch}
         onSettings={() => (settingsOpen = !settingsOpen)}
         onFocus={toggleFocus}
         onReload={() => activeTab && void reloadDocument(activeTab.path)}
         onBack={() => void moveHistory(-1)}
         onForward={() => void moveHistory(1)}
-        onOutline={toggleOutline}
       />
       <TabStrip tabs={workspace.tabs} activeTabId={workspace.activeTabId} onActivate={activateTab} onClose={handleClose} />
       {#if searchOpen}

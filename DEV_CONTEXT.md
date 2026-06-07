@@ -249,6 +249,11 @@ See `docs/task-tracker.md`.
 - 2026-06-07: Fixed local images breaking after scrolling out of view and back:
   image resolution now re-runs on virtualized range changes and reuses a
   per-document URL cache, so remounted blocks re-attach their asset.
+- 2026-06-07: Trimmed the toolbar — removed the outline-toggle and
+  metadata-toggle buttons (the minimap/masthead are subtle enough) and the
+  redundant "New tab" button (Open always opens a new tab). The show/hide wiring
+  stays reachable via the `toggle-outline`/`toggle-metadata` command ids for
+  future advanced settings.
   the missing reusable Svelte `Callout`, `CodeBlockChrome`, `Popover`, `Tab`,
   `TocItem`, `Toolbar`, and `Wikilink` primitives; migrated live toolbar, tab,
   outline, and code-block chrome to the shared contracts; expanded the

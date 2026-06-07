@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ArrowLeft, ArrowRight, Eye, FolderOpen, Focus, Moon, PanelLeft, PanelRight, Plus, RefreshCw, Search, Settings2, Sun } from '@lucide/svelte';
+  import { ArrowLeft, ArrowRight, Eye, FolderOpen, Focus, Moon, RefreshCw, Search, Settings2, Sun } from '@lucide/svelte';
   import { IconButton, StatusIndicator, Toolbar } from '../design-system';
   import WindowControls from './WindowControls.svelte';
   import { isDesktopRuntime, isMacPlatform } from '@ipc';
@@ -18,17 +18,15 @@
     config: AppConfig;
     onOpen: () => void;
     onTheme: () => void;
-    onMetadata: () => void;
     onSearch: () => void;
     onSettings: () => void;
     onFocus: () => void;
     onReload: () => void;
     onBack: () => void;
     onForward: () => void;
-    onOutline: () => void;
   }
 
-  let { title, watching, changed, reloading, canBack, canForward, config, onOpen, onTheme, onMetadata, onSearch, onSettings, onFocus, onReload, onBack, onForward, onOutline }: Props = $props();
+  let { title, watching, changed, reloading, canBack, canForward, config, onOpen, onTheme, onSearch, onSettings, onFocus, onReload, onBack, onForward }: Props = $props();
 </script>
 
 <header class="workspace-toolbar">
@@ -42,9 +40,7 @@
   </div>
   <!-- Structural and navigation controls sit at the leading edge (HIG/Fluent/GNOME). -->
   <Toolbar class="toolbar-nav" label="Navigation">
-    <IconButton icon={PanelLeft} label="Toggle outline" active={config.outlineVisible} onclick={onOutline} />
     <IconButton icon={FolderOpen} label="Open document" onclick={onOpen} />
-    <IconButton icon={Plus} label="New tab" onclick={onOpen} />
     <IconButton icon={ArrowLeft} label="Back" disabled={!canBack} onclick={onBack} />
     <IconButton icon={ArrowRight} label="Forward" disabled={!canForward} onclick={onForward} />
     <IconButton icon={RefreshCw} label="Reload document" disabled={reloading} onclick={onReload} />
@@ -53,7 +49,6 @@
   <Toolbar class="toolbar-actions" label="View and tools">
     <IconButton icon={Search} label="Find in document" onclick={onSearch} />
     <IconButton icon={Eye} label="Reader appearance" onclick={onSettings} />
-    <IconButton icon={PanelRight} label="Toggle metadata" active={config.frontmatterDisplay === 'panel'} onclick={onMetadata} />
     <IconButton icon={Focus} label="Focus mode" active={config.focusMode} onclick={onFocus} />
     <IconButton icon={Settings2} label="Command palette" onclick={() => window.dispatchEvent(new CustomEvent('maakdown:palette'))} />
     <IconButton icon={config.theme === 'dark' ? Sun : Moon} label={`Theme: ${config.theme}`} onclick={onTheme} />

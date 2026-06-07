@@ -17,10 +17,12 @@ test.describe('UAT-04 Desktop workspace lifecycle', () => {
     await seedApp(page, { documents: baseDocuments, pickerQueue: [ARCH, DOSSIER] });
     await gotoApp(page);
 
-    // Open two documents through the mocked native picker
-    await page.locator('.workspace-toolbar').getByRole('button', { name: 'Open document' }).click();
+    // Open two documents through the mocked native picker (Open always opens a
+    // new tab; the redundant "New tab" button was removed).
+    const openButton = page.locator('.workspace-toolbar').getByRole('button', { name: 'Open document' });
+    await openButton.click();
     await expectReaderReady(page);
-    await page.getByRole('button', { name: 'New tab' }).click();
+    await openButton.click();
     await expect(page.getByRole('tab')).toHaveCount(2);
     await expect(page.getByRole('tab', { name: 'dossier.md' })).toHaveAttribute('aria-selected', 'true');
     await expectReaderReady(page);
