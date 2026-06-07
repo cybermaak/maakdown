@@ -86,6 +86,22 @@ func TestValidateSVGRejectsScript(t *testing.T) {
 	}
 }
 
+func TestValidateSVGAllowsNamespaceDeclarations(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "ok.svg")
+	mustWrite(t, path, []byte(`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect fill="#fff"/></svg>`))
+	if err := ValidateSVG(path); err != nil {
+		t.Fatalf("standard namespace declarations must not be blocked: %v", err)
+	}
+}
+
+func TestValidateSVGRejectsRemoteReference(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "remote.svg")
+	mustWrite(t, path, []byte(`<svg xmlns="http://www.w3.org/2000/svg"><image href="https://evil.example/x.png"/></svg>`))
+	if err := ValidateSVG(path); err == nil {
+		t.Fatal("expected a remote-resource reference to be rejected")
+	}
+}
+
 func TestAssetServerServesTokenizedImage(t *testing.T) {
 	dir := t.TempDir()
 	mustMkdir(t, filepath.Join(dir, "docs"))

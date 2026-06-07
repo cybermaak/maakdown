@@ -238,6 +238,14 @@ See `docs/task-tracker.md`.
   bar on long documents. The functional, scrollable outline remains in the
   hover-revealed panel. Local work continues on `main` (merged
   `chrome-context-theming`).
+- 2026-06-07: Fixed local SVG images showing broken under `wails dev`.
+  `ValidateSVG` blocked any file containing `http://`/`https://`, which matched
+  every SVG's mandatory `xmlns="http://www.w3.org/2000/svg"` namespace, so
+  `ResolveAsset` errored and the reader showed a broken image. (Browser/fixture
+  rendering served the file through the vite middleware with no validation, so
+  it looked fine there.) The validator now strips namespace declarations before
+  scanning, so legitimate SVGs pass while genuine remote references are still
+  blocked. Added Go coverage for the namespace and remote-reference cases.
   the missing reusable Svelte `Callout`, `CodeBlockChrome`, `Popover`, `Tab`,
   `TocItem`, `Toolbar`, and `Wikilink` primitives; migrated live toolbar, tab,
   outline, and code-block chrome to the shared contracts; expanded the

@@ -11,10 +11,17 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
 )
+
+// xmlnsDeclaration matches XML namespace declarations (e.g.
+// xmlns="http://www.w3.org/2000/svg"). These legitimately carry http(s) URIs
+// but are identifiers, not network fetches, so they must not trip the
+// remote-reference check below.
+var xmlnsDeclaration = regexp.MustCompile(`(?i)xmlns(:[a-z0-9_-]+)?\s*=\s*("[^"]*"|'[^']*')`)
 
 const maxAssetSize int64 = 25 * 1024 * 1024
 
@@ -257,7 +264,10 @@ func ValidateSVG(path string) error {
 	if err != nil {
 		return err
 	}
-	lower := strings.ToLower(string(bytes))
+	// Strip namespace declarations first so the standard SVG/xlink namespace
+	// URIs (always http(s)) don't read as remote references.
+	scrubbed := xmlnsDeclaration.ReplaceAllString(string(bytes), "")
+	lower := strings.ToLower(scrubbed)
 	blocked := []string{"<script", "onload=", "onclick=", "onerror=", "<foreignobject", "javascript:", "http://", "https://"}
 	for _, pattern := range blocked {
 		if strings.Contains(lower, pattern) {
