@@ -38,12 +38,15 @@
         <span class="minimap-tick" style={`width: ${width}px; margin-left: ${indent}px`}></span>
       {/each}
     </div>
-    <!-- Hover-revealed floating outline. -->
+    <!-- Hover-revealed floating outline. Items render only while open so a long
+         outline never sits in the DOM during normal reading. -->
     <nav class="minimap-panel" class:open aria-label="Document outline" inert={!open}>
       <div class="minimap-title">Outline</div>
-      {#each headings as heading}
-        <TocItem id={heading.id} label={heading.text} depth={heading.depth} active={heading.id === activeHeadingId} onclick={() => onNavigate(heading.id)} />
-      {/each}
+      {#if open}
+        {#each headings as heading}
+          <TocItem id={heading.id} label={heading.text} depth={heading.depth} active={heading.id === activeHeadingId} onclick={() => onNavigate(heading.id)} />
+        {/each}
+      {/if}
     </nav>
   </div>
 {/if}

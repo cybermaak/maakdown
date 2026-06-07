@@ -62,6 +62,7 @@
 | P3.4 | Done | Implement SVG policy | P3.3 | unsafe SVG blocked or sanitized | `go test ./internal/assetservice` |
 | P3.5 | Done | Implement parent-directory watcher | P0 | write/rename/safe-save coalesced | `go test ./internal/watcher` |
 | P3.6 | Done | Preserve position on reload | P3.5/P2 | reload restores nearest anchor/block | `npm run check`, `npm run build` |
+| P3.7 | Done | Harden local SVG/image serving | P3.4 | SVG validator allows the xmlns namespace while blocking real remote refs; virtualized images re-resolve on remount via a per-document URL cache; vault index is cached and invalidated on fs change | `go test ./internal/assetservice ./internal/vault`, UAT image checks |
 
 ## P4 - Rich Enhancements
 
@@ -171,3 +172,6 @@
 | P11.9 | Done | Complete keyboard and semantic accessibility | Frontend | P10/P11.1-P11.7 | tabs, toolbars, search, palette, dialogs, drawers, and reader are keyboard/screen-reader operable | zero-warning Svelte check, axe serious/critical gate, and UAT keyboard paths |
 | P11.10 | Done | Add reduced-motion, high-contrast, and async announcements | Frontend | P8/P11.9 | system preferences are respected and loading/reload/search/copy/error state is announced | media-query coverage and UAT-07 |
 | P11.11 | Blocked | Run cross-platform editorial acceptance pass | Release | P11.1-P11.10/P7.7 | empty, tabs, search, focus, narrow, light, dark, diagram, and print workflows pass on supported platforms | hosted unsigned-build checklist first; signed-build checklist after credentials are supplied |
+| P11.12 | Done | Adopt design-handoff Panels option A (masthead + minimap) | Design/Frontend | P11.1 | metadata moves to a scrolling masthead and the outline to a hover-reveal edge minimap (fixed decorative collapsed glyph); single reading column; supersedes the persistent two-rail layout and its resizers/drawers from P11.2-P11.3 | `npm run check`, UAT 19/19, render screenshots |
+| P11.13 | Done | Trim toolbar controls | Frontend | P11.12 | outline/metadata toggle buttons and the redundant New tab button removed; show/hide wiring kept via command ids; Open always opens a new tab | `npm run check`, UAT-04/08 |
+| P11.14 | In Progress | Resolve open-path responsiveness regression | Frontend/Backend | P11.12 | opening a second document after a large file no longer stalls; vault index cached/invalidated and minimap outline lazily rendered cut open-path work; residual native file-dialog beachball under frameless needs on-device confirmation | frontend long-task probe (0 tasks, ~0.6s open); native verification pending |

@@ -254,6 +254,12 @@ See `docs/task-tracker.md`.
   redundant "New tab" button (Open always opens a new tab). The show/hide wiring
   stays reachable via the `toggle-outline`/`toggle-metadata` command ids for
   future advanced settings.
+- 2026-06-07: Reduced open-path work behind the "open a second file after a large
+  one stalls" report. The vault index is now cached per root and invalidated on
+  watcher changes (was a full tree walk on every open); the minimap outline
+  renders its items only while hovered. Frontend open measured ~0.6s with zero
+  long tasks, so the residual native beachball is most likely the frameless
+  window's macOS file dialog and needs on-device confirmation (P11.14).
   the missing reusable Svelte `Callout`, `CodeBlockChrome`, `Popover`, `Tab`,
   `TocItem`, `Toolbar`, and `Wikilink` primitives; migrated live toolbar, tab,
   outline, and code-block chrome to the shared contracts; expanded the

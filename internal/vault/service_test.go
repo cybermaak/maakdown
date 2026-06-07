@@ -35,3 +35,37 @@ func TestGetVaultIndexMapsBasenameAndRelativePath(t *testing.T) {
 		t.Fatal("expected a version")
 	}
 }
+
+func TestGetVaultIndexCachesUntilInvalidated(t *testing.T) {
+	root := t.TempDir()
+	mustWriteVault(t, filepath.Join(root, "alpha.md"), "# Alpha")
+	svc := New()
+	first, err := svc.GetVaultIndex(root)
+	if err != nil {
+		t.Fatalf("first index: %v", err)
+	}
+	// A note added after the first scan is not visible until invalidation.
+	mustWriteVault(t, filepath.Join(root, "beta.md"), "# Beta")
+	cached, err := svc.GetVaultIndex(root)
+	if err != nil {
+		t.Fatalf("cached index: %v", err)
+	}
+	if cached.Version != first.Version {
+		t.Fatal("expected cached index to be reused before invalidation")
+	}
+	svc.Invalidate()
+	fresh, err := svc.GetVaultIndex(root)
+	if err != nil {
+		t.Fatalf("fresh index: %v", err)
+	}
+	if fresh.Version == first.Version {
+		t.Fatal("expected a fresh scan to reflect the added note after invalidation")
+	}
+}
+
+func mustWriteVault(t *testing.T, path, contents string) {
+	t.Helper()
+	if err := os.WriteFile(path, []byte(contents), 0o644); err != nil {
+		t.Fatalf("write %s: %v", path, err)
+	}
+}

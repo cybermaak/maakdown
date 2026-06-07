@@ -45,6 +45,13 @@ func (a *App) Startup(ctx context.Context) {
 	runtime.OnFileDrop(ctx, func(_ int, _ int, paths []string) {
 		runtime.EventsEmit(ctx, "files-dropped", paths)
 	})
+	// Drop cached vault indexes when watched files change so wikilink
+	// resolution stays fresh while repeated opens reuse the cached scan.
+	go func() {
+		for range a.Watcher.Changes() {
+			a.Vault.Invalidate()
+		}
+	}()
 }
 
 func (a *App) Shutdown(ctx context.Context) {

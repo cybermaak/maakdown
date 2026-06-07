@@ -7,9 +7,13 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"sync"
 )
 
-type Service struct{}
+type Service struct {
+	mu    sync.Mutex
+	cache map[string]VaultIndex
+}
 
 type VaultIndex struct {
 	Version string            `json:"version"`
@@ -17,7 +21,15 @@ type VaultIndex struct {
 }
 
 func New() *Service {
-	return &Service{}
+	return &Service{cache: map[string]VaultIndex{}}
+}
+
+// Invalidate clears the cached indexes. The watcher calls this on filesystem
+// changes so newly added or removed notes are picked up on the next request.
+func (s *Service) Invalidate() {
+	s.mu.Lock()
+	s.cache = map[string]VaultIndex{}
+	s.mu.Unlock()
 }
 
 func (s *Service) GetVaultIndex(root string) (VaultIndex, error) {
@@ -25,6 +37,13 @@ func (s *Service) GetVaultIndex(root string) (VaultIndex, error) {
 	if err != nil {
 		return VaultIndex{}, err
 	}
+
+	s.mu.Lock()
+	if cached, ok := s.cache[canonicalRoot]; ok {
+		s.mu.Unlock()
+		return cached, nil
+	}
+	s.mu.Unlock()
 
 	var paths []string
 	err = filepath.WalkDir(canonicalRoot, func(path string, entry fs.DirEntry, walkErr error) error {
@@ -67,10 +86,14 @@ func (s *Service) GetVaultIndex(root string) (VaultIndex, error) {
 		hasher.Write([]byte{0})
 	}
 
-	return VaultIndex{
+	index := VaultIndex{
 		Version: hex.EncodeToString(hasher.Sum(nil))[:16],
 		Notes:   notes,
-	}, nil
+	}
+	s.mu.Lock()
+	s.cache[canonicalRoot] = index
+	s.mu.Unlock()
+	return index, nil
 }
 
 func shouldSkipDirectory(name string) bool {
