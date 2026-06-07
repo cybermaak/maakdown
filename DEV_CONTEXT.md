@@ -233,6 +233,11 @@ See `docs/task-tracker.md`.
   hover-expands to a floating outline; the closed panel is `inert`. The reader is
   now a single column with both panels summoned on demand. Build artifacts
   (`package.json.md5`, generated `wailsjs/*.ts`) are gitignored.
+- 2026-06-07: The collapsed minimap rail is now a fixed-size decorative glyph
+  rather than one tick per heading; a per-heading rail overflowed into the title
+  bar on long documents. The functional, scrollable outline remains in the
+  hover-revealed panel. Local work continues on `main` (merged
+  `chrome-context-theming`).
   the missing reusable Svelte `Callout`, `CodeBlockChrome`, `Popover`, `Tab`,
   `TocItem`, `Toolbar`, and `Wikilink` primitives; migrated live toolbar, tab,
   outline, and code-block chrome to the shared contracts; expanded the
