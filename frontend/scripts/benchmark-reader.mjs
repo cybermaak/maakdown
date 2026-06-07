@@ -50,7 +50,7 @@ async function navigateToHeading(label) {
   await page.waitForTimeout(500);
 }
 
-async function scrollUntilMounted(selector) {
+async function scrollUntilMounted(selector, countSelectors = [selector]) {
   const surface = page.locator('.document-scroll');
   await surface.evaluate((element) => {
     element.scrollTop = 0;
@@ -58,7 +58,9 @@ async function scrollUntilMounted(selector) {
   for (let step = 0; step < 100; step += 1) {
     const target = page.locator(selector).first();
     if (await target.count()) {
-      if (await target.isVisible().catch(() => false)) return;
+      if (await target.isVisible().catch(() => false)) {
+        return Promise.all(countSelectors.map((countSelector) => page.locator(countSelector).count()));
+      }
     }
     const reachedEnd = await surface.evaluate((element) => {
       const previous = element.scrollTop;
@@ -122,19 +124,17 @@ try {
       }
     }
     const openToTextMs = performance.now() - started;
-    await scrollUntilMounted('.mermaid-rendered svg, .mermaid-error');
-    await page.locator('.mermaid-rendered svg, .mermaid-error').first().waitFor();
-    const renderedDiagrams = await page.locator('.mermaid-rendered svg').count();
-    const diagramErrors = await page.locator('.mermaid-error').count();
+    const [renderedDiagrams, diagramErrors] = await scrollUntilMounted(
+      '.mermaid-rendered svg, .mermaid-error',
+      ['.mermaid-rendered svg', '.mermaid-error']
+    );
     await revealEnhancedCode();
     const highlightedBlocks = await page.locator('[data-highlight-engine]').count();
     await page.getByRole('button', { name: 'Reader appearance', exact: true }).click();
     await page.getByRole('button', { name: 'Shiki', exact: true }).click();
     await page.locator('[data-highlight-engine="shiki-js-regex"]').first().waitFor();
     const shikiBlocks = await page.locator('[data-highlight-engine="shiki-js-regex"]').count();
-    await scrollUntilMounted('.katex');
-    await page.locator('.katex').first().waitFor();
-    const renderedMath = await page.locator('.katex').count();
+    const [renderedMath] = await scrollUntilMounted('.katex');
     const enhancements = {
       highlightedBlocks,
       shikiBlocks,
