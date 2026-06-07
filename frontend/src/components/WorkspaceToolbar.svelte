@@ -1,7 +1,11 @@
 <script lang="ts">
   import { ArrowLeft, ArrowRight, Eye, FolderOpen, Focus, Moon, PanelLeft, PanelRight, Plus, RefreshCw, Search, Settings2, Sun } from '@lucide/svelte';
   import { IconButton, StatusIndicator } from '../design-system';
+  import WindowControls from './WindowControls.svelte';
+  import { isDesktopRuntime } from '@ipc';
   import type { AppConfig } from '../stores/configStore';
+
+  const desktop = isDesktopRuntime();
 
   interface Props {
     title: string;
@@ -52,4 +56,5 @@
     <IconButton icon={Settings2} label="Command palette" onclick={() => window.dispatchEvent(new CustomEvent('maakdown:palette'))} />
     <IconButton icon={config.theme === 'dark' ? Sun : Moon} label={`Theme: ${config.theme}`} onclick={onTheme} />
   </div>
+  {#if desktop}<WindowControls />{/if}
 </header>

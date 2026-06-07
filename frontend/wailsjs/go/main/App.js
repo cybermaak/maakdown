@@ -21,3 +21,15 @@ export function Quit() {
 export function SetWindowTitle(arg1) {
   return window['go']['main']['App']['SetWindowTitle'](arg1);
 }
+
+export function WindowIsMaximised() {
+  return window['go']['main']['App']['WindowIsMaximised']();
+}
+
+export function WindowMinimise() {
+  return window['go']['main']['App']['WindowMinimise']();
+}
+
+export function WindowToggleMaximise() {
+  return window['go']['main']['App']['WindowToggleMaximise']();
+}

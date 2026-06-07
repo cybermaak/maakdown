@@ -82,3 +82,25 @@ func (a *App) Print() {
 func (a *App) AppName() string {
 	return "Maakdown"
 }
+
+// WindowMinimise minimises the frameless window from the custom title bar.
+func (a *App) WindowMinimise() {
+	if a.ctx != nil {
+		runtime.WindowMinimise(a.ctx)
+	}
+}
+
+// WindowToggleMaximise toggles maximised/restored state from the custom title bar.
+func (a *App) WindowToggleMaximise() {
+	if a.ctx != nil {
+		runtime.WindowToggleMaximise(a.ctx)
+	}
+}
+
+// WindowIsMaximised reports maximised state so the title bar can pick its glyph.
+func (a *App) WindowIsMaximised() bool {
+	if a.ctx != nil {
+		return runtime.WindowIsMaximised(a.ctx)
+	}
+	return false
+}

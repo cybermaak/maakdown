@@ -10,3 +10,9 @@ export function Print():Promise<void>;
 export function Quit():Promise<void>;
 
 export function SetWindowTitle(arg1:string):Promise<void>;
+
+export function WindowIsMaximised():Promise<boolean>;
+
+export function WindowMinimise():Promise<void>;
+
+export function WindowToggleMaximise():Promise<void>;

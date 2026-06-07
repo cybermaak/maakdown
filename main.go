@@ -49,7 +49,10 @@ func main() {
 		Title:  "Maakdown",
 		Width:  1200,
 		Height: 800,
-		Menu:   appMenu,
+		// Remove the OS title bar so Maakdown renders one consistent custom
+		// title bar across macOS, Windows, and Linux.
+		Frameless: true,
+		Menu:      appMenu,
 		DragAndDrop: &options.DragAndDrop{
 			EnableFileDrop: true,
 		},

@@ -3,7 +3,7 @@ import { GetConfig, GetSession, SetConfig, SetSession } from '../../wailsjs/go/c
 import { ResolveAsset, RevokeAsset } from '../../wailsjs/go/assetservice/Service';
 import { OpenExternal } from '../../wailsjs/go/linkservice/Service';
 import { UnwatchDocument, WatchDocument } from '../../wailsjs/go/watcher/Service';
-import { Print, Quit, SetWindowTitle } from '../../wailsjs/go/main/App';
+import { Print, Quit, SetWindowTitle, WindowIsMaximised, WindowMinimise, WindowToggleMaximise } from '../../wailsjs/go/main/App';
 import { GetVaultIndex } from '../../wailsjs/go/vault/Service';
 import { EventsOn } from '../../wailsjs/runtime/runtime';
 import { config } from '../../wailsjs/go/models';
@@ -112,6 +112,22 @@ export async function quitApp(): Promise<void> {
 
 export async function printWindow(): Promise<void> {
   await Print();
+}
+
+export function isDesktopRuntime(): boolean {
+  return typeof window !== 'undefined' && Boolean((window as unknown as { runtime?: unknown }).runtime);
+}
+
+export async function windowMinimise(): Promise<void> {
+  await WindowMinimise();
+}
+
+export async function windowToggleMaximise(): Promise<void> {
+  await WindowToggleMaximise();
+}
+
+export async function windowIsMaximised(): Promise<boolean> {
+  return WindowIsMaximised();
 }
 
 export function onFileChanged(callback: (path: string) => void): () => void {

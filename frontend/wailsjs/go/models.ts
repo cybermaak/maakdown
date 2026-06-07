@@ -1,15 +1,15 @@
 export namespace assetservice {
-
+	
 	export class AssetRef {
 	    id: string;
 	    url: string;
 	    mime: string;
 	    error?: string;
-
+	
 	    static createFrom(source: any = {}) {
 	        return new AssetRef(source);
 	    }
-
+	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.id = source["id"];
@@ -22,7 +22,7 @@ export namespace assetservice {
 }
 
 export namespace config {
-
+	
 	export class AppConfig {
 	    theme: string;
 	    highlighterEngine: string;
@@ -36,11 +36,11 @@ export namespace config {
 	    outlineVisible: boolean;
 	    outlineWidth: number;
 	    metadataWidth: number;
-
+	
 	    static createFrom(source: any = {}) {
 	        return new AppConfig(source);
 	    }
-
+	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.theme = source["theme"];
@@ -61,11 +61,11 @@ export namespace config {
 	    path: string;
 	    displayName: string;
 	    lastOpenedAt: string;
-
+	
 	    static createFrom(source: any = {}) {
 	        return new RecentDocument(source);
 	    }
-
+	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.path = source["path"];
@@ -76,11 +76,11 @@ export namespace config {
 	export class ReaderPosition {
 	    scrollTop: number;
 	    activeHeadingId?: string;
-
+	
 	    static createFrom(source: any = {}) {
 	        return new ReaderPosition(source);
 	    }
-
+	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.scrollTop = source["scrollTop"];
@@ -90,17 +90,17 @@ export namespace config {
 	export class SessionTab {
 	    path: string;
 	    position: ReaderPosition;
-
+	
 	    static createFrom(source: any = {}) {
 	        return new SessionTab(source);
 	    }
-
+	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.path = source["path"];
 	        this.position = this.convertValues(source["position"], ReaderPosition);
 	    }
-
+	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
 		    if (!a) {
 		        return a;
@@ -123,18 +123,18 @@ export namespace config {
 	    tabs: SessionTab[];
 	    activePath?: string;
 	    recents: RecentDocument[];
-
+	
 	    static createFrom(source: any = {}) {
 	        return new PersistedSession(source);
 	    }
-
+	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.tabs = this.convertValues(source["tabs"], SessionTab);
 	        this.activePath = source["activePath"];
 	        this.recents = this.convertValues(source["recents"], RecentDocument);
 	    }
-
+	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
 		    if (!a) {
 		        return a;
@@ -153,22 +153,22 @@ export namespace config {
 		    return a;
 		}
 	}
-
-
+	
+	
 
 }
 
 export namespace fileservice {
-
+	
 	export class DocumentBytes {
 	    path: string;
 	    contents: string;
 	    modTime: string;
-
+	
 	    static createFrom(source: any = {}) {
 	        return new DocumentBytes(source);
 	    }
-
+	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.path = source["path"];
@@ -183,11 +183,11 @@ export namespace fileservice {
 	    trustedRoot: string;
 	    modTime: string;
 	    vaultId?: string;
-
+	
 	    static createFrom(source: any = {}) {
 	        return new OpenDocumentResult(source);
 	    }
-
+	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.path = source["path"];
@@ -202,15 +202,15 @@ export namespace fileservice {
 }
 
 export namespace vault {
-
+	
 	export class VaultIndex {
 	    version: string;
 	    notes: Record<string, string>;
-
+	
 	    static createFrom(source: any = {}) {
 	        return new VaultIndex(source);
 	    }
-
+	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.version = source["version"];

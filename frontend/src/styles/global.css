@@ -83,6 +83,41 @@ a {
   margin-left: auto;
 }
 
+/* Frameless custom title bar: the toolbar is the drag handle; interactive
+   groups opt out so clicks reach their controls. */
+.workspace-shell.frameless .workspace-toolbar {
+  --wails-draggable: drag;
+}
+
+.workspace-shell.frameless .toolbar-nav,
+.workspace-shell.frameless .toolbar-actions,
+.workspace-shell.frameless .window-controls {
+  --wails-draggable: no-drag;
+}
+
+.window-controls {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 2px;
+  margin-left: 4px;
+}
+
+.window-control {
+  display: inline-grid;
+  width: 32px;
+  height: 28px;
+  place-items: center;
+  border: 0;
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+  transition: background var(--motion-fast), color var(--motion-fast);
+}
+
+.window-control:hover { background: var(--active); color: var(--text); }
+.window-control.close:hover { background: var(--danger); color: #fff; }
+
 .context-menu {
   position: fixed;
   z-index: 61;

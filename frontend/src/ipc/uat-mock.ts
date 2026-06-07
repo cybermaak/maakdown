@@ -243,6 +243,24 @@ export async function printWindow(): Promise<void> {
   });
 }
 
+export function isDesktopRuntime(): boolean {
+  // UAT runs a static bundle without the Wails runtime, so the custom title bar
+  // stays hidden and tests exercise the browser chrome.
+  return false;
+}
+
+export async function windowMinimise(): Promise<void> {
+  // no-op
+}
+
+export async function windowToggleMaximise(): Promise<void> {
+  // no-op
+}
+
+export async function windowIsMaximised(): Promise<boolean> {
+  return false;
+}
+
 export function onFileChanged(callback: (path: string) => void): () => void {
   const wrapped = (payload: unknown) => callback(payload as string);
   listeners['file-changed'].push(wrapped);

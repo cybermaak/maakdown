@@ -33,6 +33,7 @@
     onAppCommand,
     onFileChanged,
     onFilesDropped,
+    isDesktopRuntime,
     openDocument,
     openDocumentAt,
     openExternal,
@@ -57,6 +58,7 @@
   } from './core/navigation/history';
 
   const query = new URLSearchParams(window.location.search);
+  const desktopRuntime = isDesktopRuntime();
   const showDesignSystem = (import.meta.env.DEV || import.meta.env.MODE === 'benchmark') && query.has('design-system');
   const fixture = (import.meta.env.DEV || import.meta.env.MODE === 'benchmark') ? query.get('fixture') : null;
   let workspace = $state(createWorkspace());
@@ -596,6 +598,7 @@
     class:no-outline={!$appConfig.outlineVisible}
     class:outline-open={mobileOutlineOpen}
     class:metadata-open={mobileMetadataOpen}
+    class:frameless={desktopRuntime}
     oncontextmenu={handleContextMenu}
   >
     {#if $appConfig.outlineVisible}<aside class="sidebar" aria-label="Table of contents">
