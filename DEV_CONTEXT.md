@@ -260,6 +260,10 @@ See `docs/task-tracker.md`.
   renders its items only while hovered. Frontend open measured ~0.6s with zero
   long tasks, so the residual native beachball is most likely the frameless
   window's macOS file dialog and needs on-device confirmation (P11.14).
+- 2026-06-07: Open-path stall resolved (user-confirmed on-device); the vault walk
+  measured ~11ms so the cache was a minor win. An autonomous native
+  UI-verification harness (CDP-driven real build, no UI automation) is deferred
+  as P11.15.
   the missing reusable Svelte `Callout`, `CodeBlockChrome`, `Popover`, `Tab`,
   `TocItem`, `Toolbar`, and `Wikilink` primitives; migrated live toolbar, tab,
   outline, and code-block chrome to the shared contracts; expanded the
