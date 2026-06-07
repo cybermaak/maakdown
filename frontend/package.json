@@ -10,7 +10,10 @@
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "test": "vitest run",
     "benchmark": "node scripts/benchmark-reader.mjs",
-    "visual-smoke": "node scripts/visual-smoke.mjs"
+    "visual-smoke": "node scripts/visual-smoke.mjs",
+    "uat": "playwright test --config playwright.uat.config.ts",
+    "uat:headed": "playwright test --config playwright.uat.config.ts --headed",
+    "uat:report": "playwright show-report uat-results/html"
   },
   "dependencies": {
     "@fontsource/inter": "^5.2.8",
@@ -41,6 +44,7 @@
     "vite": "^8.0.16"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/svelte": "^5.3.1",
     "@types/js-yaml": "^4.0.9",

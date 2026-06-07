@@ -55,3 +55,9 @@ build/signing/private/
 .env
 .env.*
 !.env.example
+
+# Playwright UAT artifacts
+frontend/test-results/
+frontend/uat-results/
+frontend/playwright-report/
+frontend/.last-run.json

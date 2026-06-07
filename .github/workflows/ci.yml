@@ -37,6 +37,38 @@ jobs:
         working-directory: frontend
         run: npm run visual-smoke
 
+  uat:
+    needs: frontend
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+      - name: Install Playwright Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Run UI-driven UAT suite
+        working-directory: frontend
+        run: npm run uat
+      - name: Upload UAT failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: uat-failure-artifacts
+          path: |
+            frontend/uat-results/
+            frontend/test-results/
+          retention-days: 7
+          if-no-files-found: ignore
+
   backend:
     runs-on: ubuntu-latest
     steps:

@@ -35,8 +35,18 @@ function fixtureServer(): Plugin {
   };
 }
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [svelte(), fixtureServer()],
+  resolve: {
+    alias:
+      mode === 'uat'
+        ? [
+            // UAT mode swaps the Wails IPC boundary for a deterministic mock.
+            // Matches both `./ipc` (App.svelte) and `../ipc` (DocumentView.svelte).
+            { find: /^\.\.?\/ipc$/, replacement: resolve(__dirname, 'src/ipc/uat-mock.ts') }
+          ]
+        : []
+  },
   server: {
     host: '127.0.0.1',
     port: 5173,
@@ -50,4 +60,4 @@ export default defineConfig({
     environment: 'jsdom',
     include: ['src/**/*.test.ts']
   }
-});
+}));

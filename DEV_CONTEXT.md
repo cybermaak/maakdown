@@ -38,6 +38,10 @@ accessibility announcements.
 - `frontend/src/design-system/`: production Svelte primitives and deterministic gallery.
 - `frontend/src/components/`: reader surface, table of contents, and metadata panel.
 - `fixtures/`: deterministic Markdown evaluation documents and local fixture assets.
+- `frontend/e2e/`: Playwright UI-driven UAT journeys and the mock-IPC seeding support.
+- `frontend/src/ipc/uat-mock.ts`: deterministic Wails IPC mock used only in `vite --mode uat`.
+- `frontend/playwright.uat.config.ts`: headless-Chromium UAT runner config.
+- `docs/uat-test-plan.md` / `docs/uat-traceability.md`: UAT plan and requirements matrix.
 - `tools/generate-reader-evaluation-fixture.mjs`: regenerates the large reader evaluation dossier.
 - `frontend/scripts/benchmark-reader.mjs`: Chromium benchmark for parser,
   virtualizer, navigation, and rich enhancements.
@@ -141,6 +145,17 @@ See `docs/task-tracker.md`.
   virtualized search, command palette, native print/PDF expansion, persistent
   typography/measure/focus controls, metadata formatting, responsive collapse,
   reduced-motion/high-contrast rules, and native menu parity.
+- 2026-06-06: Implemented the UI-driven UAT suite (P7.6). Added a `vite --mode
+  uat` entry mode that aliases the Wails IPC boundary to a deterministic
+  `frontend/src/ipc/uat-mock.ts` (state on `window.__uat`, durable config and
+  session in `localStorage` so a reload models a restart). Authored Playwright
+  journeys UAT-01 (read), UAT-02 (theme), and UAT-04 (workspace lifecycle), with
+  a shared support fixture that fails on unexpected page/console errors; kept
+  UAT-03/05/06/07 as Planned rows in `docs/uat-traceability.md`. Added
+  `npm run uat`/`uat:headed`/`uat:report`, a push-to-main CI job, and a
+  release-check gate. The suite caught a real defect while building UAT-04:
+  `DocumentView.handleScroll` dereferenced a null model when a scrolled tab was
+  closed; it now bails on a detached surface.
 
 ## Verification Commands
 
@@ -154,6 +169,7 @@ cd frontend && npm run check
 cd frontend && npm run build
 cd frontend && npm run test
 cd frontend && npm run benchmark
+cd frontend && npm run uat
 go test ./...
 scripts/verify.sh
 scripts/release-check.sh

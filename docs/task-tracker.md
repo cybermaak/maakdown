@@ -99,6 +99,7 @@
 | P7.3 | Done | Add macOS signing/notarization runbook | P0 | non-secret signing docs and script exist | doc/script review; credentials remain external |
 | P7.4 | Done | Add Windows signing runbook | P0 | non-secret signing docs and script exist | doc/script review; credentials remain external |
 | P7.5 | Blocked | Cross-platform packaging verification | P7.3/P7.4 | builds validated on Windows/macOS/Linux | workflow implemented; requires external Windows/Linux runners and user signing credentials |
+| P7.6 | Done | UI-driven UAT regression suite | P8/P9 | Playwright UAT mode with mocked Wails boundary; UAT-01/02/04 executable; UAT-03/05/06/07 in traceability matrix; CI job and release gate | `npm run uat` (8 passing, ~5 s); `docs/uat-traceability.md` |
 
 ## P8 - Design System Foundation
 
