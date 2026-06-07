@@ -18,11 +18,10 @@ a {
 
 .workspace-shell {
   display: grid;
-  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   height: 100vh;
   overflow: hidden;
 }
-.workspace-shell.no-outline { grid-template-columns: minmax(0, 1fr); }
 
 .sidebar {
   position: relative;
@@ -364,9 +363,69 @@ a {
 }
 
 .reader-grid {
+  position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr);
   height: calc(100vh - var(--toolbar-height) - var(--tabbar-height) - 2px);
+}
+
+/* Outline minimap: a thin tick rail at the reader's left edge that expands to a
+   floating labelled outline on hover (Panels option A). */
+.minimap {
+  position: absolute;
+  z-index: 18;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  padding-left: 6px;
+}
+.minimap-ticks {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 10px 10px 10px 6px;
+  opacity: 1;
+  transition: opacity 120ms var(--ease-standard);
+}
+.minimap-ticks.hidden { opacity: 0; }
+.minimap-tick {
+  height: 2.5px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--muted) 50%, transparent);
+  transition: background 120ms var(--ease-standard);
+}
+.minimap-tick.active { background: var(--text); }
+.minimap-panel {
+  position: absolute;
+  left: 6px;
+  top: 50%;
+  transform: translateY(-50%) translateX(-8px);
+  width: 256px;
+  max-height: 82%;
+  overflow: auto;
+  padding: 10px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface-bg);
+  box-shadow: var(--shadow-pop);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 130ms var(--ease-standard), transform 130ms var(--ease-standard);
+}
+.minimap-panel.open {
+  transform: translateY(-50%) translateX(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+.minimap-title {
+  padding: 4px 8px 7px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 /* Metadata masthead: a quiet frontmatter band atop the reading column. */
@@ -402,7 +461,7 @@ a {
   max-width: var(--reading-measure);
   margin-inline: auto;
 }
-.doc-block:is(.doc-block-code, .doc-block-table, .doc-block-mermaid) { max-width: min(1100px, calc(100vw - var(--sidebar-width) - var(--metadata-width) - 72px)); }
+.doc-block:is(.doc-block-code, .doc-block-table, .doc-block-mermaid) { max-width: min(1100px, calc(100vw - 120px)); }
 .doc-block table { width: 100%; border-collapse: collapse; }
 .doc-block th, .doc-block td { border-bottom: 1px solid var(--reader-rule); padding: 8px 10px; text-align: left; }
 .doc-block tbody tr:hover { background: color-mix(in srgb, var(--reader-selection) 45%, transparent); }
@@ -505,6 +564,7 @@ a {
 .workspace-shell.focus-mode { grid-template-columns: minmax(0, 1fr); }
 .workspace-shell.focus-mode .sidebar,
 .workspace-shell.focus-mode .tab-strip,
+.workspace-shell.focus-mode .minimap,
 .workspace-shell.focus-mode .metadata-panel { display: none; }
 .workspace-shell.focus-mode .workspace-main { grid-column: 1; }
 

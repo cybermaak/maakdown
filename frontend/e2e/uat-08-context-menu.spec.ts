@@ -32,7 +32,8 @@ test.describe('UAT-08 Custom context menus', () => {
   });
 
   test('outline heading right-click offers link and text copy', async ({ page }) => {
-    await page.locator('.toc [data-heading-id]').first().click({ button: 'right' });
+    await page.locator('.minimap').hover(); // reveal the hover outline
+    await page.locator('.minimap-panel [data-heading-id]').first().click({ button: 'right' });
     const menu = page.getByRole('menu');
     await expect(menu).toBeVisible();
     await expect(menu.getByRole('menuitem', { name: 'Copy link to section' })).toBeVisible();

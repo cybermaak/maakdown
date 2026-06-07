@@ -3,7 +3,7 @@
   import DesignSystemGallery from './design-system/DesignSystemGallery.svelte';
   import DocumentView from './components/DocumentView.svelte';
   import TabStrip from './components/TabStrip.svelte';
-  import TocSidebar from './components/TocSidebar.svelte';
+  import Minimap from './components/Minimap.svelte';
   import WorkspaceEmptyState from './components/WorkspaceEmptyState.svelte';
   import WorkspaceToolbar from './components/WorkspaceToolbar.svelte';
   import SearchBar from './components/SearchBar.svelte';
@@ -303,11 +303,8 @@
   }
 
   function toggleOutline() {
-    if (narrowWindow) {
-      mobileOutlineOpen = !mobileOutlineOpen;
-      mobileMetadataOpen = false;
-      return;
-    }
+    // The outline is now an edge minimap overlaid on the reader, so it toggles
+    // the same way at every width.
     updateConfig({ ...$appConfig, outlineVisible: !$appConfig.outlineVisible });
   }
 
@@ -475,7 +472,7 @@
     event.preventDefault();
 
     const tabEl = target.closest<HTMLElement>('.document-tab');
-    const headingEl = target.closest<HTMLElement>('.toc [data-heading-id]');
+    const headingEl = target.closest<HTMLElement>('.minimap [data-heading-id]');
     let items: ContextMenuItem[] | null = null;
 
     if (tabEl?.dataset.tabId) {
@@ -612,16 +609,6 @@
     class:frameless={desktopRuntime}
     oncontextmenu={handleContextMenu}
   >
-    {#if $appConfig.outlineVisible}<aside class="sidebar" aria-label="Table of contents">
-      <div class="sidebar-brand"><span class="brand-mark" aria-hidden="true">M</span><strong>Maakdown</strong></div>
-      {#if activeTab?.model}
-        <TocSidebar headings={activeTab.model.headings} {activeHeadingId} onNavigate={navigate} />
-      {:else}
-        <p class="muted">No document outline</p>
-      {/if}
-      <button class="panel-resizer outline" aria-label="Resize outline" onpointerdown={(event) => resizePanel('outline', event)}></button>
-    </aside>{/if}
-
     <section class="workspace-main">
       <WorkspaceToolbar
         title={activeTab?.title ?? ''}
@@ -680,6 +667,9 @@
         />
       {:else if activeTab?.model}
         <div class="reader-grid">
+          {#if $appConfig.outlineVisible}
+            <Minimap headings={activeTab.model.headings} {activeHeadingId} onNavigate={navigate} />
+          {/if}
           <DocumentView
             bind:this={documentView}
             model={activeTab.model}
