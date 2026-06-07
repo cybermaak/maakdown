@@ -269,6 +269,12 @@ See `docs/task-tracker.md`.
   commit all generated `frontend/wailsjs/` bindings (dropped the `**/*.ts`
   ignore) so they stay consistent and the frontend builds in CI without a
   Go/Wails toolchain.
+- 2026-06-07: Added a release artifact pipeline. `scripts/package-artifact.sh`
+  packages `build/bin/` into `dist/` per platform (macOS zip, Windows zip, Linux
+  tar.gz); the tag-triggered `Release` workflow builds all three OSes, packages
+  them, and publishes them to a GitHub Release (artifacts unsigned; signing stays
+  a separate credentialed step). `release-smoke.yml` remains the manual
+  build-verify-only path. Documented in `docs/release-checklist.md` (P7.8).
   the missing reusable Svelte `Callout`, `CodeBlockChrome`, `Popover`, `Tab`,
   `TocItem`, `Toolbar`, and `Wikilink` primitives; migrated live toolbar, tab,
   outline, and code-block chrome to the shared contracts; expanded the

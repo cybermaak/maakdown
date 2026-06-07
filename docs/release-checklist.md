@@ -3,6 +3,28 @@
 This checklist is the P7 release gate. Signing commands require credentials that
 remain outside the repository.
 
+## Build and artifact pipeline
+
+- **Build (per platform):** `wails build` produces the native app under
+  `build/bin/`. Cross-platform builds run in CI (one runner per OS); a single
+  machine cannot build all three.
+- **Package:** `scripts/package-artifact.sh` zips/tars `build/bin/` into `dist/`
+  (`Maakdown-<version>-macos-<arch>.zip`, `…-windows-….zip`,
+  `…-linux-….tar.gz`). Used locally and by CI.
+- **Publish (CI):** the `Release` workflow (`.github/workflows/release.yml`)
+  triggers on a `v*` tag, builds macOS/Windows/Linux, packages each, and
+  attaches the archives to a GitHub Release. `workflow_dispatch` does a dry run
+  (workflow artifacts only, no Release).
+- **Verify only (CI):** the `Cross-platform release smoke` workflow
+  (`workflow_dispatch`) builds and uploads short-lived artifacts without
+  publishing a Release.
+- Release artifacts are **unsigned**; signing/notarization is the credentialed
+  step below and is applied by the release operator.
+
+To cut a release: tag the commit (`git tag vX.Y.Z && git push origin vX.Y.Z`)
+and the workflow publishes the GitHub Release. Validate workflow changes on the
+`ci/sandbox` ref before relying on them.
+
 ## Preflight
 
 - Confirm `docs/task-tracker.md` has no release blockers.

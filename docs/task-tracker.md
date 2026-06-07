@@ -102,6 +102,7 @@
 | P7.5 | Done | Cross-platform packaging verification | P7.3/P7.4/P7.7 | unsigned builds validated on Windows/macOS/Linux | sandbox run 27083374632 built, validated, and uploaded all three native artifacts |
 | P7.6 | Done | UI-driven UAT regression suite | P8-P11 | optimized spec-level Playwright suite covers UAT-01 through UAT-07 with deterministic mocked native boundaries | production-bundled UAT-mode `npm run uat` (14 tests); `docs/uat-traceability.md` |
 | P7.7 | Done | Create GitHub repository and activate hosted verification | User/Release | repository exists, Actions are enabled, and manually dispatched `Cross-platform release smoke` passes | first `ci/sandbox` attempt passed on Linux/macOS/Windows: Actions run 27083374632; no signing secrets committed |
+| P7.8 | Done | Publish release artifacts to GitHub Releases | Release | tag-triggered `Release` workflow builds macOS/Windows/Linux, packages via `scripts/package-artifact.sh`, and attaches archives to a GitHub Release | workflow YAML validated; packaging script verified locally (macOS zip); first real publish pending a version tag on `ci/sandbox` |
 
 ## P8 - Design System Foundation
 
