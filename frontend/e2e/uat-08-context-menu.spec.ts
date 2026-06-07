@@ -39,10 +39,8 @@ test.describe('UAT-08 Custom context menus', () => {
     await expect(menu.getByRole('menuitem', { name: 'Copy heading text' })).toBeVisible();
   });
 
-  test('toolbar right-click offers a consistent command menu', async ({ page }) => {
-    await page.locator('.workspace-toolbar').click({ button: 'right' });
-    const menu = page.getByRole('menu');
-    await expect(menu).toBeVisible();
-    await expect(menu.getByRole('menuitem', { name: 'Command palette' })).toBeVisible();
+  test('title bar suppresses the native menu without showing a redundant custom menu', async ({ page }) => {
+    await page.locator('.workspace-toolbar').click({ button: 'right', position: { x: 4, y: 4 } });
+    await expect(page.getByRole('menu')).toHaveCount(0);
   });
 });

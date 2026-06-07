@@ -446,24 +446,17 @@
     return items;
   }
 
-  function commandMenuItems(): ContextMenuItem[] {
-    return [
-      { label: 'Open document…', onSelect: () => void handleOpen() },
-      { label: 'Find in document', disabled: !activeTab?.model, onSelect: showSearch },
-      { label: 'Command palette', onSelect: openPalette },
-      { separator: true },
-      { label: `Theme: ${$appConfig.theme}`, onSelect: cycleTheme }
-    ];
-  }
-
   function handleContextMenu(event: MouseEvent) {
     const target = event.target as HTMLElement;
     if (target.closest('input, textarea')) return; // keep native editing menu in fields
+    // Suppress the native webview menu everywhere; only surfaces with
+    // non-redundant actions get a custom menu (the title bar and metadata panel
+    // are intentionally excluded — their actions live on visible controls).
     event.preventDefault();
 
     const tabEl = target.closest<HTMLElement>('.document-tab');
     const headingEl = target.closest<HTMLElement>('.toc [data-heading-id]');
-    let items: ContextMenuItem[];
+    let items: ContextMenuItem[] | null = null;
 
     if (tabEl?.dataset.tabId) {
       const id = tabEl.dataset.tabId;
@@ -483,11 +476,9 @@
       ];
     } else if (target.closest('.document-scroll')) {
       items = readerMenuItems(target);
-    } else {
-      items = commandMenuItems();
     }
 
-    openContextMenu(items, event.clientX, event.clientY);
+    if (items) openContextMenu(items, event.clientX, event.clientY);
   }
 
   function handleKeydown(event: KeyboardEvent) {
