@@ -14,9 +14,11 @@
     currentSearchBlockId?: string | null;
     onCopy?: (label: string, value: string) => void;
     onInspectDiagram?: (title: string, html: string) => void;
+    forceEnhance?: boolean;
+    onEnhanced?: (blockId: string) => void;
   }
 
-  let { block, onMeasure, searchQuery = '', caseSensitive = false, currentSearchBlockId = null, onCopy, onInspectDiagram }: Props = $props();
+  let { block, onMeasure, searchQuery = '', caseSensitive = false, currentSearchBlockId = null, onCopy, onInspectDiagram, forceEnhance = false, onEnhanced }: Props = $props();
   let element = $state<HTMLElement | undefined>();
   let html = $state('');
   let observer: IntersectionObserver | undefined;
@@ -35,6 +37,11 @@
     }
     observer?.disconnect();
     if (!element || block.enhancement === 'none') {
+      observeSize();
+      return;
+    }
+    if (forceEnhance) {
+      void enhance();
       observeSize();
       return;
     }
@@ -65,6 +72,7 @@
     if (run === enhancementRun) {
       html = next;
       enhancedKey = `${block.id}:${$appConfig.highlighterEngine}:${$appConfig.theme}`;
+      onEnhanced?.(block.id);
     }
   }
 
@@ -84,6 +92,11 @@
 
   function markSearchResults() {
     if (!element) return;
+    element.querySelectorAll<HTMLInputElement>('input[type="checkbox"]').forEach((checkbox) => {
+      if (!checkbox.hasAttribute('aria-label')) {
+        checkbox.setAttribute('aria-label', checkbox.checked ? 'Completed task' : 'Incomplete task');
+      }
+    });
     element.querySelectorAll('mark.search-mark').forEach((mark) => mark.replaceWith(document.createTextNode(mark.textContent ?? '')));
     if (!searchQuery) return;
     const escaped = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

@@ -89,6 +89,21 @@ a {
   background: var(--panel-bg);
 }
 
+.tab-list {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-self: stretch;
+  align-items: end;
+}
+
+.tab-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+}
+
 .document-tab {
   display: flex;
   align-items: center;
@@ -118,7 +133,7 @@ a {
   cursor: pointer;
 }
 
-.document-tab.active .tab-main { color: var(--text); }
+.document-tab.active.tab-main { color: var(--text); }
 .tab-main span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tab-main i { width: 6px; height: 6px; flex: 0 0 6px; border-radius: 50%; background: var(--warning); }
 
@@ -195,6 +210,7 @@ a {
 .palette-scrim { position: fixed; inset: 0; z-index: 100; display: grid; place-items: start center; padding-top: 12vh; background: var(--scrim); }
 .command-palette { width: min(620px, calc(100vw - 32px)); border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--panel-bg); box-shadow: var(--shadow-pop); overflow: hidden; }
 .command-palette > input { box-sizing: border-box; width: 100%; border: 0; border-bottom: 1px solid var(--border); outline: 0; padding: 16px; color: var(--text); background: transparent; font-size: 16px; }
+.command-palette button.active { background: var(--control-bg-hover); }
 .palette-results { max-height: 52vh; overflow: auto; padding: 6px; }
 .palette-results button { display: flex; width: 100%; align-items: center; justify-content: space-between; border: 0; border-radius: var(--radius-sm); padding: 10px; color: var(--text); background: transparent; text-align: left; cursor: pointer; }
 .palette-results button:hover, .palette-results button:focus-visible { background: var(--active); }
@@ -460,7 +476,7 @@ a {
   color: var(--link);
   font-weight: 600;
 }
-.print-status { position: absolute; z-index: 90; left: 50%; bottom: 24px; transform: translateX(-50%); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 10px 14px; background: var(--panel-bg); box-shadow: var(--shadow-pop); }
+.print-status { position: absolute; z-index: 90; left: 50%; bottom: 24px; transform: translateX(-50%); display: flex; align-items: center; gap: 12px; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 10px 14px; background: var(--panel-bg); box-shadow: var(--shadow-pop); }
 
 .metadata-panel h2 {
   margin-top: 0;

@@ -99,7 +99,7 @@ export async function expectReaderReady(page: Page): Promise<void> {
  * Auto-applied guard: any unexpected console error or page error fails the test.
  * Filters a small set of environment noise (e.g. favicon, font 404s in headless).
  */
-const benignError = /favicon|net::ERR_|Failed to load resource.*404/i;
+const benignError = /favicon\.ico/i;
 
 export const test = base.extend<{ errorGuard: void }>({
   errorGuard: [

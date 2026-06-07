@@ -6,7 +6,7 @@
   import { anchorIdFromHref, getActiveHeading, isInternalHref, resolveAnchor } from '../core/navigation/navigation';
   import { BlockVirtualizer, type VirtualRange } from '../core/virtualizer/virtualizer';
   import { shouldResolveAsset } from '../core/assets/assets';
-  import { openExternal, resolveAsset } from '../ipc';
+  import { openExternal, resolveAsset } from '@ipc';
   import { appConfig } from '../stores/configStore';
   import DiagramDialog from './DiagramDialog.svelte';
 
@@ -30,6 +30,8 @@
   let printRange: VirtualRange | null = null;
   let announcement = $state('');
   let diagram = $state<{ title: string; html: string } | null>(null);
+  let printMode = $state(false);
+  let enhancedForPrint = new Set<string>();
 
   $effect(() => {
     model;
@@ -141,16 +143,45 @@
     document.getElementById(blockId)?.scrollIntoView({ block: 'center' });
   }
 
-  export async function preparePrint() {
-    if (!surface || printRange) return;
+  export function scrollToOffset(scrollTop: number) {
+    if (!surface) return;
+    surface.scrollTop = scrollTop;
+    updateRange();
+  }
+
+  export async function preparePrint(signal: AbortSignal, onProgress: (value: number) => void): Promise<boolean> {
+    if (!surface || printRange) return false;
     printRange = range;
+    enhancedForPrint = new Set();
+    printMode = true;
     range = { start: 0, end: model.blocks.length, top: 0, bottom: 0 };
     await tick();
+    const enhancedBlocks = model.blocks.filter((block) => block.enhancement !== 'none');
+    const total = Math.max(1, enhancedBlocks.length);
+    const started = performance.now();
+    while (enhancedForPrint.size < enhancedBlocks.length && performance.now() - started < 10_000) {
+      if (signal.aborted) return false;
+      onProgress(Math.min(90, Math.round((enhancedForPrint.size / total) * 90)));
+      await new Promise<void>((resolve) => window.setTimeout(resolve, 40));
+    }
+    if (signal.aborted) return false;
+    const images = Array.from(surface.querySelectorAll<HTMLImageElement>('img'));
+    await Promise.all(images.map(async (image) => {
+      if (image.complete) return;
+      await Promise.race([
+        image.decode().catch(() => undefined),
+        new Promise<void>((resolve) => window.setTimeout(resolve, 2_000))
+      ]);
+    }));
+    if (signal.aborted) return false;
+    onProgress(100);
     await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    return true;
   }
 
   export function restoreAfterPrint() {
     if (!printRange) return;
+    printMode = false;
     range = printRange;
     printRange = null;
     updateRange();
@@ -255,6 +286,8 @@
       currentSearchBlockId={searchBlockId}
       onCopy={copyValue}
       onInspectDiagram={(title, html) => (diagram = { title, html })}
+      forceEnhance={printMode}
+      onEnhanced={(blockId) => enhancedForPrint.add(blockId)}
     />
   {/each}
   <div class="virtual-spacer" style={`height: ${range.bottom}px`} aria-hidden="true"></div>

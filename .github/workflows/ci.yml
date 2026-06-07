@@ -32,7 +32,9 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Run reader benchmark
         working-directory: frontend
-        run: npm run benchmark
+        run: |
+          npm run benchmark
+          npm run benchmark:workspace
       - name: Run visual smoke
         working-directory: frontend
         run: npm run visual-smoke

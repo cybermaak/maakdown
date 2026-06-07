@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { CaseSensitive, ChevronDown, ChevronUp, X } from '@lucide/svelte';
   import { IconButton } from '../design-system';
 
@@ -15,10 +16,13 @@
   }
 
   let { query, index, total, caseSensitive, onQuery, onCase, onPrevious, onNext, onClose }: Props = $props();
+  let input = $state<HTMLInputElement | undefined>();
+  onMount(() => input?.focus());
 </script>
 
 <div class="search-bar" role="search">
   <input
+    bind:this={input}
     aria-label="Find in document"
     placeholder="Find in document"
     value={query}

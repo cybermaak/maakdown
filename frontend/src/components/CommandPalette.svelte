@@ -15,6 +15,8 @@
   let { tabs, recents, headings, onCommand, onOpenPath, onHeading, onClose }: Props = $props();
   let query = $state('');
   let input = $state<HTMLInputElement | undefined>();
+  let palette = $state<HTMLElement | undefined>();
+  let activeIndex = $state(0);
   const commands: CommandItem[] = [
     { id: 'open', label: 'Open document', hint: 'Cmd O' },
     { id: 'find', label: 'Find in document', hint: 'Cmd F' },
@@ -26,6 +28,17 @@
   let visibleCommands = $derived(commands.filter((item) => item.label.toLowerCase().includes(query.toLowerCase())));
   let visibleTabs = $derived(tabs.filter((tab) => tab.title.toLowerCase().includes(query.toLowerCase())));
   let visibleHeadings = $derived(headings.filter((heading) => heading.text.toLowerCase().includes(query.toLowerCase())).slice(0, 8));
+  let items = $derived([
+    ...visibleCommands.map((item) => ({ label: item.label, hint: item.hint, run: () => onCommand(item.id) })),
+    ...visibleTabs.map((tab) => ({ label: `Tab: ${tab.title}`, run: () => onOpenPath(tab.path) })),
+    ...visibleHeadings.map((heading) => ({ label: `Heading: ${heading.text}`, run: () => onHeading(heading.id) })),
+    ...(!query ? recents.slice(0, 5).map((recent) => ({ label: `Recent: ${recent.displayName}`, run: () => onOpenPath(recent.path) })) : [])
+  ]);
+
+  $effect(() => {
+    query;
+    activeIndex = 0;
+  });
 
   onMount(() => input?.focus());
 
@@ -33,28 +46,46 @@
     if (event.key === 'Escape') {
       event.preventDefault();
       onClose();
+      return;
+    }
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      activeIndex = items.length ? (activeIndex + (event.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length : 0;
+      return;
+    }
+    if (event.key === 'Enter' && items[activeIndex]) {
+      event.preventDefault();
+      items[activeIndex].run();
+      onClose();
+      return;
+    }
+    if (event.key === 'Tab' && palette) {
+      const focusable = Array.from(palette.querySelectorAll<HTMLElement>('input, button:not([disabled])'));
+      const first = focusable[0];
+      const last = focusable.at(-1);
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+      }
     }
   }
 </script>
 
 <div class="palette-scrim" role="presentation" onclick={(event) => { if (event.target === event.currentTarget) onClose(); }} onkeydown={handleKeydown}>
-  <div class="command-palette" role="dialog" aria-modal="true" aria-label="Command palette">
+  <div bind:this={palette} class="command-palette" role="dialog" aria-modal="true" aria-label="Command palette">
     <input bind:this={input} aria-label="Search commands, tabs, and headings" placeholder="Search commands, tabs, and headings" bind:value={query} />
     <div class="palette-results">
-      {#each visibleCommands as command}
-        <button onclick={() => { onCommand(command.id); onClose(); }}><span>{command.label}</span><kbd>{command.hint ?? ''}</kbd></button>
+      {#each items as item, index}
+        <button
+          class:active={index === activeIndex}
+          aria-current={index === activeIndex ? 'true' : undefined}
+          onmouseenter={() => (activeIndex = index)}
+          onclick={() => { item.run(); onClose(); }}
+        ><span>{item.label}</span><kbd>{'hint' in item ? item.hint ?? '' : ''}</kbd></button>
       {/each}
-      {#each visibleTabs as tab}
-        <button onclick={() => { onOpenPath(tab.path); onClose(); }}><span>Tab: {tab.title}</span></button>
-      {/each}
-      {#each visibleHeadings as heading}
-        <button onclick={() => { onHeading(heading.id); onClose(); }}><span>Heading: {heading.text}</span></button>
-      {/each}
-      {#if !query}
-        {#each recents.slice(0, 5) as recent}
-          <button onclick={() => { onOpenPath(recent.path); onClose(); }}><span>Recent: {recent.displayName}</span></button>
-        {/each}
-      {/if}
     </div>
   </div>
 </div>

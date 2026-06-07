@@ -36,6 +36,8 @@ interface MockState {
   pickerQueue: string[];
   externalLinks: string[];
   printCalls: number;
+  printSnapshots: Array<{ blocks: number; enhanced: number }>;
+  clipboardText: string;
   windowTitle: string;
   savedConfigs: AppConfig[];
   savedSessions: PersistedSession[];
@@ -110,6 +112,8 @@ function buildState(): MockState {
     pickerQueue: seeded.pickerQueue ?? [],
     externalLinks: [],
     printCalls: 0,
+    printSnapshots: [],
+    clipboardText: '',
     windowTitle: '',
     savedConfigs: [],
     savedSessions: [],
@@ -119,6 +123,15 @@ function buildState(): MockState {
 }
 
 const state = buildState();
+
+Object.defineProperty(navigator, 'clipboard', {
+  configurable: true,
+  value: {
+    writeText: async (value: string) => {
+      state.clipboardText = value;
+    }
+  }
+});
 
 (window as unknown as { __uat: UatController }).__uat = {
   state,
@@ -224,6 +237,10 @@ export async function quitApp(): Promise<void> {
 
 export async function printWindow(): Promise<void> {
   state.printCalls += 1;
+  state.printSnapshots.push({
+    blocks: document.querySelectorAll('.doc-block').length,
+    enhanced: document.querySelectorAll('.doc-block [data-highlight-engine], .doc-block-mermaid svg').length
+  });
 }
 
 export function onFileChanged(callback: (path: string) => void): () => void {

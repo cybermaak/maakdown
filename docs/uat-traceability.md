@@ -10,7 +10,7 @@ user-visible outcome and the verification that covers it.
   `docs/task-tracker.md`. No skipped or expected-failure UAT test is committed;
   the scenario becomes executable when the tracker task is `Done`.
 
-## Executable coverage (Done phases P0–P9)
+## Executable coverage
 
 | Requirement | Product outcome | Verification | Status |
 |---|---|---|---|
@@ -32,23 +32,13 @@ user-visible outcome and the verification that covers it.
 | Sessions and recents (P9.4–P9.6) | Tab order, active tab, positions, settings, and recents restore on restart | UAT-04 | Executable |
 | Parser security schema (P1.3) | Malicious HTML fixtures render inert | `src/core/pipeline/parseDocument.test.ts` (unit) + UAT-01 | Executable |
 | Bounded large-document DOM (P5) | Mounted block count stays bounded | `scripts/benchmark-reader.mjs` (performance harness) | Executable |
+| Full-document search (P10.1–P10.3) | Offscreen matches are counted, materialized, marked, and case-filtered | UAT-03 | Executable |
+| Navigation and command spine (P10.4–P10.5) | History and palette commands are keyboard operable with focus restoration | history unit tests, UAT-05 | Executable |
+| Copy and Mermaid tools (P10.6–P10.7) | Copy state is announced; diagrams open and close through an accessible dialog | UAT-05 | Executable |
+| Complete-document print (P10.9–P10.10) | Print sees the expanded document; cancellation skips print; cleanup restores bounds | UAT-06 | Executable |
+| Multi-tab performance (P10.14) | Several large tabs retain one bounded active reader with thresholded activation | `scripts/benchmark-workspace.mjs` | Executable |
+| Reader appearance and focus mode (P11.4–P11.5) | Appearance updates without reparse and focus mode remains keyboard reachable | UAT-05 | Executable |
+| Accessibility release gate (P11.9–P11.10) | Keyboard tabs/modals, labels, announcements, and reduced motion pass with no serious/critical axe findings | UAT-07 | Executable |
 
-## Planned coverage (Todo phases P10–P11)
-
-| Requirement | Product outcome | Verification | Status |
-|---|---|---|---|
-| Full-document search (P10.1–P10.3) | Offscreen matches counted, materialized, wrapped, and marked | UAT-03 | Planned |
-| Navigation history (P10.4) | Per-tab back/forward restores path and anchor | UAT-05 | Planned |
-| Command palette (P10.5) | Palette groups commands, tabs, recents, and headings | UAT-05 | Planned |
-| Copy tools (P10.6) | Code/heading copy announce success and failure | UAT-05 | Planned |
-| Mermaid inspection dialog (P10.7) | Captioned diagrams open with zoom/pan/reset and focus restore | UAT-05 | Planned |
-| Reload status (P10.8) | Toolbar/tab expose watching, changed, and reload states | UAT-04 (extension) | Planned |
-| Complete-document print (P10.9–P10.10) | Print sees the whole document, then cleanup restores bounds and position | UAT-06 | Planned |
-| Editorial shell and panels (P11.1–P11.3) | Outline, two-row chrome, resizable/collapsible panels, narrow drawers | UAT-05 | Planned |
-| Reader appearance controls (P11.4) | Font, size, line height, measure update without reparse and persist | UAT-05 | Planned |
-| Focus mode (P11.5) | Secondary chrome hides; find and explicit exit stay reachable | UAT-05 | Planned |
-| Accessibility release gate (P11.9–P11.10) | Keyboard, landmarks, modal focus, announcements, reduced motion | UAT-07 | Planned |
-
-When a Planned row's tracker task becomes `Done`, add its UAT scenario (UAT-03,
-UAT-05, UAT-06, or UAT-07) as an executable spec under `frontend/e2e/` and move
-the row to the Executable table before treating the phase as release-ready.
+Cross-platform acceptance remains tracked by P7.7/P11.11 and begins after the
+GitHub repository exists and the hosted workflow has produced its first matrix.

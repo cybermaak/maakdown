@@ -38,18 +38,16 @@ function fixtureServer(): Plugin {
 export default defineConfig(({ mode }) => ({
   plugins: [svelte(), fixtureServer()],
   resolve: {
-    alias:
-      mode === 'uat'
-        ? [
-            // UAT mode swaps the Wails IPC boundary for a deterministic mock.
-            // Matches both `./ipc` (App.svelte) and `../ipc` (DocumentView.svelte).
-            { find: /^\.\.?\/ipc$/, replacement: resolve(__dirname, 'src/ipc/uat-mock.ts') }
-          ]
-        : []
+    alias: {
+      '@ipc': resolve(__dirname, mode === 'uat' ? 'src/ipc/uat-mock.ts' : 'src/ipc/index.ts')
+    }
   },
+  cacheDir: mode === 'uat'
+    ? `node_modules/.vite-uat${process.env.VITE_CACHE_SUFFIX ? `-${process.env.VITE_CACHE_SUFFIX}` : ''}`
+    : 'node_modules/.vite',
   server: {
     host: '127.0.0.1',
-    port: 5173,
+    port: mode === 'uat' ? 5191 : 5173,
     strictPort: true
   },
   build: {

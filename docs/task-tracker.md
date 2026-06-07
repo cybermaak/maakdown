@@ -15,11 +15,11 @@
 | P4 | Done | Rich enhancements | code, math, Mermaid, and theme propagation work |
 | P5 | Done | Virtualized large docs | 10k-line fixture has bounded DOM and working anchors |
 | P6 | Done | Notes support | wikilinks navigate within configured vault |
-| P7 | In Progress | Release hardening | local release tooling is complete; external cross-platform/signing verification remains |
+| P7 | In Progress | Release hardening | local release tooling is complete; GitHub-hosted cross-platform/signing verification remains |
 | P8 | Done | Design system foundation | approved design language, themes, fonts, icons, primitives, and visual harness land |
 | P9 | Done | Desktop workspace | tabs, sessions, recents, desktop open flows, and native commands work |
-| P10 | In Progress | Reading productivity | search, history, reader tools, and complete-document printing work |
-| P11 | In Progress | Editorial experience | approved mock composition, appearance controls, responsive panels, and accessibility pass |
+| P10 | Done | Reading productivity | search, history, reader tools, and complete-document printing work |
+| P11 | In Progress | Editorial experience | local editorial and accessibility work is complete; hosted acceptance remains |
 
 ## P0 - Scaffold
 
@@ -98,8 +98,9 @@
 | P7.2 | Done | Implement perf harness | P5 | target metrics recorded locally and in CI | `npm run benchmark`, `docs/performance-baseline.md` |
 | P7.3 | Done | Add macOS signing/notarization runbook | P0 | non-secret signing docs and script exist | doc/script review; credentials remain external |
 | P7.4 | Done | Add Windows signing runbook | P0 | non-secret signing docs and script exist | doc/script review; credentials remain external |
-| P7.5 | Blocked | Cross-platform packaging verification | P7.3/P7.4 | builds validated on Windows/macOS/Linux | workflow implemented; requires external Windows/Linux runners and user signing credentials |
-| P7.6 | Done | UI-driven UAT regression suite | P8/P9 | Playwright UAT mode with mocked Wails boundary; UAT-01/02/04 executable; UAT-03/05/06/07 in traceability matrix; CI job and release gate | `npm run uat` (8 passing, ~5 s); `docs/uat-traceability.md` |
+| P7.5 | Blocked | Cross-platform packaging verification | P7.3/P7.4/P7.7 | builds validated on Windows/macOS/Linux | workflow implemented; requires GitHub-hosted runners and user signing credentials |
+| P7.6 | Done | UI-driven UAT regression suite | P8-P11 | optimized spec-level Playwright suite covers UAT-01 through UAT-07 with deterministic mocked native boundaries | `npm run uat` (14 passing, 11.6 s); `docs/uat-traceability.md` |
+| P7.7 | Todo | Create GitHub repository and activate hosted verification | User/Release | repository exists, Actions are enabled, `CI` and `Cross-platform release smoke` pass on `main`, and required checks are configured | first hosted Linux/macOS/Windows run links recorded in `DEV_CONTEXT.md`; no signing secrets committed |
 
 ## P8 - Design System Foundation
 
@@ -142,17 +143,17 @@
 | P10.1 | Done | Add block plain-text search projection | Frontend core | P9.1 | every searchable block exposes stable text without DOM scraping | unit tests across Markdown fixtures |
 | P10.2 | Done | Implement current-document search engine and state | Frontend core | P10.1 | query, case, whole-word, truthful full-model counts, ordering, and wrapping work per tab | search unit tests including virtualized count accuracy |
 | P10.3 | Done | Integrate search with virtualized navigation and marking | Frontend | P5/P10.2 | next/previous lands on offscreen results and marks only mounted content | Playwright 10k-line search tests |
-| P10.4 | In Progress | Implement per-tab file and anchor navigation history | Frontend core | P9.1/P2 | back/forward restores path, anchor/block, and relative offset | unit and Playwright navigation tests |
-| P10.5 | In Progress | Build command-palette-first command spine | Frontend | P9.8/P10.0 | thin palette ships first for commands/tabs/recents/headings, then adds settings and history with approved keyboard interaction | command parity, focus trap/restoration, Playwright and visual tests |
+| P10.4 | Done | Implement per-tab file and anchor navigation history | Frontend core | P9.1/P2 | back/forward restores path, anchor/block, and relative offset | history unit tests and UAT workspace/navigation coverage |
+| P10.5 | Done | Build command-palette-first command spine | Frontend | P9.8/P10.0 | thin palette ships first for commands/tabs/recents/headings, then adds settings and history with approved keyboard interaction | keyboard selection, focus trap/restoration, and UAT-05 |
 | P10.6 | Done | Add code-copy and heading-link copy tools | Frontend | P4/P8/P9.8 | code chrome shows language/copy state and copy actions announce success/failure | clipboard mocks and Playwright tests |
 | P10.7 | Done | Add zoomable Mermaid inspection dialog | Frontend | P4.4/P8.8 | captioned diagrams open with zoom, pan, reset, close, and focus restoration | component, accessibility, and visual tests |
 | P10.8 | Done | Add manual reload and external-change status | Full stack | P9.3 | toolbar/tab states expose watching, changed, reload progress, and recoverable errors | watcher integration tests |
-| P10.9 | In Progress | Implement guarded complete-document print preparation | Frontend | P5/P4 | progress/cancel flow renders all blocks and printable enhancements, then guaranteed cleanup restores the bounded reader | Playwright completion, cancellation, error, and memory tests |
+| P10.9 | Done | Implement guarded complete-document print preparation | Frontend | P5/P4 | progress/cancel flow renders all blocks and printable enhancements, then guaranteed cleanup restores the bounded reader | UAT-06 completion/cancellation and bounded cleanup |
 | P10.10 | Done | Invoke native print and system PDF flow | Backend | P10.9 | print command opens platform dialog and restores bounded reader afterward | macOS/Windows/Linux smoke tests |
 | P10.11 | Done | Add shared formatting and locale layer | Frontend core | P10.0 | metadata, dates, sizes, counts, and durations use one tested formatter with no raw runtime strings | fixed-locale/time-zone unit tests and metadata screenshots |
 | P10.12 | Done | Define reader error taxonomy and recovery presentations | Full stack | P9/P10.0 | missing, permission, oversized, unsupported, parse, watcher, asset, and unresolved-link states have typed messages and actions | unit fixtures plus Playwright recovery scenarios |
 | P10.13 | Done | Add unified Settings surface through the palette | Frontend | P10.5/P9.4 | theme, metadata, reader, panel, and dev/evaluation settings have one persistent home; Shiki remains dev-only | persistence, keyboard, and visual tests |
-| P10.14 | In Progress | Add standing multi-tab active-render benchmark | Frontend/CI | P9.11 | several large open tabs retain one mounted reader and bounded enhancement work after P10 changes | benchmark report and CI threshold |
+| P10.14 | Done | Add standing multi-tab active-render benchmark | Frontend/CI | P9.11 | several large open tabs retain one mounted reader and bounded enhancement work after P10 changes | `npm run benchmark:workspace`; CI thresholds for one reader, mounted blocks, and activation latency |
 | P10.15 | Done | Keep the accessibility baseline continuously green | Frontend/CI | P8/P9 | existing and new controls retain visible focus, names, semantics, reduced-motion behavior, and dialog/palette focus management before P11 async-announcement completion | automated accessibility checks plus manual keyboard smoke per P10 milestone |
 
 ## P11 - Editorial Experience
@@ -167,6 +168,6 @@
 | P11.6 | Done | Refine metadata status badges and tag chips | Frontend | P8/P11.1 | status values use semantic tones, tags wrap cleanly, and paths remain readable | fixture and narrow-panel visual tests |
 | P11.7 | Done | Refine document element presentation | Frontend | P8/P10.0/P11.1 | ink headings with hover anchors, capped prose plus wide diagrams/tables/code, tasks, callouts, footnotes, assets, and wikilinks match approved treatments in both themes | fixture visual regression |
 | P11.8 | Done | Finalize provisional brand mark usage | Design/Frontend | P8.1/P11.1 | square `M` mark is consistently applied and remains replaceable without layout changes | brand review and icon-size screenshots |
-| P11.9 | In Progress | Complete keyboard and semantic accessibility | Frontend | P10/P11.1-P11.7 | tabs, toolbars, search, palette, dialogs, drawers, and reader are keyboard/screen-reader operable | automated accessibility and manual keyboard pass |
-| P11.10 | In Progress | Add reduced-motion, high-contrast, and async announcements | Frontend | P8/P11.9 | system preferences are respected and loading/reload/search/copy/error state is announced | media-query and accessibility tests |
-| P11.11 | Blocked | Run cross-platform editorial acceptance pass | Release | P11.1-P11.10 | empty, tabs, search, focus, narrow, light, dark, diagram, and print workflows pass on supported platforms | signed-build visual and interaction checklist |
+| P11.9 | Done | Complete keyboard and semantic accessibility | Frontend | P10/P11.1-P11.7 | tabs, toolbars, search, palette, dialogs, drawers, and reader are keyboard/screen-reader operable | zero-warning Svelte check, axe serious/critical gate, and UAT keyboard paths |
+| P11.10 | Done | Add reduced-motion, high-contrast, and async announcements | Frontend | P8/P11.9 | system preferences are respected and loading/reload/search/copy/error state is announced | media-query coverage and UAT-07 |
+| P11.11 | Blocked | Run cross-platform editorial acceptance pass | Release | P11.1-P11.10/P7.7 | empty, tabs, search, focus, narrow, light, dark, diagram, and print workflows pass on supported platforms | hosted unsigned-build checklist first; signed-build checklist after credentials are supplied |

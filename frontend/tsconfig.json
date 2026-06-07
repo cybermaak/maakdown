@@ -12,6 +12,9 @@
     "strict": true,
     "target": "ES2022",
     "module": "ESNext",
+    "paths": {
+      "@ipc": ["./src/ipc/index.ts"]
+    },
     "types": ["svelte"]
   },
   "include": ["src/**/*.d.ts", "src/**/*.ts", "src/**/*.svelte"]

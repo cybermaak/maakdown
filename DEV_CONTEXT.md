@@ -8,10 +8,9 @@ The app is a viewer, not an editor. It renders CommonMark/GFM, code, KaTeX math,
 
 ## Current Phase
 
-**Phase:** P10 and P11 in progress; P7.5 remains externally blocked
-**Active focus:** complete cross-file navigation history, command-palette focus
-navigation, guarded print cancellation, multi-tab performance automation, and
-the final accessibility announcement pass.
+**Phase:** P10 complete; P11 locally complete; P7.5/P11.11 externally blocked
+**Active focus:** create the GitHub repository, enable Actions, and record the
+first hosted Linux/macOS/Windows verification matrix before signing acceptance.
 
 ## Major Files And Directories
 
@@ -48,7 +47,7 @@ the final accessibility announcement pass.
 - `build/darwin/`, `build/windows/`, `build/signing/`: signing and packaging templates/documentation; secrets excluded.
 - `.github/workflows/ci.yml`: frontend, Go, Wails, and reader benchmark checks.
 - `.github/workflows/release-smoke.yml`: manual unsigned packaging matrix for
-  macOS, Windows, and Linux.
+  macOS, Windows, and Linux; also runs on pushes to `main`.
 
 ## Decisions
 
@@ -92,6 +91,10 @@ the final accessibility announcement pass.
 - Compute search totals over the full document model while marking only mounted blocks.
 - Route human-readable dates, sizes, counts, and durations through one formatting layer.
 - Treat print expansion as cancellable, memory-sensitive work with guaranteed cleanup.
+- Represent navigation visits as per-tab path/anchor/offset entries and transfer
+  history to the destination tab when following cross-file links.
+- Use the explicit `@ipc` adapter alias so UAT swaps only the native boundary
+  without relying on fragile relative-import matching.
 - Keep tested multi-path watchers for all open documents; the supplemental
   review's active-only watcher staging suggestion is superseded by completed P9.
 
@@ -161,6 +164,12 @@ See `docs/task-tracker.md`.
   persisted highlighter selector, per-tab anchor history, copy tools, Mermaid
   inspection, reload status, reader error presentations, resizable panels,
   responsive drawers, and wider editorial code/table/diagram treatments.
+- 2026-06-06: Completed the remaining local P10/P11 work: cross-file
+  path/anchor/offset history, keyboard command-palette focus management,
+  cancellable full-document print enhancement, tab/dialog semantics, task
+  checkbox labels, async print announcements, and a standing multi-large-tab
+  benchmark. Expanded UAT-01 through UAT-07 to 14 headless tests covering
+  search, reader tools, print/cancel, and accessibility.
 
 ## Verification Commands
 
@@ -174,6 +183,7 @@ cd frontend && npm run check
 cd frontend && npm run build
 cd frontend && npm run test
 cd frontend && npm run benchmark
+cd frontend && npm run benchmark:workspace
 cd frontend && npm run uat
 go test ./...
 scripts/verify.sh
@@ -182,9 +192,9 @@ scripts/release-check.sh
 
 ## Current Verification Blockers
 
-- P7.5 requires Windows and Linux runners plus the user's external macOS and
-  Windows signing credentials. The workflow and scripts are implemented, but
-  those external checks cannot be completed in this local macOS session.
+- P7.7 requires the user to create/connect the GitHub repository. P7.5 and
+  P11.11 then require hosted Linux/macOS/Windows workflow runs; signed
+  acceptance additionally requires the user's external signing credentials.
 
 ## Verification Notes
 
@@ -194,6 +204,10 @@ scripts/release-check.sh
   the production frontend build, and all Go tests. Browser frame sampling
   confirmed a stable light code background through highlight.js enhancement
   and successful switching to Shiki.
+- The completed UAT suite passes 14 tests in 11.6 seconds on local headless
+  Chromium and includes an axe serious/critical accessibility gate.
+- The standing workspace benchmark keeps one reader and 22 blocks mounted
+  across three large tabs; measured activation latency was 24-37 ms.
 - `scripts/verify.sh` previously passed 15 frontend tests, Svelte checks, frontend build, Go
   tests, and a production Wails build.
 - The initial application chunk is approximately 213 kB. Parser, Mermaid, Shiki,

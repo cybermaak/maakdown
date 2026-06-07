@@ -12,14 +12,37 @@
   let { open, html, title, onClose }: Props = $props();
   let zoom = $state(1);
   let dialog = $state<HTMLElement | undefined>();
-  onMount(() => dialog?.focus());
+  let returnFocus: HTMLElement | null = null;
+  onMount(() => {
+    returnFocus = document.activeElement as HTMLElement | null;
+    dialog?.focus();
+    return () => returnFocus?.focus();
+  });
+
+  function handleKeydown(event: KeyboardEvent) {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      onClose();
+      queueMicrotask(() => returnFocus?.focus());
+      return;
+    }
+    if (event.key !== 'Tab' || !dialog) return;
+    const focusable = Array.from(dialog.querySelectorAll<HTMLElement>('button:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+    const first = focusable[0];
+    const last = focusable.at(-1);
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last?.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first?.focus();
+    }
+  }
 </script>
 
 {#if open}
   <div class="diagram-backdrop" role="presentation" onclick={onClose}>
-    <div bind:this={dialog} class="diagram-dialog" role="dialog" aria-modal="true" aria-label={title} tabindex="-1" onkeydown={(event) => {
-      if (event.key === 'Escape') onClose();
-    }}>
+    <div bind:this={dialog} class="diagram-dialog" role="dialog" aria-modal="true" aria-label={title} tabindex="-1" onkeydown={handleKeydown}>
       <header>
         <strong>{title}</strong>
         <div class="diagram-tools" role="toolbar" aria-label="Diagram zoom">

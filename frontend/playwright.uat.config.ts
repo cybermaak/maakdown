@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 const isCI = !!process.env.CI;
-const port = 5173;
+const port = 5191;
 const baseURL = `http://127.0.0.1:${port}`;
 
 /**
@@ -29,7 +29,7 @@ export default defineConfig({
   webServer: {
     command: 'npm run dev -- --mode uat',
     url: baseURL,
-    reuseExistingServer: !isCI,
+    reuseExistingServer: false,
     timeout: 120_000
   }
 });

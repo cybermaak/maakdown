@@ -40,11 +40,17 @@
     setWindowTitle,
     unwatchDocument,
     watchDocument
-  } from './ipc';
+  } from '@ipc';
   import { appConfig } from './stores/configStore';
   import { applyTheme } from './core/theme/theme';
   import { applyReaderTheme, resolveTheme } from './core/theme/readerTheme';
   import { searchDocument } from './core/search/search';
+  import {
+    moveHistory as moveNavigationHistory,
+    pushHistory,
+    replaceCurrent,
+    type NavigationEntry
+  } from './core/navigation/history';
 
   const query = new URLSearchParams(window.location.search);
   const showDesignSystem = import.meta.env.DEV && query.has('design-system');
@@ -65,9 +71,11 @@
   let narrowWindow = $state(false);
   let mobileOutlineOpen = $state(false);
   let mobileMetadataOpen = $state(false);
-  const histories = new Map<string, { entries: string[]; index: number }>();
-  let historyVersion = $state(0);
   const livePositions = new Map<string, ReaderPosition>();
+  let paletteReturnFocus: HTMLElement | null = null;
+  let printController: AbortController | null = null;
+  let printProgress = $state(0);
+  let announcement = $state('');
   let activeTab = $derived(workspace.tabs.find((tab) => tab.id === workspace.activeTabId) ?? null);
   let searchMatches = $derived(activeTab?.model ? searchDocument(activeTab.model, searchQuery, { caseSensitive: searchCaseSensitive }) : []);
 
@@ -128,6 +136,24 @@
         watching: false
       }));
     }
+  }
+
+  function currentLocation(tab = activeTab): NavigationEntry | null {
+    if (!tab) return null;
+    const position = livePositions.get(tab.id) ?? tab.position;
+    return { path: tab.path, scrollTop: position.scrollTop, anchorId: position.activeHeadingId };
+  }
+
+  async function openLinkedPath(path: string) {
+    const source = activeTab;
+    const sourceLocation = currentLocation(source);
+    const sourceHistory = source && sourceLocation ? pushHistory(source.history, sourceLocation) : null;
+    await openPath(path);
+    const target = workspace.tabs.find((tab) => canonicalIdentity(tab.path) === canonicalIdentity(path));
+    if (!target) return;
+    const destination = { path: target.path, scrollTop: 0, anchorId: null };
+    const history = pushHistory(sourceHistory ?? target.history, destination);
+    commit(updateTab(workspace, target.id, { history }));
   }
 
   async function handleOpen() {
@@ -194,31 +220,37 @@
 
   function navigate(anchorId: string) {
     if (activeTab) {
-      const history = histories.get(activeTab.id) ?? { entries: [], index: -1 };
-      if (history.entries[history.index] !== anchorId) {
-        history.entries = [...history.entries.slice(0, history.index + 1), anchorId];
-        history.index = history.entries.length - 1;
-        histories.set(activeTab.id, history);
-        historyVersion += 1;
-      }
+      const current = currentLocation(activeTab);
+      let history = current ? pushHistory(activeTab.history, current) : activeTab.history;
+      history = pushHistory(history, { path: activeTab.path, scrollTop: current?.scrollTop ?? 0, anchorId });
+      commit(updateTab(workspace, activeTab.id, { history }));
     }
     documentView?.scrollToAnchor(anchorId);
   }
 
-  function moveHistory(offset: number) {
+  async function moveHistory(offset: number) {
     if (!activeTab) return;
-    const history = histories.get(activeTab.id);
-    if (!history) return;
-    const next = history.index + offset;
-    if (next < 0 || next >= history.entries.length) return;
-    history.index = next;
-    historyVersion += 1;
-    documentView?.scrollToAnchor(history.entries[next]);
+    const current = currentLocation(activeTab);
+    const synced = current ? replaceCurrent(activeTab.history, current) : activeTab.history;
+    const history = moveNavigationHistory(synced, offset);
+    if (history.index === synced.index) return;
+    const entry = history.entries[history.index];
+    await openPath(entry.path, { scrollTop: entry.scrollTop, activeHeadingId: entry.anchorId });
+    const target = workspace.tabs.find((tab) => canonicalIdentity(tab.path) === canonicalIdentity(entry.path));
+    if (!target) return;
+    livePositions.set(target.id, { scrollTop: entry.scrollTop, activeHeadingId: entry.anchorId });
+    commit(updateTab(workspace, target.id, { history }));
+    queueMicrotask(() => entry.anchorId ? documentView?.scrollToAnchor(entry.anchorId) : documentView?.scrollToOffset(entry.scrollTop));
   }
 
   function updatePosition(scrollTop: number, headingId: string | null) {
     if (!activeTab) return;
     livePositions.set(activeTab.id, { scrollTop, activeHeadingId: headingId });
+    if (activeTab.history.index >= 0) {
+      commit(updateTab(workspace, activeTab.id, {
+        history: replaceCurrent(activeTab.history, { path: activeTab.path, scrollTop, anchorId: headingId })
+      }), false);
+    }
     activeHeadingId = headingId;
     schedulePersist();
   }
@@ -306,19 +338,38 @@
   async function printDocument() {
     if (!documentView || printing) return;
     printing = true;
+    printProgress = 0;
+    printController = new AbortController();
+    announcement = 'Preparing complete document for print';
     try {
-      await documentView.preparePrint();
+      const ready = await documentView.preparePrint(printController.signal, (value) => (printProgress = value));
+      if (!ready) {
+        announcement = 'Print preparation cancelled';
+        return;
+      }
       await printWindow();
+      announcement = 'Print dialog opened';
     } finally {
       documentView.restoreAfterPrint();
       printing = false;
+      printController = null;
+      printProgress = 0;
     }
   }
 
   let activeHistory = $derived.by(() => {
-    historyVersion;
-    return activeTab ? histories.get(activeTab.id) : undefined;
+    return activeTab?.history;
   });
+
+  function openPalette() {
+    paletteReturnFocus = document.activeElement as HTMLElement | null;
+    paletteOpen = true;
+  }
+
+  function closePalette() {
+    paletteOpen = false;
+    queueMicrotask(() => paletteReturnFocus?.focus());
+  }
 
   function handleCommand(command: string) {
     if (command === 'open') void handleOpen();
@@ -330,7 +381,7 @@
     if (command === 'find') showSearch();
     if (command === 'focus') toggleFocus();
     if (command === 'print') void printDocument();
-    if (command === 'palette') paletteOpen = true;
+    if (command === 'palette') openPalette();
     if (command === 'settings') settingsOpen = true;
     if (command === 'quit') void quitApp();
   }
@@ -377,8 +428,8 @@
     updateNarrow();
     narrowQuery.addEventListener('change', updateNarrow);
     window.addEventListener('keydown', handleKeydown);
-    const openPalette = () => (paletteOpen = true);
-    window.addEventListener('maakdown:palette', openPalette);
+    const openPaletteEvent = () => openPalette();
+    window.addEventListener('maakdown:palette', openPaletteEvent);
     window.addEventListener('dragenter', () => (dragActive = true));
     window.addEventListener('dragleave', () => (dragActive = false));
     window.addEventListener('drop', () => (dragActive = false));
@@ -405,7 +456,7 @@
       onFilesDropped((paths) => paths.filter((path) => /\.md(?:own|arkdown)?$/i.test(path)).forEach((path) => void openPath(path))),
       onAppCommand(handleCommand)
     ];
-    removeListeners.push(() => window.removeEventListener('maakdown:palette', openPalette));
+    removeListeners.push(() => window.removeEventListener('maakdown:palette', openPaletteEvent));
     removeListeners.push(() => narrowQuery.removeEventListener('change', updateNarrow));
   });
 
@@ -470,8 +521,8 @@
         onSettings={() => (settingsOpen = !settingsOpen)}
         onFocus={toggleFocus}
         onReload={() => activeTab && void reloadDocument(activeTab.path)}
-        onBack={() => moveHistory(-1)}
-        onForward={() => moveHistory(1)}
+        onBack={() => void moveHistory(-1)}
+        onForward={() => void moveHistory(1)}
         onOutline={toggleOutline}
       />
       <TabStrip tabs={workspace.tabs} activeTabId={workspace.activeTabId} onActivate={activateTab} onClose={handleClose} onAdd={handleOpen} />
@@ -497,9 +548,9 @@
           recents={workspace.recents}
           headings={activeTab?.model?.headings ?? []}
           onCommand={handleCommand}
-          onOpenPath={(path) => void openPath(path)}
+          onOpenPath={(path) => void openLinkedPath(path)}
           onHeading={navigate}
-          onClose={() => (paletteOpen = false)}
+          onClose={closePalette}
         />
       {/if}
 
@@ -513,7 +564,7 @@
             documentPath={activeTab.path}
             initialScrollTop={livePositions.get(activeTab.id)?.scrollTop ?? activeTab.position.scrollTop}
             onPositionChange={updatePosition}
-            onOpenDocument={openPath}
+            onOpenDocument={openLinkedPath}
             searchQuery={searchOpen ? searchQuery : ''}
             searchBlockId={searchMatches[searchIndex]?.blockId ?? null}
             searchCaseSensitive={searchCaseSensitive}
@@ -531,7 +582,13 @@
         <WorkspaceEmptyState recents={workspace.recents} onOpen={handleOpen} onOpenRecent={openPath} />
       {/if}
       {#if dragActive}<div class="drop-overlay">Drop Markdown files to open</div>{/if}
-      {#if printing}<div class="print-status" role="status">Preparing complete document for print...</div>{/if}
+      {#if printing}
+        <div class="print-status" role="status">
+          <span>Preparing complete document for print... {printProgress}%</span>
+          <button type="button" onclick={() => printController?.abort()}>Cancel</button>
+        </div>
+      {/if}
+      <p class="sr-only" aria-live="polite">{announcement}</p>
     </section>
   </main>
 {/if}

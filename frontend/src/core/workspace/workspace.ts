@@ -1,4 +1,5 @@
 import type { DocumentModel } from '../model/types';
+import { emptyHistory, type NavigationHistory } from '../navigation/history';
 
 export interface ReaderPosition {
   scrollTop: number;
@@ -17,6 +18,7 @@ export interface DocumentTab {
   watching: boolean;
   changed: boolean;
   reloading: boolean;
+  history: NavigationHistory;
 }
 
 export interface RecentDocument {
@@ -77,7 +79,8 @@ export function activateOrAddTab(state: WorkspaceState, path: string, position?:
     position: position ?? { scrollTop: 0, activeHeadingId: null },
     watching: false,
     changed: false,
-    reloading: false
+    reloading: false,
+    history: emptyHistory()
   };
   return { ...state, tabs: [...state.tabs, tab], activeTabId: tab.id };
 }

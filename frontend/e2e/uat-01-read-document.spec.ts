@@ -58,7 +58,7 @@ test.describe('UAT-01 Open and read a technical document', () => {
     // Mermaid diagram renders an SVG once scheduled
     const mermaid = page.locator('.doc-block-mermaid');
     await mermaid.scrollIntoViewIfNeeded();
-    await expect(mermaid.locator('svg')).toBeVisible({ timeout: 15_000 });
+    await expect(mermaid.locator('.mermaid-rendered svg')).toBeVisible({ timeout: 15_000 });
 
     await surface.evaluate((el) => (el.scrollTop = 0));
   });

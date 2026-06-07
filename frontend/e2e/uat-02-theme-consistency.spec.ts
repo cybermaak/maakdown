@@ -45,8 +45,9 @@ test.describe('UAT-02 Theme and reader consistency', () => {
     // Mermaid uses semantic reader colors (dark palette) rather than library defaults
     const mermaid = page.locator('.doc-block-mermaid');
     await mermaid.scrollIntoViewIfNeeded();
-    await expect(mermaid.locator('svg')).toBeVisible({ timeout: 15_000 });
-    const svgMarkup = (await mermaid.locator('svg').evaluate((el) => el.outerHTML)).toLowerCase();
+    const diagramSvg = mermaid.locator('.mermaid-rendered svg');
+    await expect(diagramSvg).toBeVisible({ timeout: 15_000 });
+    const svgMarkup = (await diagramSvg.evaluate((el) => el.outerHTML)).toLowerCase();
     expect(svgMarkup).toContain('26342d'); // dark mainBkg from the reader palette
     expect(svgMarkup).not.toContain('ececff'); // mermaid default node fill
 
