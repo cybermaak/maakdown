@@ -39,6 +39,7 @@ user-visible outcome and the verification that covers it.
 | Multi-tab performance (P10.14) | Several large tabs retain one bounded active reader with thresholded activation | `scripts/benchmark-workspace.mjs` | Executable |
 | Reader appearance and focus mode (P11.4–P11.5) | Appearance updates without reparse and focus mode remains keyboard reachable | UAT-05 | Executable |
 | Accessibility release gate (P11.9–P11.10) | Keyboard tabs/modals, labels, announcements, and reduced motion pass with no serious/critical axe findings | UAT-07 | Executable |
+| Custom context menus | Native menu suppressed; consistent per-surface custom menu for reader, tabs, outline, and toolbar | UAT-08 | Executable |
 
 Cross-platform acceptance remains tracked by P7.7/P11.11 and begins after the
 GitHub repository exists and the hosted workflow has produced its first matrix.

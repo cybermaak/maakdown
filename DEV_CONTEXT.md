@@ -104,6 +104,17 @@ when the user is ready to supply external signing infrastructure.
   `main`, and separate workflow defects from product test failures.
 - Keep tested multi-path watchers for all open documents; the supplemental
   review's active-only watcher staging suggestion is superseded by completed P9.
+- Suppress the native webview context menu app-wide and render one custom,
+  OS-consistent menu per surface; keep the native editing menu inside text
+  fields so OS text services (spelling, proofread, Look Up) stay available.
+- Run a frameless window with one custom title bar across all platforms; the
+  workspace toolbar is the drag handle and hosts trailing window controls.
+  Controls/drag are gated on the Wails desktop runtime so browser/UAT bundles
+  are unaffected.
+- Group toolbar controls as leading navigation and trailing view actions rather
+  than one trailing cluster, per Apple HIG, Windows Fluent, and GNOME HIG.
+- Build the Shiki theme from the live semantic reader tokens so both
+  highlighters share one palette.
 
 ## Planned Tasks
 
@@ -187,6 +198,18 @@ See `docs/task-tracker.md`.
   fixture host. This removes Vite development dependency optimization and its
   cold-cache dynamic parser import race from Ubuntu CI while retaining worker,
   virtualizer, enhancement, theme, navigation, and mocked native coverage.
+- 2026-06-07: Window-chrome and theming refinements (five separate commits):
+  (1) per-tab close affordance with the redundant add-tab button removed;
+  (2) Shiki highlighting rebuilt from the semantic reader palette so it matches
+  highlight.js; (3) toolbar split into a leading navigation group and a trailing
+  view group per HIG/Fluent/GNOME guidance
+  (`docs/design-system/toolbar-placement.md`); (4) a consistent custom context
+  menu across reader/tabs/outline/toolbar that suppresses the native webview
+  menu (no Inspect Element) while leaving the native editing menu in text fields,
+  with UAT-08 coverage; (5) a frameless window with one custom title bar (drag
+  region plus minimise/maximise/close), new Go window methods and IPC wrappers,
+  desktop-runtime gated (`docs/design-system/custom-titlebar.md`). Cross-platform
+  title-bar visual acceptance on Windows/Linux remains a platform-owner step.
 
 ## Verification Commands
 
