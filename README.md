@@ -2,32 +2,31 @@
 
 # Maakdown
 
-**A fast, reader-first desktop Markdown viewer for technical documents and personal notes.**
+**A beautiful, distraction-free desktop app for reading your Markdown.**
 
-Open local Markdown files and read them in a quiet, native-editorial workspace — with accurate
-rendering, smooth scrolling on large documents, and practical retrieval and output tools, without
-ever becoming an editor.
+Open any Markdown file and see it the way you meant it — clean typography, rich code, math, and
+diagrams, all in a calm reading workspace. Keep many documents open in tabs, jump around with a
+sidebar outline and search, and pick up right where you left off next time.
 
-Windows · macOS · Linux — one codebase.
+Works on Windows, macOS, and Linux.
 
 </div>
 
 ---
 
-## Why Maakdown
+## Why you'll like it
 
-Maakdown is a **viewer, not an editor**. There is no live-preview loop, no collaboration, no cloud
-sync, and no mobile target. It focuses on doing one thing well: rendering technical Markdown
-accurately, safely, and fast, in an interface that stays out of your way.
-
-- **Reader-first.** Strong typography, restrained chrome, and a document-first layout built on a
-  reviewed design system with warm paper/ink themes.
-- **Fast on big files.** Block-level virtualization keeps the live DOM bounded, so a 10,000-line
-  document scrolls smoothly and stays memory-light.
-- **Progressive rendering.** First readable text appears quickly; expensive work like syntax
-  highlighting, math, and diagrams enhances after the text is on screen.
-- **Safe by default.** All rendered HTML is sanitized, links and local assets are constrained, and
-  images load through a bounded, tokenized asset service — never raw `file://`.
+- **A genuinely nice reading experience.** Warm, book-like themes, careful typography, and a focus
+  mode that clears everything but the words. Tune the font, size, line height, and width to taste.
+- **Handles your biggest files with ease.** Open a 10,000-line document and it still scrolls
+  smoothly and stays light on memory, with text appearing instantly and richer details filling in
+  as you read.
+- **Renders the technical stuff correctly.** Syntax-highlighted code, KaTeX math, Mermaid diagrams,
+  tables, task lists, callouts, footnotes, and local images all just work.
+- **Built for working across many notes.** Tabbed documents, recent files, drag-and-drop, internal
+  links and wikilinks between notes, and a session that restores itself the next time you open the app.
+- **Find and get things out fast.** Search the current document, navigate with a command palette and
+  keyboard shortcuts, and print or export to PDF whenever you need a copy.
 
 ## Features
 
@@ -43,7 +42,7 @@ accurately, safely, and fast, in an interface that stays out of your way.
 | **Navigation** | Sidebar TOC with scroll-spy, internal `#anchors`, footnotes, and per-tab history |
 | **Wikilinks** | `[[Note Name]]` resolved through a Go-built vault index |
 | **Workspace** | Tabbed documents, session restoration, recent files, and drag-and-drop |
-| **Find** | Current-document search with true match counts, case, and whole-word options |
+| **Find** | Current-document search with true match counts, next/previous, and a case-sensitive toggle |
 | **Commands** | Native menus, keyboard shortcuts, and an in-app command palette |
 | **Output** | Print and system print-to-PDF of the complete document, not just the visible slice |
 | **Appearance** | Light/dark themes, focus mode, and configurable font, size, line height, and measure |
@@ -85,7 +84,7 @@ The authoritative product and architecture docs live in [`docs/`](docs/):
 | Tool | Version | Notes |
 |---|---|---|
 | **Go** | 1.22+ | Backend and the Wails CLI |
-| **Node.js** | 22.x (LTS) | Frontend tooling |
+| **Node.js** | 20.19+ or 22.12+ | Required by Vite 8 / the Svelte plugin (avoid 22.0–22.11) |
 | **npm** | 10.x | Ships with Node |
 | **Wails CLI** | v2.11.x | Desktop dev/build; do **not** use Wails v3 for v1 |
 | Platform deps | — | See the [Wails platform guide](https://wails.io/docs/gettingstarted/installation) for the WebView/build packages on your OS (e.g. WebKit2GTK on Linux) |
