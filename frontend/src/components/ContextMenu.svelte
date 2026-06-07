@@ -10,13 +10,24 @@
     if (!$contextMenu.open) return;
     position = { x: $contextMenu.x, y: $contextMenu.y };
 
+    // Preserve an active text selection: focusing a menu item would clear the
+    // highlight, so mouse-driven selection menus keep focus on the document.
+    const hasSelection = Boolean(window.getSelection()?.toString());
+
     const dismissOnPointer = (event: PointerEvent) => {
       if (!menuEl?.contains(event.target as Node)) closeContextMenu();
     };
     const dismissOnScroll = () => closeContextMenu();
+    const dismissOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeContextMenu();
+      }
+    };
     window.addEventListener('pointerdown', dismissOnPointer, true);
     window.addEventListener('resize', dismissOnScroll);
     window.addEventListener('blur', dismissOnScroll);
+    window.addEventListener('keydown', dismissOnEscape);
 
     void tick().then(() => {
       if (!menuEl) return;
@@ -26,13 +37,14 @@
       if (x + rect.width > window.innerWidth - margin) x = Math.max(margin, window.innerWidth - rect.width - margin);
       if (y + rect.height > window.innerHeight - margin) y = Math.max(margin, window.innerHeight - rect.height - margin);
       position = { x, y };
-      menuEl.querySelector<HTMLButtonElement>('[role="menuitem"]:not(:disabled)')?.focus();
+      if (!hasSelection) menuEl.querySelector<HTMLButtonElement>('[role="menuitem"]:not(:disabled)')?.focus();
     });
 
     return () => {
       window.removeEventListener('pointerdown', dismissOnPointer, true);
       window.removeEventListener('resize', dismissOnScroll);
       window.removeEventListener('blur', dismissOnScroll);
+      window.removeEventListener('keydown', dismissOnEscape);
     };
   });
 
