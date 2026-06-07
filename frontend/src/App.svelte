@@ -53,8 +53,8 @@
   } from './core/navigation/history';
 
   const query = new URLSearchParams(window.location.search);
-  const showDesignSystem = import.meta.env.DEV && query.has('design-system');
-  const fixture = import.meta.env.DEV ? query.get('fixture') : null;
+  const showDesignSystem = (import.meta.env.DEV || import.meta.env.MODE === 'benchmark') && query.has('design-system');
+  const fixture = (import.meta.env.DEV || import.meta.env.MODE === 'benchmark') ? query.get('fixture') : null;
   let workspace = $state(createWorkspace());
   let documentView = $state<DocumentView | undefined>();
   let removeListeners: Array<() => void> = [];

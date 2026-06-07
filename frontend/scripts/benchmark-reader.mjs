@@ -1,30 +1,105 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { chromium } from 'playwright';
-import { createServer } from 'vite';
+import { startFixtureApp } from './fixture-app-server.mjs';
 
 const frontendRoot = resolve(import.meta.dirname, '..');
 const repoRoot = resolve(frontendRoot, '..');
 const outputDir = resolve(repoRoot, 'output/performance');
+const benchmarkDist = resolve(outputDir, 'benchmark-app');
 const port = Number(process.env.MAAKDOWN_BENCHMARK_PORT ?? 5188);
 const fixtures = ['small-readme.md', 'medium-technical-doc.md', 'large-10k-lines.md'];
 
-const server = await createServer({
-  root: frontendRoot,
-  server: { host: '127.0.0.1', port, strictPort: true },
-  logLevel: 'error'
+const server = await startFixtureApp({
+  frontendRoot,
+  repoRoot,
+  outputDir: benchmarkDist,
+  port
 });
-await server.listen();
 
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
-page.on('pageerror', (error) => console.error('pageerror:', error));
+const browserErrors = [];
+page.on('pageerror', (error) => browserErrors.push(error));
 page.on('console', (message) => {
-  if (message.type() === 'error') {
-    console.error('console:', message.text());
+  if (message.type() === 'error' && !message.text().startsWith('Failed to load resource:')) {
+    const location = message.location();
+    browserErrors.push(new Error(`console.error: ${message.text()} (${location.url || 'unknown source'})`));
+  }
+});
+page.on('response', (response) => {
+  const resourceType = response.request().resourceType();
+  if (response.status() >= 400 && ['document', 'script', 'stylesheet'].includes(resourceType)) {
+    browserErrors.push(new Error(`HTTP ${response.status()}: ${response.url()}`));
   }
 });
 const results = [];
+
+async function navigateToHeading(label) {
+  const surface = page.locator('.document-scroll');
+  await page.waitForTimeout(500);
+  const before = await surface.evaluate((element) => element.scrollTop);
+  await page.getByRole('button', { name: label, exact: true }).first().click();
+  await page.waitForFunction(
+    ({ previous }) => {
+      const element = document.querySelector('.document-scroll');
+      return element instanceof HTMLElement && Math.abs(element.scrollTop - previous) > 100;
+    },
+    { previous: before }
+  );
+  await page.waitForTimeout(500);
+}
+
+async function scrollUntilMounted(selector) {
+  const surface = page.locator('.document-scroll');
+  await surface.evaluate((element) => {
+    element.scrollTop = 0;
+  });
+  for (let step = 0; step < 100; step += 1) {
+    const target = page.locator(selector).first();
+    if (await target.count()) {
+      if (await target.isVisible().catch(() => false)) return;
+    }
+    const reachedEnd = await surface.evaluate((element) => {
+      const previous = element.scrollTop;
+      element.scrollTop = Math.min(element.scrollTop + element.clientHeight * 0.75, element.scrollHeight);
+      return element.scrollTop === previous;
+    });
+    if (reachedEnd) break;
+    await page.waitForTimeout(150);
+  }
+  throw new Error(`Could not mount ${selector} while scrolling the reader`);
+}
+
+async function revealEnhancedCode() {
+  const surface = page.locator('.document-scroll');
+  await surface.evaluate((element) => {
+    element.scrollTop = 0;
+  });
+  for (let step = 0; step < 100; step += 1) {
+    const highlighted = page.locator('[data-highlight-engine]').first();
+    if (await highlighted.count() && await highlighted.isVisible().catch(() => false)) return;
+
+    const reachedEnd = await surface.evaluate((element) => {
+      const previous = element.scrollTop;
+      element.scrollTop = Math.min(element.scrollTop + element.clientHeight * 0.25, element.scrollHeight);
+      return element.scrollTop === previous;
+    });
+    if (reachedEnd) break;
+    await page.waitForTimeout(200);
+  }
+  const diagnostics = await surface.evaluate((element) => {
+    const code = element.querySelector('[data-enhancement="code"]');
+    return {
+      scrollTop: element.scrollTop,
+      scrollHeight: element.scrollHeight,
+      codeBlocks: element.querySelectorAll('[data-enhancement="code"]').length,
+      codeTop: code?.getBoundingClientRect().top ?? null,
+      surfaceTop: element.getBoundingClientRect().top
+    };
+  });
+  throw new Error(`Could not render a highlighted code block while scrolling the reader: ${JSON.stringify(diagnostics)}`);
+}
 
 try {
   for (const fixture of fixtures) {
@@ -33,28 +108,31 @@ try {
     for (let attempt = 0; attempt < 3; attempt += 1) {
       await page.goto(fixtureUrl);
       try {
-        await page.getByRole('heading', { name: 'Maakdown Reader Evaluation Dossier', exact: true }).waitFor({ timeout: 12_000 });
+        await page.locator('.document-scroll h1').filter({ hasText: 'Maakdown Reader Evaluation Dossier' }).first().waitFor({ timeout: 12_000 });
         break;
       } catch (error) {
-        if (attempt === 2) throw error;
-        // Vite may reload after optimizing worker-only parser dependencies.
+        if (browserErrors.length) {
+          throw new AggregateError(browserErrors, `Browser failed while loading ${fixture}`);
+        }
+        if (attempt === 2) {
+          const bodyText = (await page.locator('body').innerText()).slice(0, 1_000);
+          throw new Error(`Timed out loading ${fixture}. Visible UI:\n${bodyText}`, { cause: error });
+        }
         await page.waitForTimeout(2_000);
       }
     }
     const openToTextMs = performance.now() - started;
-    await page.getByRole('button', { name: 'System architecture', exact: true }).click();
+    await scrollUntilMounted('.mermaid-rendered svg, .mermaid-error');
     await page.locator('.mermaid-rendered svg, .mermaid-error').first().waitFor();
     const renderedDiagrams = await page.locator('.mermaid-rendered svg').count();
     const diagramErrors = await page.locator('.mermaid-error').count();
-    await page.getByRole('button', { name: 'typescript implementation sample', exact: true }).first().click();
-    await page.locator('[data-highlight-engine]').first().waitFor();
+    await revealEnhancedCode();
     const highlightedBlocks = await page.locator('[data-highlight-engine]').count();
     await page.getByRole('button', { name: 'Reader appearance', exact: true }).click();
     await page.getByRole('button', { name: 'Shiki', exact: true }).click();
-    await page.getByRole('button', { name: 'typescript implementation sample', exact: true }).first().click();
     await page.locator('[data-highlight-engine="shiki-js-regex"]').first().waitFor();
     const shikiBlocks = await page.locator('[data-highlight-engine="shiki-js-regex"]').count();
-    await page.getByRole('button', { name: 'Quantitative model', exact: true }).first().click();
+    await scrollUntilMounted('.katex');
     await page.locator('.katex').first().waitFor();
     const renderedMath = await page.locator('.katex').count();
     const enhancements = {
@@ -64,6 +142,16 @@ try {
       diagramErrors,
       renderedMath
     };
+    let finalGateOffsetPx = null;
+    if (fixture === 'large-10k-lines.md') {
+      await navigateToHeading('Final release gate');
+      const finalGate = page.locator('.document-scroll h2').filter({ hasText: 'Final release gate' }).first();
+      await finalGate.waitFor();
+      finalGateOffsetPx = await finalGate.evaluate((heading) => {
+        const surface = heading.closest('.document-scroll');
+        return surface ? Math.abs(heading.getBoundingClientRect().top - surface.getBoundingClientRect().top) : null;
+      });
+    }
     const metrics = await page.locator('.document-scroll').evaluate((element) => {
       const frameSamples = [];
       const maxScroll = element.scrollHeight - element.clientHeight;
@@ -80,15 +168,6 @@ try {
       };
     });
     const mountedReaders = await page.getByRole('document', { name: 'Markdown document' }).count();
-    let finalGateOffsetPx = null;
-    if (fixture === 'large-10k-lines.md') {
-      await page.getByRole('button', { name: 'Final release gate', exact: true }).click();
-      await page.getByRole('heading', { name: 'Final release gate', exact: true }).waitFor();
-      finalGateOffsetPx = await page.getByRole('heading', { name: 'Final release gate', exact: true }).evaluate((heading) => {
-        const surface = heading.closest('.document-scroll');
-        return surface ? Math.abs(heading.getBoundingClientRect().top - surface.getBoundingClientRect().top) : null;
-      });
-    }
     results.push({ fixture, openToTextMs, mountedReaders, ...metrics, ...enhancements, finalGateOffsetPx });
   }
 } finally {

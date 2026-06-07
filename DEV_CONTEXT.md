@@ -44,6 +44,8 @@ when the user is ready to supply external signing infrastructure.
 - `tools/generate-reader-evaluation-fixture.mjs`: regenerates the large reader evaluation dossier.
 - `frontend/scripts/benchmark-reader.mjs`: Chromium benchmark for parser,
   virtualizer, navigation, and rich enhancements.
+- `frontend/scripts/fixture-app-server.mjs`: shared benchmark-mode production
+  build and static fixture host for reader benchmarks and visual smoke checks.
 - `build/darwin/`, `build/windows/`, `build/signing/`: signing and packaging templates/documentation; secrets excluded.
 - `.github/workflows/ci.yml`: frontend, Go, Wails, and reader benchmark checks.
 - `.github/workflows/release-smoke.yml`: manually dispatched unsigned build,
@@ -179,6 +181,11 @@ See `docs/task-tracker.md`.
   first attempt: frontend checks, Go tests, native Wails builds, artifact
   validation, and unsigned artifact uploads succeeded on macOS, Linux, and
   Windows.
+- 2026-06-07: Made reader benchmark and visual-smoke verification run against a
+  dedicated benchmark-mode production bundle served by a deterministic local
+  fixture host. This removes Vite development dependency optimization and its
+  cold-cache dynamic parser import race from Ubuntu CI while retaining worker,
+  virtualizer, enhancement, theme, and navigation coverage.
 
 ## Verification Commands
 
@@ -215,6 +222,10 @@ scripts/release-check.sh
   and successful switching to Shiki.
 - The completed UAT suite passes 14 tests in 11.6 seconds on local headless
   Chromium and includes an axe serious/critical accessibility gate.
+- The production-bundle reader benchmark passes repeatedly in headless Chromium;
+  the current 10,726-line fixture opens to readable text in about 1.3 seconds,
+  keeps one reader and a bounded DOM mounted, renders both highlighters and
+  Mermaid without errors, and reaches the final heading within 226 px.
 - The standing workspace benchmark keeps one reader and 22 blocks mounted
   across three large tabs; measured activation latency was 24-37 ms.
 - `scripts/verify.sh` previously passed 15 frontend tests, Svelte checks, frontend build, Go

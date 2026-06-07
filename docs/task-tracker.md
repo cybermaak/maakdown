@@ -95,7 +95,7 @@
 | ID | Status | Task | Depends On | Exit Criteria | Verification |
 |---|---|---|---|---|---|
 | P7.1 | Done | Build performance fixture corpus | P1 | named fixtures exist | small, medium, and 10k-line fixtures generated deterministically |
-| P7.2 | Done | Implement perf harness | P5 | target metrics recorded locally and in CI | `npm run benchmark`, `docs/performance-baseline.md` |
+| P7.2 | Done | Implement perf harness | P5 | target metrics recorded locally and in CI | benchmark-mode production bundle with deterministic fixture host; repeated `npm run benchmark`; `docs/performance-baseline.md` |
 | P7.3 | Done | Add macOS signing/notarization runbook | P0 | non-secret signing docs and script exist | doc/script review; credentials remain external |
 | P7.4 | Done | Add Windows signing runbook | P0 | non-secret signing docs and script exist | doc/script review; credentials remain external |
 | P7.5 | Done | Cross-platform packaging verification | P7.3/P7.4/P7.7 | unsigned builds validated on Windows/macOS/Linux | sandbox run 27083374632 built, validated, and uploaded all three native artifacts |

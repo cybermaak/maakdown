@@ -201,7 +201,9 @@
           return;
         }
         try {
-          const fixture = import.meta.env.DEV ? new URLSearchParams(window.location.search).get('fixture') : null;
+          const fixture = (import.meta.env.DEV || import.meta.env.MODE === 'benchmark')
+            ? new URLSearchParams(window.location.search).get('fixture')
+            : null;
           if (fixture) {
             const fixtureDirectory = fixture.includes('/') ? fixture.slice(0, fixture.lastIndexOf('/') + 1) : '';
             image.src = `/__maakdown_fixture/${encodeURI(`${fixtureDirectory}${raw}`)}`;
