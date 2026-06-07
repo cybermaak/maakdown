@@ -45,7 +45,8 @@ when the user is ready to supply external signing infrastructure.
 - `frontend/scripts/benchmark-reader.mjs`: Chromium benchmark for parser,
   virtualizer, navigation, and rich enhancements.
 - `frontend/scripts/fixture-app-server.mjs`: shared benchmark-mode production
-  build and static fixture host for reader benchmarks and visual smoke checks.
+  build and static fixture host for reader/workspace benchmarks and visual
+  smoke checks.
 - `build/darwin/`, `build/windows/`, `build/signing/`: signing and packaging templates/documentation; secrets excluded.
 - `.github/workflows/ci.yml`: frontend, Go, Wails, and reader benchmark checks.
 - `.github/workflows/release-smoke.yml`: manually dispatched unsigned build,
@@ -181,11 +182,11 @@ See `docs/task-tracker.md`.
   first attempt: frontend checks, Go tests, native Wails builds, artifact
   validation, and unsigned artifact uploads succeeded on macOS, Linux, and
   Windows.
-- 2026-06-07: Made reader benchmark and visual-smoke verification run against a
-  dedicated benchmark-mode production bundle served by a deterministic local
+- 2026-06-07: Made reader/workspace benchmarks and visual-smoke verification
+  run against dedicated production bundles served by a deterministic local
   fixture host. This removes Vite development dependency optimization and its
   cold-cache dynamic parser import race from Ubuntu CI while retaining worker,
-  virtualizer, enhancement, theme, and navigation coverage.
+  virtualizer, enhancement, theme, navigation, and mocked multi-tab coverage.
 
 ## Verification Commands
 

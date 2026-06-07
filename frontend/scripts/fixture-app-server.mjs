@@ -30,10 +30,10 @@ async function serveFile(response, filePath) {
   response.end(content);
 }
 
-export async function startFixtureApp({ frontendRoot, repoRoot, outputDir, port }) {
+export async function startFixtureApp({ frontendRoot, repoRoot, outputDir, port, mode = 'benchmark' }) {
   await build({
     root: frontendRoot,
-    mode: 'benchmark',
+    mode,
     build: { outDir: outputDir, emptyOutDir: true },
     logLevel: 'error'
   });

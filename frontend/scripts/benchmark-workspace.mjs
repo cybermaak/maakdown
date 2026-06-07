@@ -1,29 +1,24 @@
 import { chromium } from 'playwright';
 import { readFile } from 'node:fs/promises';
-import { spawn } from 'node:child_process';
+import { resolve } from 'node:path';
+import { startFixtureApp } from './fixture-app-server.mjs';
 
 const port = 5192;
 const url = `http://127.0.0.1:${port}`;
+const frontendRoot = resolve(import.meta.dirname, '..');
+const repoRoot = resolve(frontendRoot, '..');
+const appOutputDir = resolve(repoRoot, 'output', 'performance', 'workspace-app');
 const large = await readFile(new URL('../../fixtures/maakdown-reader-evaluation.md', import.meta.url), 'utf8');
 const paths = ['/bench/one.md', '/bench/two.md', '/bench/three.md'];
-const server = spawn('npm', ['run', 'dev', '--', '--mode', 'uat', '--port', String(port)], {
-  stdio: ['ignore', 'pipe', 'pipe'],
-  env: { ...process.env, VITE_CACHE_SUFFIX: 'workspace' }
+const server = await startFixtureApp({
+  frontendRoot,
+  repoRoot,
+  outputDir: appOutputDir,
+  port,
+  mode: 'uat'
 });
 
-async function waitForServer() {
-  for (let attempt = 0; attempt < 120; attempt += 1) {
-    try {
-      const response = await fetch(url);
-      if (response.ok) return;
-    } catch {}
-    await new Promise((resolve) => setTimeout(resolve, 250));
-  }
-  throw new Error('workspace benchmark server did not start');
-}
-
 try {
-  await waitForServer();
   const browser = await chromium.launch();
   const page = await browser.newPage();
   page.setDefaultTimeout(120_000);
@@ -59,5 +54,5 @@ try {
   if (maxActivationMs > 1500) throw new Error(`tab activation threshold exceeded: ${maxActivationMs}ms`);
   await browser.close();
 } finally {
-  server.kill('SIGTERM');
+  await server.close();
 }

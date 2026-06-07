@@ -153,7 +153,7 @@
 | P10.11 | Done | Add shared formatting and locale layer | Frontend core | P10.0 | metadata, dates, sizes, counts, and durations use one tested formatter with no raw runtime strings | fixed-locale/time-zone unit tests and metadata screenshots |
 | P10.12 | Done | Define reader error taxonomy and recovery presentations | Full stack | P9/P10.0 | missing, permission, oversized, unsupported, parse, watcher, asset, and unresolved-link states have typed messages and actions | unit fixtures plus Playwright recovery scenarios |
 | P10.13 | Done | Add unified Settings surface through the palette | Frontend | P10.5/P9.4 | theme, metadata, reader, panel, and dev/evaluation settings have one persistent home; Shiki remains dev-only | persistence, keyboard, and visual tests |
-| P10.14 | Done | Add standing multi-tab active-render benchmark | Frontend/CI | P9.11 | several large open tabs retain one mounted reader and bounded enhancement work after P10 changes | `npm run benchmark:workspace`; CI thresholds for one reader, mounted blocks, and activation latency |
+| P10.14 | Done | Add standing multi-tab active-render benchmark | Frontend/CI | P9.11 | several large open tabs retain one mounted reader and bounded enhancement work after P10 changes | production-bundled UAT-mode `npm run benchmark:workspace`; CI thresholds for one reader, mounted blocks, and activation latency |
 | P10.15 | Done | Keep the accessibility baseline continuously green | Frontend/CI | P8/P9 | existing and new controls retain visible focus, names, semantics, reduced-motion behavior, and dialog/palette focus management before P11 async-announcement completion | automated accessibility checks plus manual keyboard smoke per P10 milestone |
 
 ## P11 - Editorial Experience
