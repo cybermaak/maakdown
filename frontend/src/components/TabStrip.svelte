@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { FileText, X } from '@lucide/svelte';
   import type { DocumentTab } from '../core/workspace/workspace';
+  import { Tab } from '../design-system';
 
   interface Props {
     tabs: DocumentTab[];
@@ -28,42 +28,21 @@
     queueMicrotask(() => document.querySelectorAll<HTMLElement>('[role="tab"]')[next]?.focus());
   }
 
-  function closeFromGlyph(event: MouseEvent, id: string) {
-    // The close glyph is a non-focusable affordance inside the tab button, so
-    // nested interactive content never triggers an accessibility violation.
-    event.stopPropagation();
-    onClose(id);
-  }
 </script>
 
 <div class="tab-strip">
   <div class="tab-list" role="tablist" aria-label="Open documents">
     {#each tabs as tab, index}
-      <button
-        class="document-tab"
-        class:active={tab.id === activeTabId}
-        type="button"
-        role="tab"
-        data-tab-id={tab.id}
-        aria-selected={tab.id === activeTabId}
-        aria-keyshortcuts="Delete"
+      <Tab
+        id={tab.id}
+        label={tab.title}
+        active={tab.id === activeTabId}
+        changed={tab.changed}
         tabindex={tab.id === activeTabId ? 0 : -1}
-        onclick={() => onActivate(tab.id)}
+        onactivate={() => onActivate(tab.id)}
+        onclose={() => onClose(tab.id)}
         onkeydown={(event) => handleKeydown(event, index)}
-      >
-        <FileText size={14} aria-hidden="true" />
-        <span class="tab-title">{tab.title}</span>
-        {#if tab.changed}<i aria-label="Changed"></i>{/if}
-        <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-        <span
-          class="tab-close"
-          aria-hidden="true"
-          title={`Close ${tab.title}`}
-          onclick={(event) => closeFromGlyph(event, tab.id)}
-        >
-          <X size={13} aria-hidden="true" />
-        </span>
-      </button>
+      />
     {/each}
   </div>
 </div>

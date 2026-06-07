@@ -22,7 +22,8 @@ test.describe('UAT-04 Desktop workspace lifecycle', () => {
     await expectReaderReady(page);
     await page.getByRole('button', { name: 'New tab' }).click();
     await expect(page.getByRole('tab')).toHaveCount(2);
-    await expect(page.getByRole('heading', { level: 1, name: 'Maakdown Reader Evaluation Dossier' })).toBeVisible();
+    await expect(page.getByRole('tab', { name: 'dossier.md' })).toHaveAttribute('aria-selected', 'true');
+    await expectReaderReady(page);
 
     // Opening an already-open canonical path activates the existing tab (no duplicate)
     await page.evaluate((path) => {
@@ -34,8 +35,9 @@ test.describe('UAT-04 Desktop workspace lifecycle', () => {
 
     // Switching tabs keeps only the active document mounted
     await page.getByRole('tab', { name: 'dossier.md' }).click();
+    await expect(page.getByRole('tab', { name: 'dossier.md' })).toHaveAttribute('aria-selected', 'true');
     await expect(page.getByRole('document', { name: 'Markdown document' })).toHaveCount(1);
-    await expect(page.getByRole('heading', { level: 1, name: 'Maakdown Reader Evaluation Dossier' })).toBeVisible();
+    await expectReaderReady(page);
 
     // Close and reopen a tab
     await page.keyboard.press(`${mod}+w`);
@@ -65,7 +67,7 @@ test.describe('UAT-04 Desktop workspace lifecycle', () => {
 
     // External change triggers a reload that keeps the reading position
     await emitNative(page, 'file-changed', DOSSIER);
-    await expect(page.getByRole('heading', { level: 1, name: 'Maakdown Reader Evaluation Dossier' })).toBeVisible();
+    await expect(page.getByText('Watching', { exact: true })).toBeVisible();
     await expect
       .poll(() => surface.evaluate((el) => el.scrollTop))
       .toBeGreaterThan(before - 100);
@@ -116,5 +118,27 @@ test.describe('UAT-04 Desktop workspace lifecycle', () => {
     // Session was persisted through the mocked durable boundary
     const savedCount = await readMockState<number>(page, (state) => (state.savedSessions as unknown[]).length);
     expect(savedCount).toBeGreaterThan(0);
+  });
+
+  test('relocates a missing restored document in the same tab', async ({ page }) => {
+    const missing = '/uat/moved-away.md';
+    await seedApp(page, {
+      documents: baseDocuments,
+      pickerQueue: [ARCH],
+      session: {
+        tabs: [{ path: missing, position: { scrollTop: 420, activeHeadingId: 'rendering-architecture' } }],
+        activePath: missing
+      }
+    });
+    await gotoApp(page);
+
+    await expect(page.getByRole('heading', { name: 'Document not found' })).toBeVisible();
+    await page.getByRole('button', { name: 'Locate file' }).click();
+
+    await expect(page.getByRole('tab')).toHaveCount(1);
+    await expect(page.getByRole('tab', { name: 'architecture.md' })).toHaveAttribute('aria-selected', 'true');
+    await expectReaderReady(page);
+    const watched = await readMockState<string[]>(page, (state) => state.watched as string[]);
+    expect(watched).toEqual([ARCH]);
   });
 });

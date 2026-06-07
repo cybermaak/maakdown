@@ -99,6 +99,35 @@ export function closeTab(state: WorkspaceState, id: string): WorkspaceState {
   return { ...state, tabs, activeTabId: nextActive, closedTabs: [closed, ...state.closedTabs].slice(0, 10) };
 }
 
+export function relocateTab(state: WorkspaceState, id: string, path: string): WorkspaceState {
+  const sourceIndex = state.tabs.findIndex((tab) => tab.id === id);
+  if (sourceIndex < 0) return state;
+  const identity = canonicalIdentity(path);
+  const existing = state.tabs.find((tab) => tab.id !== id && canonicalIdentity(tab.path) === identity);
+  if (existing) {
+    return {
+      ...state,
+      tabs: state.tabs.filter((tab) => tab.id !== id),
+      activeTabId: existing.id
+    };
+  }
+  const tabs = [...state.tabs];
+  tabs[sourceIndex] = {
+    ...tabs[sourceIndex],
+    path,
+    title: titleFromPath(path),
+    model: null,
+    loading: true,
+    error: null,
+    trustedRoot: '',
+    watching: false,
+    changed: false,
+    reloading: false,
+    history: emptyHistory()
+  };
+  return { ...state, tabs, activeTabId: id };
+}
+
 export function addRecent(recents: RecentDocument[], path: string, now = new Date()): RecentDocument[] {
   const identity = canonicalIdentity(path);
   return [

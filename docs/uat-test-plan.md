@@ -89,9 +89,12 @@ full-document search truthfulness, and active rendering bounds.
    position.
 7. Simulate restart and verify tab order, active tab, recents, settings, and
    per-document position restore.
+8. Restore a missing path, locate its replacement, and verify the existing tab
+   recovers in place with one watcher on the replacement path.
 
 **Covers:** tabs, canonical-path deduplication, active-tab isolation, reopen,
-drop, watcher status, reload, sessions, recents, and reading position.
+drop, watcher status, reload, sessions, recents, reading position, and
+missing-file recovery.
 
 ### UAT-05 Commands And Editorial Reading Controls
 

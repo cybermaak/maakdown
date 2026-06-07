@@ -2,7 +2,7 @@
 
 **Purpose:** project task breakdown and progress tracker.  
 **Status values:** Todo, In Progress, Blocked, Done, Deferred.  
-**Last updated:** 2026-06-06.
+**Last updated:** 2026-06-07.
 
 ## Summary
 
@@ -112,9 +112,9 @@
 | P8.4 | Done | Source and document production fonts | Design/Release | P8.1 | genuine licensed Inter and JetBrains Mono weight files have provenance, hashes, and local loading | Fontsource packages bundle licensed, weight-specific local assets; production build |
 | P8.5 | Done | Install pinned Lucide Svelte icon package | Frontend | P8.1 | icons render locally with shared sizing and accessible labels; no CDN remains | dependency review, build, and icon gallery |
 | P8.6 | Done | Implement core control primitives | Frontend | P8.2/P8.3/P8.5 | Button, IconButton, SegmentedControl, Badge, Tag, and StatusIndicator cover approved states | Svelte check and deterministic gallery |
-| P8.7 | Done | Implement reader primitives | Frontend | P8.2/P8.3/P8.5 | TocItem, Callout, CodeBlockChrome, and Wikilink match contracts without bypassing parser security | parser tests and reader benchmark |
-| P8.8 | Done | Implement floating and shell primitives | Frontend | P8.6 | Dialog, Toolbar, and Tab provide keyboard/focus behavior and stable dimensions | zero-warning Svelte accessibility check |
-| P8.9 | Done | Build development design-system gallery | Frontend | P8.6-P8.8 | every primitive/state renders in one deterministic route for visual QA | `npm run visual-smoke` |
+| P8.7 | Done | Implement reader primitives | Frontend | P8.2/P8.3/P8.5 | TocItem, Callout, CodeBlockChrome, and Wikilink match contracts without bypassing parser security | shared Svelte primitives, parser tests, reader benchmark, and UAT heading/code coverage |
+| P8.8 | Done | Implement floating and shell primitives | Frontend | P8.6 | Dialog, Popover, Toolbar, and Tab provide keyboard/focus behavior and stable dimensions | zero-warning Svelte accessibility check and UAT tab-keyboard coverage |
+| P8.9 | Done | Build development design-system gallery | Frontend | P8.6-P8.8 | every primitive/state renders in one deterministic route for visual QA | expanded light/dark `npm run visual-smoke` gallery |
 | P8.10 | Done | Migrate existing reader shell to tokens and primitives | Frontend | P8.3/P8.6-P8.8 | current P1-P7 behavior uses the design API with no feature-local control palette | frontend tests, build, benchmark, and screenshots |
 | P8.11 | Done | Establish visual regression and adherence checks | Frontend/CI | P8.9/P8.10 | approved light/dark references and overflow checks run in CI | CI visual-smoke step and deterministic screenshots |
 
@@ -126,7 +126,7 @@
 | P9.2 | Done | Implement canonical-path tab lifecycle | Frontend | P9.1 | open reuses existing paths; close selects nearest tab; closed tabs can reopen | workspace unit tests |
 | P9.3 | Done | Refactor watcher for multiple document paths | Backend | P3/P9.1 | watchers register/unregister by canonical path and emit path-specific changes | Go tests for shared directory, safe-save, and cleanup |
 | P9.4 | Done | Persist versioned settings and sessions atomically | Backend | P9.1 | OS app-data JSON stores tabs, active tab, positions, recents, and settings | Go tests for defaults, corruption, reload, and atomic replacement |
-| P9.5 | Done | Restore tabs and per-document reading positions | Full stack | P9.2/P9.4 | launch restores order, active tab, positions, and recoverable missing-file tabs | session serialization tests and frontend integration check |
+| P9.5 | Done | Restore tabs and per-document reading positions | Full stack | P9.2/P9.4 | launch restores order, active tab, positions, and recoverable missing-file tabs | session serialization tests plus UAT restore and in-place missing-file relocation |
 | P9.6 | Done | Add approved empty state and recent documents | Frontend | P8/P9.4 | mock-aligned drop target, open action, recents, timestamps, and missing state work | workspace tests and visual smoke |
 | P9.7 | Done | Add native file drag-and-drop | Full stack | P9.2/P9.6 | supported dropped Markdown files open or activate tabs with visible drop feedback | Wails runtime integration and frontend build |
 | P9.8 | Done | Add native menus and shared command dispatch | Full stack | P9.2/P8.8 | menu, shortcut, and toolbar commands share command ids | Go build and Svelte check |

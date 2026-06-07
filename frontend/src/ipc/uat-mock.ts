@@ -147,7 +147,7 @@ function trustedRootFor(path: string): string {
 
 function readDocumentRecord(path: string): MockDocument {
   const doc = state.documents[path];
-  if (!doc) throw new Error(`No mock document seeded for path: ${path}`);
+  if (!doc) throw new Error(`File not found: ${path}`);
   return doc;
 }
 

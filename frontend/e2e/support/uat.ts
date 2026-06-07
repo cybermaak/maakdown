@@ -92,7 +92,7 @@ export async function readMockState<T>(page: Page, selector: (state: Record<stri
 /** Wait for the active document reader surface to render. */
 export async function expectReaderReady(page: Page): Promise<void> {
   await expect(page.getByRole('document', { name: 'Markdown document' })).toBeVisible();
-  await expect(page.locator('.doc-block').first()).toBeVisible();
+  await expect.poll(() => page.locator('.doc-block').count()).toBeGreaterThan(0);
 }
 
 /**

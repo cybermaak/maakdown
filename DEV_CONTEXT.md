@@ -8,7 +8,8 @@ The app is a viewer, not an editor. It renders CommonMark/GFM, code, KaTeX math,
 
 ## Current Phase
 
-**Phase:** P7 and P10 complete; P11 locally complete; P11.11 signing acceptance remains blocked
+**Phase:** P8/P9 completion audit finished; P7 and P10 complete; P11 locally
+complete; P11.11 signing acceptance remains blocked
 **Active focus:** credentialed signing and cross-platform editorial acceptance
 when the user is ready to supply external signing infrastructure.
 
@@ -210,6 +211,12 @@ See `docs/task-tracker.md`.
   region plus minimise/maximise/close), new Go window methods and IPC wrappers,
   desktop-runtime gated (`docs/design-system/custom-titlebar.md`). Cross-platform
   title-bar visual acceptance on Windows/Linux remains a platform-owner step.
+- 2026-06-07: Audited P8/P9 completion against the implementation plan. Added
+  the missing reusable Svelte `Callout`, `CodeBlockChrome`, `Popover`, `Tab`,
+  `TocItem`, `Toolbar`, and `Wikilink` primitives; migrated live toolbar, tab,
+  outline, and code-block chrome to the shared contracts; expanded the
+  deterministic light/dark gallery; added in-place missing-file relocation for
+  restored tabs; and strengthened workspace unit/UAT coverage.
 
 ## Verification Commands
 
@@ -238,6 +245,11 @@ scripts/release-check.sh
 
 ## Verification Notes
 
+- The P8/P9 completion audit passes 24 frontend unit tests, zero-warning Svelte
+  checks, the production frontend build, all Go tests, light/dark visual smoke,
+  the reader and three-tab workspace benchmarks, and 19 headless Chromium UAT
+  tests in 35.6 seconds. The workspace benchmark kept one reader and 12 blocks
+  mounted with a maximum measured activation of 335 ms.
 - The current P10/P11 slice passes zero-warning Svelte checks, 17 frontend
   tests, the frontend production build, and all Go tests.
 - Current verification passes zero-warning Svelte checks, 19 frontend tests,

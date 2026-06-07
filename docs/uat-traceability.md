@@ -30,6 +30,7 @@ user-visible outcome and the verification that covers it.
 | File drop (P9.7) | Dropped Markdown opens or activates a tab | UAT-04 | Executable |
 | Watcher reload (P3.6/P9.3) | External change reloads while preserving reading position | UAT-04 | Executable |
 | Sessions and recents (P9.4–P9.6) | Tab order, active tab, positions, settings, and recents restore on restart | UAT-04 | Executable |
+| Missing-file recovery (P9.5) | A restored missing tab can locate a replacement without creating a duplicate tab or watcher | UAT-04 | Executable |
 | Parser security schema (P1.3) | Malicious HTML fixtures render inert | `src/core/pipeline/parseDocument.test.ts` (unit) + UAT-01 | Executable |
 | Bounded large-document DOM (P5) | Mounted block count stays bounded | `scripts/benchmark-reader.mjs` (performance harness) | Executable |
 | Full-document search (P10.1–P10.3) | Offscreen matches are counted, materialized, marked, and case-filtered | UAT-03 | Executable |

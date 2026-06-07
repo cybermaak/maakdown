@@ -1,7 +1,14 @@
 export { default as Badge } from './Badge.svelte';
 export { default as Button } from './Button.svelte';
+export { default as Callout } from './Callout.svelte';
+export { default as CodeBlockChrome } from './CodeBlockChrome.svelte';
 export { default as Dialog } from './Dialog.svelte';
 export { default as IconButton } from './IconButton.svelte';
+export { default as Popover } from './Popover.svelte';
 export { default as SegmentedControl } from './SegmentedControl.svelte';
 export { default as StatusIndicator } from './StatusIndicator.svelte';
+export { default as Tab } from './Tab.svelte';
 export { default as Tag } from './Tag.svelte';
+export { default as TocItem } from './TocItem.svelte';
+export { default as Toolbar } from './Toolbar.svelte';
+export { default as Wikilink } from './Wikilink.svelte';

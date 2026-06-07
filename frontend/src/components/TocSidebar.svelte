@@ -1,6 +1,7 @@
 <script lang="ts">
   import { tick } from 'svelte';
   import type { Heading } from '../core/model/types';
+  import { TocItem } from '../design-system';
 
   interface Props {
     headings: Heading[];
@@ -23,16 +24,13 @@
     <p class="muted">No headings</p>
   {:else}
     {#each headings as heading}
-      <button
-        type="button"
-        data-heading-id={heading.id}
-        class:active={heading.id === activeHeadingId}
-        aria-current={heading.id === activeHeadingId ? 'location' : undefined}
-        style={`--depth: ${heading.depth}`}
+      <TocItem
+        id={heading.id}
+        label={heading.text}
+        depth={heading.depth}
+        active={heading.id === activeHeadingId}
         onclick={() => onNavigate(heading.id)}
-      >
-        {heading.text}
-      </button>
+      />
     {/each}
   {/if}
 </nav>

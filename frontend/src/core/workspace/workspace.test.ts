@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { activateOrAddTab, addRecent, closeTab, createWorkspace, serializeSession } from './workspace';
+import { activateOrAddTab, addRecent, closeTab, createWorkspace, relocateTab, serializeSession } from './workspace';
 
 describe('workspace', () => {
   it('deduplicates canonical paths', () => {
@@ -15,6 +15,41 @@ describe('workspace', () => {
     state = closeTab(state, state.tabs[1].id);
     expect(state.tabs.find((tab) => tab.id === state.activeTabId)?.path).toBe('/c.md');
     expect(state.closedTabs[0].path).toBe('/b.md');
+  });
+
+  it('relocates a missing tab in place without losing its position', () => {
+    let state = activateOrAddTab(createWorkspace(), '/missing.md', { scrollTop: 320, activeHeadingId: 'details' });
+    const id = state.activeTabId!;
+    state = relocateTab(state, id, '/moved/found.md');
+    expect(state.tabs).toHaveLength(1);
+    expect(state.tabs[0]).toMatchObject({
+      id,
+      path: '/moved/found.md',
+      title: 'found.md',
+      position: { scrollTop: 320, activeHeadingId: 'details' },
+      loading: true,
+      error: null
+    });
+  });
+
+  it('deduplicates a relocated path against an existing tab', () => {
+    let state = activateOrAddTab(createWorkspace(), '/missing.md');
+    const missingId = state.activeTabId!;
+    state = activateOrAddTab(state, '/existing.md');
+    const existingId = state.activeTabId!;
+    state = relocateTab(state, missingId, '/existing.md');
+    expect(state.tabs).toHaveLength(1);
+    expect(state.activeTabId).toBe(existingId);
+  });
+
+  it('keeps recents unique and bounded', () => {
+    let recents = Array.from({ length: 12 }, (_, index) =>
+      addRecent([], `/note-${index}.md`, new Date(`2026-06-${String(index + 1).padStart(2, '0')}T00:00:00Z`))[0]
+    );
+    recents = addRecent(recents, '/note-5.md', new Date('2026-06-20T00:00:00Z'));
+    expect(recents).toHaveLength(12);
+    expect(recents[0].path).toBe('/note-5.md');
+    expect(recents.filter((recent) => recent.path === '/note-5.md')).toHaveLength(1);
   });
 
   it('serializes only durable workspace data', () => {

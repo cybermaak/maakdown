@@ -1,6 +1,6 @@
 <script lang="ts">
   import { ArrowLeft, ArrowRight, Eye, FolderOpen, Focus, Moon, PanelLeft, PanelRight, Plus, RefreshCw, Search, Settings2, Sun } from '@lucide/svelte';
-  import { IconButton, StatusIndicator } from '../design-system';
+  import { IconButton, StatusIndicator, Toolbar } from '../design-system';
   import WindowControls from './WindowControls.svelte';
   import { isDesktopRuntime } from '@ipc';
   import type { AppConfig } from '../stores/configStore';
@@ -39,22 +39,22 @@
     {:else if watching}<StatusIndicator label="Watching" tone="success" />{/if}
   </div>
   <!-- Structural and navigation controls sit at the leading edge (HIG/Fluent/GNOME). -->
-  <div class="toolbar-nav" role="toolbar" aria-label="Navigation">
+  <Toolbar class="toolbar-nav" label="Navigation">
     <IconButton icon={PanelLeft} label="Toggle outline" active={config.outlineVisible} onclick={onOutline} />
     <IconButton icon={FolderOpen} label="Open document" onclick={onOpen} />
     <IconButton icon={Plus} label="New tab" onclick={onOpen} />
     <IconButton icon={ArrowLeft} label="Back" disabled={!canBack} onclick={onBack} />
     <IconButton icon={ArrowRight} label="Forward" disabled={!canForward} onclick={onForward} />
     <IconButton icon={RefreshCw} label="Reload document" disabled={reloading} onclick={onReload} />
-  </div>
+  </Toolbar>
   <!-- View and meta controls sit at the trailing edge. -->
-  <div class="toolbar-actions" role="toolbar" aria-label="View and tools">
+  <Toolbar class="toolbar-actions" label="View and tools">
     <IconButton icon={Search} label="Find in document" onclick={onSearch} />
     <IconButton icon={Eye} label="Reader appearance" onclick={onSettings} />
     <IconButton icon={PanelRight} label="Toggle metadata" active={config.frontmatterDisplay === 'panel'} onclick={onMetadata} />
     <IconButton icon={Focus} label="Focus mode" active={config.focusMode} onclick={onFocus} />
     <IconButton icon={Settings2} label="Command palette" onclick={() => window.dispatchEvent(new CustomEvent('maakdown:palette'))} />
     <IconButton icon={config.theme === 'dark' ? Sun : Moon} label={`Theme: ${config.theme}`} onclick={onTheme} />
-  </div>
+  </Toolbar>
   {#if desktop}<WindowControls />{/if}
 </header>

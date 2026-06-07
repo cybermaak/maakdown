@@ -21,6 +21,7 @@
     canonicalIdentity,
     closeTab,
     createWorkspace,
+    relocateTab,
     serializeSession,
     updateTab,
     type DocumentTab,
@@ -215,6 +216,29 @@
     if (!tab) return;
     commit({ ...workspace, closedTabs });
     void openPath(tab.path, tab.position);
+  }
+
+  async function relocateMissingTab(id: string) {
+    const tab = workspace.tabs.find((item) => item.id === id);
+    if (!tab) return;
+    try {
+      const opened = await openDocument();
+      const existing = workspace.tabs.find(
+        (item) => item.id !== id && canonicalIdentity(item.path) === canonicalIdentity(opened.path)
+      );
+      if (tab.watching) await unwatchDocument(tab.path);
+      commit(relocateTab(workspace, id, opened.path));
+      if (existing) return;
+      await parseOpened(id, opened);
+      commit({ ...workspace, recents: addRecent(workspace.recents, opened.path) });
+    } catch (error) {
+      if (String(error).toLowerCase().includes('cancel')) return;
+      commit(updateTab(workspace, id, {
+        loading: false,
+        error: error instanceof Error ? error.message : String(error),
+        watching: false
+      }));
+    }
   }
 
   function cycleTab(offset: number) {
@@ -652,7 +676,12 @@
       {/if}
 
       {#if activeTab?.error}
-        <ReaderError error={activeTab.error} onRetry={() => void openPath(activeTab.path)} onClose={() => handleClose(activeTab.id)} />
+        <ReaderError
+          error={activeTab.error}
+          onRetry={() => void openPath(activeTab.path)}
+          onRelocate={() => void relocateMissingTab(activeTab.id)}
+          onClose={() => handleClose(activeTab.id)}
+        />
       {:else if activeTab?.model}
         <div class="reader-grid">
           <DocumentView
