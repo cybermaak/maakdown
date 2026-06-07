@@ -12,7 +12,7 @@
       <path d="M955 335 V400"/>
     </g>
     <g fill="#ffffff" stroke="#303830" stroke-width="2">
-      <rect x="60" y="185" width="230" height="150" rx="8"/>
+      <rect x="60" y="185" width="270" height="150" rx="8"/>
       <rect x="410" y="185" width="270" height="150" rx="8"/>
       <rect x="800" y="185" width="310" height="150" rx="8"/>
       <rect x="410" y="400" width="270" height="82" rx="8"/>

@@ -246,6 +246,9 @@ See `docs/task-tracker.md`.
   it looked fine there.) The validator now strips namespace declarations before
   scanning, so legitimate SVGs pass while genuine remote references are still
   blocked. Added Go coverage for the namespace and remote-reference cases.
+- 2026-06-07: Fixed local images breaking after scrolling out of view and back:
+  image resolution now re-runs on virtualized range changes and reuses a
+  per-document URL cache, so remounted blocks re-attach their asset.
   the missing reusable Svelte `Callout`, `CodeBlockChrome`, `Popover`, `Tab`,
   `TocItem`, `Toolbar`, and `Wikilink` primitives; migrated live toolbar, tab,
   outline, and code-block chrome to the shared contracts; expanded the

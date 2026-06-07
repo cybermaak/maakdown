@@ -35,10 +35,16 @@
   let diagram = $state<{ title: string; html: string } | null>(null);
   let printMode = $state(false);
   let enhancedForPrint = new Set<string>();
+  // Cache resolved asset URLs per raw path so blocks that unmount and remount
+  // during virtualized scrolling re-attach their image without re-resolving.
+  let assetUrlCache = new Map<string, string>();
 
   $effect(() => {
     model;
     documentPath;
+    if (restoredPath !== documentPath) {
+      assetUrlCache = new Map();
+    }
     virtualizer = new BlockVirtualizer(model.blocks.length);
     const viewportHeight = untrack(() => surface?.clientHeight ?? 900);
     range = virtualizer.range(0, viewportHeight);
@@ -51,6 +57,13 @@
         updateRange();
       }
     });
+    void resolveVisibleImages();
+  });
+
+  // Re-resolve images whenever the mounted range changes, so blocks remounted by
+  // scrolling get their cached asset URL re-applied.
+  $effect(() => {
+    range;
     void resolveVisibleImages();
   });
 
@@ -206,18 +219,28 @@
         if (!raw || !shouldResolveAsset(raw) || image.dataset.assetResolved === 'true') {
           return;
         }
+        const cached = assetUrlCache.get(raw);
+        if (cached) {
+          image.src = cached;
+          image.dataset.assetResolved = 'true';
+          image.loading = 'lazy';
+          return;
+        }
         try {
           const fixture = (import.meta.env.DEV || import.meta.env.MODE === 'benchmark')
             ? new URLSearchParams(window.location.search).get('fixture')
             : null;
           if (fixture) {
             const fixtureDirectory = fixture.includes('/') ? fixture.slice(0, fixture.lastIndexOf('/') + 1) : '';
-            image.src = `/__maakdown_fixture/${encodeURI(`${fixtureDirectory}${raw}`)}`;
+            const url = `/__maakdown_fixture/${encodeURI(`${fixtureDirectory}${raw}`)}`;
+            assetUrlCache.set(raw, url);
+            image.src = url;
             image.dataset.assetResolved = 'true';
             image.loading = 'lazy';
             return;
           }
           const asset = await resolveAsset(documentPath, raw);
+          assetUrlCache.set(raw, asset.url);
           image.src = asset.url;
           image.dataset.assetResolved = 'true';
           image.loading = 'lazy';
