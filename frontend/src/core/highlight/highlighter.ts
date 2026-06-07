@@ -1,4 +1,5 @@
 import hljs from 'highlight.js/lib/common';
+import { buildShikiTheme } from './shikiTheme';
 
 export interface HighlightTiming {
   blockId: string;
@@ -38,14 +39,15 @@ class HighlightJsHighlighter implements Highlighter {
 
 class ShikiJsRegexHighlighter implements Highlighter {
   private highlighter: import('shiki').Highlighter | null = null;
-  private theme = 'github-light';
+  private themeName = '';
 
   async init(languages: string[], theme: string): Promise<void> {
     const shiki = await import('shiki');
-    this.theme = theme === 'dark' ? 'github-dark' : 'github-light';
+    const registration = buildShikiTheme(theme === 'dark' ? 'dark' : 'light');
+    this.themeName = registration.name;
     const supported = languages.filter((language) => language in shiki.bundledLanguages);
     this.highlighter = await shiki.createHighlighter({
-      themes: ['github-light', 'github-dark'],
+      themes: [registration],
       langs: supported.length > 0 ? supported : ['text'],
       engine: shiki.createJavaScriptRegexEngine()
     });
@@ -59,7 +61,7 @@ class ShikiJsRegexHighlighter implements Highlighter {
     const language = loaded.includes(lang) ? lang : 'text';
     const html = this.highlighter!.codeToHtml(code, {
       lang: language,
-      theme: this.theme
+      theme: this.themeName
     });
     return html.replace(
       '<pre',
@@ -68,7 +70,13 @@ class ShikiJsRegexHighlighter implements Highlighter {
   }
 
   async setTheme(theme: string): Promise<void> {
-    this.theme = theme === 'dark' ? 'github-dark' : 'github-light';
+    if (!this.highlighter) {
+      return;
+    }
+    // Rebuild from the live reader tokens so Shiki tracks the active app theme.
+    const registration = buildShikiTheme(theme === 'dark' ? 'dark' : 'light');
+    await this.highlighter.loadTheme(registration);
+    this.themeName = registration.name;
   }
 
   async dispose(): Promise<void> {
