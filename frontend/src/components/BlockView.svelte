@@ -18,12 +18,17 @@
   let observer: IntersectionObserver | undefined;
   let resizeObserver: ResizeObserver | undefined;
   let enhancementRun = 0;
+  let enhancedKey = '';
 
   $effect(() => {
     block;
     $appConfig.highlighterEngine;
     $appConfig.theme;
-    html = block.html;
+    const nextKey = `${block.id}:${$appConfig.highlighterEngine}:${$appConfig.theme}`;
+    if (enhancedKey !== nextKey) {
+      html = block.html;
+      enhancedKey = '';
+    }
     observer?.disconnect();
     if (!element || block.enhancement === 'none') {
       observeSize();
@@ -55,6 +60,7 @@
     const next = await enhancementManager.enhance(block);
     if (run === enhancementRun) {
       html = next;
+      enhancedKey = `${block.id}:${$appConfig.highlighterEngine}:${$appConfig.theme}`;
     }
   }
 

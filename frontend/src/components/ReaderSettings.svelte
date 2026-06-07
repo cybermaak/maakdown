@@ -33,4 +33,13 @@
     value={config.readerMeasure}
     onchange={(value: AppConfig['readerMeasure']) => update({ readerMeasure: value })}
   />
+  <SegmentedControl
+    label="Code highlighting"
+    options={[
+      { value: 'highlightjs', label: 'Highlight.js' },
+      { value: 'shiki-js-regex', label: 'Shiki' }
+    ]}
+    value={config.highlighterEngine}
+    onchange={(value: AppConfig['highlighterEngine']) => update({ highlighterEngine: value })}
+  />
 </div>
