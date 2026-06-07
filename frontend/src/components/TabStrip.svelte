@@ -44,6 +44,7 @@
         class:active={tab.id === activeTabId}
         type="button"
         role="tab"
+        data-tab-id={tab.id}
         aria-selected={tab.id === activeTabId}
         aria-keyshortcuts="Delete"
         tabindex={tab.id === activeTabId ? 0 : -1}

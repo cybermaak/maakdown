@@ -11,6 +11,9 @@
   import ReaderSettings from './components/ReaderSettings.svelte';
   import CommandPalette from './components/CommandPalette.svelte';
   import ReaderError from './components/ReaderError.svelte';
+  import ContextMenu from './components/ContextMenu.svelte';
+  import { openContextMenu, type ContextMenuItem } from './stores/contextMenu';
+  import { isInternalHref } from './core/navigation/navigation';
   import { disposeParserWorker, parseInWorker } from './core/workers/parserClient';
   import {
     activateOrAddTab,
@@ -32,6 +35,7 @@
     onFilesDropped,
     openDocument,
     openDocumentAt,
+    openExternal,
     readDocument,
     quitApp,
     printWindow,
@@ -386,6 +390,104 @@
     if (command === 'quit') void quitApp();
   }
 
+  function copyText(text: string) {
+    if (!text) return;
+    void navigator.clipboard?.writeText(text).catch(() => {});
+  }
+
+  function closeOthers(keepId: string) {
+    for (const id of workspace.tabs.map((tab) => tab.id)) {
+      if (id !== keepId) handleClose(id);
+    }
+  }
+
+  function readerMenuItems(target: HTMLElement): ContextMenuItem[] {
+    const selection = window.getSelection?.()?.toString().trim() ?? '';
+    const link = target.closest('a');
+    const image = target.closest('img');
+    const pre = target.closest('pre');
+    const items: ContextMenuItem[] = [];
+
+    if (link) {
+      const notePath = link.dataset.notePath;
+      const href = link.getAttribute('href') ?? '';
+      if (notePath) {
+        items.push({ label: 'Open note', onSelect: () => void openLinkedPath(notePath) });
+        items.push({ label: 'Copy note name', onSelect: () => copyText(link.textContent ?? '') });
+      } else if (href && !isInternalHref(href)) {
+        items.push({ label: 'Open link in browser', onSelect: () => void openExternal(new URL(href, window.location.href).toString()) });
+        items.push({ label: 'Copy link', onSelect: () => copyText(new URL(href, window.location.href).toString()) });
+      } else if (href) {
+        items.push({ label: 'Copy link', onSelect: () => copyText(href) });
+      }
+      return items;
+    }
+
+    if (image) {
+      items.push({ label: 'Copy image address', onSelect: () => copyText(image.currentSrc || image.src) });
+      return items;
+    }
+
+    if (selection) {
+      items.push({ label: 'Copy', onSelect: () => copyText(selection) });
+      items.push({ label: `Find “${selection.length > 24 ? `${selection.slice(0, 24)}…` : selection}”`, onSelect: () => { showSearch(); searchQuery = selection; searchIndex = 0; } });
+      return items;
+    }
+
+    if (pre) {
+      items.push({ label: 'Copy code', onSelect: () => copyText(pre.textContent ?? '') });
+      items.push({ separator: true });
+    }
+    items.push({ label: 'Find in document', onSelect: showSearch });
+    items.push({ label: 'Reload', disabled: !activeTab, onSelect: () => activeTab && void reloadDocument(activeTab.path) });
+    items.push({ label: 'Print', disabled: !activeTab?.model, onSelect: () => void printDocument() });
+    return items;
+  }
+
+  function commandMenuItems(): ContextMenuItem[] {
+    return [
+      { label: 'Open document…', onSelect: () => void handleOpen() },
+      { label: 'Find in document', disabled: !activeTab?.model, onSelect: showSearch },
+      { label: 'Command palette', onSelect: openPalette },
+      { separator: true },
+      { label: `Theme: ${$appConfig.theme}`, onSelect: cycleTheme }
+    ];
+  }
+
+  function handleContextMenu(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (target.closest('input, textarea')) return; // keep native editing menu in fields
+    event.preventDefault();
+
+    const tabEl = target.closest<HTMLElement>('.document-tab');
+    const headingEl = target.closest<HTMLElement>('.toc [data-heading-id]');
+    let items: ContextMenuItem[];
+
+    if (tabEl?.dataset.tabId) {
+      const id = tabEl.dataset.tabId;
+      const tab = workspace.tabs.find((item) => item.id === id);
+      items = [
+        { label: 'Close tab', danger: true, onSelect: () => handleClose(id) },
+        { label: 'Close other tabs', disabled: workspace.tabs.length < 2, onSelect: () => closeOthers(id) },
+        { label: 'Reopen closed tab', disabled: workspace.closedTabs.length === 0, onSelect: reopenClosed },
+        { separator: true },
+        { label: 'Copy path', disabled: !tab, onSelect: () => copyText(tab?.path ?? '') }
+      ];
+    } else if (headingEl?.dataset.headingId) {
+      const id = headingEl.dataset.headingId;
+      items = [
+        { label: 'Copy link to section', onSelect: () => copyText(`#${id}`) },
+        { label: 'Copy heading text', onSelect: () => copyText(headingEl.textContent?.trim() ?? '') }
+      ];
+    } else if (target.closest('.document-scroll')) {
+      items = readerMenuItems(target);
+    } else {
+      items = commandMenuItems();
+    }
+
+    openContextMenu(items, event.clientX, event.clientY);
+  }
+
   function handleKeydown(event: KeyboardEvent) {
     const mod = event.metaKey || event.ctrlKey;
     if (!mod) return;
@@ -494,6 +596,7 @@
     class:no-outline={!$appConfig.outlineVisible}
     class:outline-open={mobileOutlineOpen}
     class:metadata-open={mobileMetadataOpen}
+    oncontextmenu={handleContextMenu}
   >
     {#if $appConfig.outlineVisible}<aside class="sidebar" aria-label="Table of contents">
       <div class="sidebar-brand"><span class="brand-mark" aria-hidden="true">M</span><strong>Maakdown</strong></div>
@@ -590,5 +693,6 @@
       {/if}
       <p class="sr-only" aria-live="polite">{announcement}</p>
     </section>
+    <ContextMenu />
   </main>
 {/if}

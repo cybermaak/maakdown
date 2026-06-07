@@ -25,6 +25,7 @@
     {#each headings as heading}
       <button
         type="button"
+        data-heading-id={heading.id}
         class:active={heading.id === activeHeadingId}
         aria-current={heading.id === activeHeadingId ? 'location' : undefined}
         style={`--depth: ${heading.depth}`}
