@@ -100,7 +100,7 @@
 | P7.4 | Done | Add Windows signing runbook | P0 | non-secret signing docs and script exist | doc/script review; credentials remain external |
 | P7.5 | Blocked | Cross-platform packaging verification | P7.3/P7.4/P7.7 | builds validated on Windows/macOS/Linux | workflow implemented; requires GitHub-hosted runners and user signing credentials |
 | P7.6 | Done | UI-driven UAT regression suite | P8-P11 | optimized spec-level Playwright suite covers UAT-01 through UAT-07 with deterministic mocked native boundaries | `npm run uat` (14 passing, 11.6 s); `docs/uat-traceability.md` |
-| P7.7 | Todo | Create GitHub repository and activate hosted verification | User/Release | repository exists, Actions are enabled, `CI` and `Cross-platform release smoke` pass on `main`, and required checks are configured | first hosted Linux/macOS/Windows run links recorded in `DEV_CONTEXT.md`; no signing secrets committed |
+| P7.7 | In Progress | Create GitHub repository and activate hosted verification | User/Release | repository exists, Actions are enabled, `CI` and manually dispatched `Cross-platform release smoke` pass, and required checks are configured | verify workflow on `ci/sandbox`; record first hosted Linux/macOS/Windows run in `DEV_CONTEXT.md`; no signing secrets committed |
 
 ## P8 - Design System Foundation
 

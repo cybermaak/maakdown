@@ -9,8 +9,9 @@ The app is a viewer, not an editor. It renders CommonMark/GFM, code, KaTeX math,
 ## Current Phase
 
 **Phase:** P10 complete; P11 locally complete; P7.5/P11.11 externally blocked
-**Active focus:** create the GitHub repository, enable Actions, and record the
-first hosted Linux/macOS/Windows verification matrix before signing acceptance.
+**Active focus:** verify the manually dispatched cross-platform workflow on
+`ci/sandbox` and record the first hosted Linux/macOS/Windows build matrix before
+signing acceptance.
 
 ## Major Files And Directories
 
@@ -46,8 +47,9 @@ first hosted Linux/macOS/Windows verification matrix before signing acceptance.
   virtualizer, navigation, and rich enhancements.
 - `build/darwin/`, `build/windows/`, `build/signing/`: signing and packaging templates/documentation; secrets excluded.
 - `.github/workflows/ci.yml`: frontend, Go, Wails, and reader benchmark checks.
-- `.github/workflows/release-smoke.yml`: manual unsigned packaging matrix for
-  macOS, Windows, and Linux; also runs on pushes to `main`.
+- `.github/workflows/release-smoke.yml`: manually dispatched unsigned build,
+  test, artifact-validation, and short-lived artifact-upload matrix for macOS,
+  Windows, and Linux.
 
 ## Decisions
 
