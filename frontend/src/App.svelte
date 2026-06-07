@@ -525,7 +525,7 @@
         onForward={() => void moveHistory(1)}
         onOutline={toggleOutline}
       />
-      <TabStrip tabs={workspace.tabs} activeTabId={workspace.activeTabId} onActivate={activateTab} onClose={handleClose} onAdd={handleOpen} />
+      <TabStrip tabs={workspace.tabs} activeTabId={workspace.activeTabId} onActivate={activateTab} onClose={handleClose} />
       {#if searchOpen}
         <SearchBar
           query={searchQuery}

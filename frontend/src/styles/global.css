@@ -97,45 +97,52 @@ a {
   align-items: end;
 }
 
-.tab-actions {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  margin-left: auto;
-}
-
 .document-tab {
   display: flex;
-  align-items: center;
   min-width: 130px;
   max-width: 220px;
   height: 31px;
+  align-items: center;
+  gap: 7px;
+  padding: 0 6px 0 10px;
   border: 1px solid transparent;
   border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  color: var(--muted);
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
 }
 
 .document-tab.active {
   border-color: var(--border);
   border-bottom-color: var(--surface-bg);
   background: var(--surface-bg);
+  color: var(--text);
 }
 
-.tab-main {
-  display: flex;
-  min-width: 0;
-  flex: 1;
-  align-items: center;
-  gap: 7px;
-  padding: 0 4px 0 10px;
-  border: 0;
+.tab-title { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.document-tab i { width: 6px; height: 6px; flex: 0 0 6px; border-radius: 50%; background: var(--warning); }
+
+.tab-close {
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radius-sm);
   color: var(--muted);
-  background: transparent;
-  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--motion-fast, 120ms) ease, background var(--motion-fast, 120ms) ease;
 }
 
-.document-tab.active.tab-main { color: var(--text); }
-.tab-main span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.tab-main i { width: 6px; height: 6px; flex: 0 0 6px; border-radius: 50%; background: var(--warning); }
+.tab-close:hover { background: var(--active); color: var(--text); }
+
+.document-tab:hover .tab-close,
+.document-tab.active .tab-close,
+.document-tab:focus-visible .tab-close {
+  opacity: 1;
+}
 
 .muted,
 .status {
