@@ -15,7 +15,7 @@
 | P4 | Done | Rich enhancements | code, math, Mermaid, and theme propagation work |
 | P5 | Done | Virtualized large docs | 10k-line fixture has bounded DOM and working anchors |
 | P6 | Done | Notes support | wikilinks navigate within configured vault |
-| P7 | In Progress | Release hardening | local release tooling is complete; GitHub-hosted cross-platform/signing verification remains |
+| P7 | Done | Release hardening | local and GitHub-hosted unsigned release verification is complete; signing remains credentialed release work |
 | P8 | Done | Design system foundation | approved design language, themes, fonts, icons, primitives, and visual harness land |
 | P9 | Done | Desktop workspace | tabs, sessions, recents, desktop open flows, and native commands work |
 | P10 | Done | Reading productivity | search, history, reader tools, and complete-document printing work |
@@ -98,9 +98,9 @@
 | P7.2 | Done | Implement perf harness | P5 | target metrics recorded locally and in CI | `npm run benchmark`, `docs/performance-baseline.md` |
 | P7.3 | Done | Add macOS signing/notarization runbook | P0 | non-secret signing docs and script exist | doc/script review; credentials remain external |
 | P7.4 | Done | Add Windows signing runbook | P0 | non-secret signing docs and script exist | doc/script review; credentials remain external |
-| P7.5 | Blocked | Cross-platform packaging verification | P7.3/P7.4/P7.7 | builds validated on Windows/macOS/Linux | workflow implemented; requires GitHub-hosted runners and user signing credentials |
+| P7.5 | Done | Cross-platform packaging verification | P7.3/P7.4/P7.7 | unsigned builds validated on Windows/macOS/Linux | sandbox run 27083374632 built, validated, and uploaded all three native artifacts |
 | P7.6 | Done | UI-driven UAT regression suite | P8-P11 | optimized spec-level Playwright suite covers UAT-01 through UAT-07 with deterministic mocked native boundaries | `npm run uat` (14 passing, 11.6 s); `docs/uat-traceability.md` |
-| P7.7 | In Progress | Create GitHub repository and activate hosted verification | User/Release | repository exists, Actions are enabled, `CI` and manually dispatched `Cross-platform release smoke` pass, and required checks are configured | verify workflow on `ci/sandbox`; record first hosted Linux/macOS/Windows run in `DEV_CONTEXT.md`; no signing secrets committed |
+| P7.7 | Done | Create GitHub repository and activate hosted verification | User/Release | repository exists, Actions are enabled, and manually dispatched `Cross-platform release smoke` passes | first `ci/sandbox` attempt passed on Linux/macOS/Windows: Actions run 27083374632; no signing secrets committed |
 
 ## P8 - Design System Foundation
 

@@ -8,10 +8,9 @@ The app is a viewer, not an editor. It renders CommonMark/GFM, code, KaTeX math,
 
 ## Current Phase
 
-**Phase:** P10 complete; P11 locally complete; P7.5/P11.11 externally blocked
-**Active focus:** verify the manually dispatched cross-platform workflow on
-`ci/sandbox` and record the first hosted Linux/macOS/Windows build matrix before
-signing acceptance.
+**Phase:** P7 and P10 complete; P11 locally complete; P11.11 signing acceptance remains blocked
+**Active focus:** credentialed signing and cross-platform editorial acceptance
+when the user is ready to supply external signing infrastructure.
 
 ## Major Files And Directories
 
@@ -97,6 +96,9 @@ signing acceptance.
   history to the destination tab when following cross-file links.
 - Use the explicit `@ipc` adapter alias so UAT swaps only the native boundary
   without relying on fragile relative-import matching.
+- Keep cross-platform release smoke manually dispatched. Verify workflow
+  changes on the disposable remote `ci/sandbox` ref before promoting them to
+  `main`, and separate workflow defects from product test failures.
 - Keep tested multi-path watchers for all open documents; the supplemental
   review's active-only watcher staging suggestion is superseded by completed P9.
 
@@ -172,6 +174,11 @@ See `docs/task-tracker.md`.
   checkbox labels, async print announcements, and a standing multi-large-tab
   benchmark. Expanded UAT-01 through UAT-07 to 14 headless tests covering
   search, reader tools, print/cancel, and accessibility.
+- 2026-06-07: Created the GitHub repository and completed the first
+  `ci/sandbox` cross-platform release-smoke run. Run 27083374632 passed on its
+  first attempt: frontend checks, Go tests, native Wails builds, artifact
+  validation, and unsigned artifact uploads succeeded on macOS, Linux, and
+  Windows.
 
 ## Verification Commands
 
@@ -194,9 +201,9 @@ scripts/release-check.sh
 
 ## Current Verification Blockers
 
-- P7.7 requires the user to create/connect the GitHub repository. P7.5 and
-  P11.11 then require hosted Linux/macOS/Windows workflow runs; signed
-  acceptance additionally requires the user's external signing credentials.
+- P11.11 signed editorial acceptance requires the user's external macOS and
+  Windows signing credentials. Unsigned hosted builds now pass on all supported
+  platforms.
 
 ## Verification Notes
 

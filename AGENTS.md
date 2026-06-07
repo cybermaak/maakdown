@@ -13,6 +13,8 @@ This file defines repo-level operating rules for any agent working in Maakdown.
 ## Verification And Commit Policy
 
 - Every meaningful implementation change should end with verification that matches the scope of the change.
+- Check `git status` before editing. The worktree may contain user changes.
+- Prefer narrow changes and avoid bundling unrelated cleanup into product work.
 - Use the cheapest useful verification first:
   - docs/tree-only changes: `find`, `rg`, and `git status`
   - frontend changes: `npm install` if needed, then `npm run check` and `npm run build`
@@ -21,6 +23,31 @@ This file defines repo-level operating rules for any agent working in Maakdown.
 - After verification succeeds, commit the completed coherent unit of work unless the user asks not to.
 - Do not batch unrelated work into one commit when they can be split cleanly.
 - If verification is blocked by missing local tools or functional constraints, record the blocker in `DEV_CONTEXT.md`.
+
+## GitHub Actions Verification
+
+- Verify changes to GitHub Actions workflows or scripts used directly by those
+  workflows on the remote `ci/sandbox` branch before pushing them to `main`.
+- Keep `workflow_dispatch` available on the workflow under test.
+- Use this flow without creating a local sandbox branch:
+  1. Force-push local `HEAD` to `origin/ci/sandbox`.
+  2. Trigger the workflow with
+     `gh workflow run <workflow-file> --ref ci/sandbox`.
+  3. Watch the run for up to 10 minutes and inspect failures before touching
+     `main`.
+- Retry at most three remote attempts while correcting workflow definitions,
+  workflow scripts, runner setup, permissions, artifact handling, or other CI
+  infrastructure owned by the change.
+- If the run is still active after 10 minutes, stop watching and ask the user
+  to report its final result before continuing.
+- If the first sandbox attempt succeeds, the verified change may be pushed to
+  `main` after local verification.
+- If verification requires multiple sandbox attempts, pause for user
+  confirmation before pushing to `main`.
+- Cross-platform workflow verification establishes that the workflow,
+  supporting scripts, tests, and builds execute on the declared runners. Do
+  not fix unrelated product behavior merely to turn a workflow run green;
+  report product failures separately unless the user expands the task.
 
 ## DEV_CONTEXT.md Policy
 
@@ -93,6 +120,15 @@ Beast mode increases autonomy for implementation choices, not for remote pushes 
 4. Verify the result.
 5. Update `DEV_CONTEXT.md` and `docs/task-tracker.md`.
 6. Commit verified work.
+
+## Practical Defaults
+
+- For product bugs, identify the root cause, add or adjust a regression test,
+  then implement the fix.
+- For workflow failures, distinguish workflow/setup/script defects from product
+  test failures before editing code.
+- Keep workflow and release documentation aligned with the actual scripts and
+  triggers.
 
 ## Current Repo Expectations
 
