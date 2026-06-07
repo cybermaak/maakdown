@@ -2,7 +2,6 @@
   import { onDestroy, onMount } from 'svelte';
   import DesignSystemGallery from './design-system/DesignSystemGallery.svelte';
   import DocumentView from './components/DocumentView.svelte';
-  import MetadataPanel from './components/MetadataPanel.svelte';
   import TabStrip from './components/TabStrip.svelte';
   import TocSidebar from './components/TocSidebar.svelte';
   import WorkspaceEmptyState from './components/WorkspaceEmptyState.svelte';
@@ -293,11 +292,8 @@
   }
 
   function toggleMetadata() {
-    if (narrowWindow) {
-      mobileMetadataOpen = !mobileMetadataOpen;
-      mobileOutlineOpen = false;
-      return;
-    }
+    // The metadata masthead lives inline in the reading column, so it toggles
+    // the same way at every width.
     const next = {
       ...$appConfig,
       frontmatterDisplay: $appConfig.frontmatterDisplay === 'panel' ? 'hidden' as const : 'panel' as const
@@ -694,13 +690,8 @@
             searchQuery={searchOpen ? searchQuery : ''}
             searchBlockId={searchMatches[searchIndex]?.blockId ?? null}
             searchCaseSensitive={searchCaseSensitive}
+            showMasthead={$appConfig.frontmatterDisplay === 'panel'}
           />
-          {#if $appConfig.frontmatterDisplay === 'panel'}
-            <div class="metadata-wrap">
-              <button class="panel-resizer metadata" aria-label="Resize metadata" onpointerdown={(event) => resizePanel('metadata', event)}></button>
-              <MetadataPanel frontmatter={activeTab.model.frontmatter} />
-            </div>
-          {/if}
         </div>
       {:else if activeTab?.loading || workspace.restoring}
         <div class="workspace-loading" role="status">Opening document...</div>

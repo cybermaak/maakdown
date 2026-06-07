@@ -9,6 +9,7 @@
   import { openExternal, resolveAsset } from '@ipc';
   import { appConfig } from '../stores/configStore';
   import DiagramDialog from './DiagramDialog.svelte';
+  import Masthead from './Masthead.svelte';
 
   interface Props {
     model: DocumentModel;
@@ -19,10 +20,12 @@
     searchQuery?: string;
     searchBlockId?: string | null;
     searchCaseSensitive?: boolean;
+    showMasthead?: boolean;
   }
 
-  let { model, documentPath, onOpenDocument, initialScrollTop = 0, onPositionChange, searchQuery = '', searchBlockId = null, searchCaseSensitive = false }: Props = $props();
+  let { model, documentPath, onOpenDocument, initialScrollTop = 0, onPositionChange, searchQuery = '', searchBlockId = null, searchCaseSensitive = false, showMasthead = false }: Props = $props();
   let surface = $state<HTMLElement | undefined>();
+  let mastheadEl = $state<HTMLElement | undefined>();
   let virtualizer = new BlockVirtualizer(0);
   let range = $state<VirtualRange>({ start: 0, end: 0, top: 0, bottom: 0 });
   let measurementFrame = 0;
@@ -122,7 +125,10 @@
       return;
     }
     updateRange();
-    const startBlock = model.blocks[virtualizer.indexAt(surface?.scrollTop ?? 0)];
+    // The masthead scrolls with the document but is outside the virtualizer's
+    // coordinate space, so discount its height when mapping scroll to a block.
+    const headerOffset = mastheadEl?.offsetHeight ?? 0;
+    const startBlock = model.blocks[virtualizer.indexAt(Math.max(0, (surface?.scrollTop ?? 0) - headerOffset))];
     const activeHeadingId = getActiveHeading(model, {
       startBlockId: startBlock?.id ?? null,
       endBlockId: model.blocks[Math.max(range.end - 1, range.start)]?.id ?? null
@@ -278,6 +284,11 @@
   onkeydown={handleKeydown}
   onscroll={handleScroll}
 >
+  {#if showMasthead}
+    <div class="masthead-host" bind:this={mastheadEl}>
+      <Masthead frontmatter={model.frontmatter} path={documentPath} />
+    </div>
+  {/if}
   <div class="virtual-spacer" style={`height: ${range.top}px`} aria-hidden="true"></div>
   {#each model.blocks.slice(range.start, range.end) as block (block.id)}
     <BlockView

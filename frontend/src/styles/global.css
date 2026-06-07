@@ -369,6 +369,23 @@ a {
   height: calc(100vh - var(--toolbar-height) - var(--tabbar-height) - 2px);
 }
 
+/* Metadata masthead: a quiet frontmatter band atop the reading column. */
+.reader-masthead {
+  max-width: var(--reading-measure);
+  margin: 0 auto 26px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.masthead-top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 11px; }
+.masthead-path { display: flex; align-items: center; gap: 7px; min-width: 0; flex: 1; color: var(--muted); }
+.masthead-path-text { font-family: var(--font-mono); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.masthead-bottom { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.masthead-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.masthead-meta { margin: 0 0 0 auto; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.masthead-meta-item { font-size: 12px; color: var(--muted); }
+.masthead-meta-item dt { display: inline; font-weight: 600; letter-spacing: 0.03em; }
+.masthead-meta-item dd { display: inline; margin: 0; color: var(--text); }
+
 .document-scroll {
   min-width: 0;
   overflow: auto;

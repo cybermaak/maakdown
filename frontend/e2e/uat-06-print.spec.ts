@@ -8,6 +8,9 @@ test('UAT-06 prints a fully mounted document and restores virtualization', async
     documents: [{ path: DOC_PATH, fixture: 'maakdown-reader-evaluation.md', trustedRoot: '/uat' }],
     session: { tabs: [{ path: DOC_PATH }], activePath: DOC_PATH }
   });
+  // A short viewport guarantees the virtualized slice is smaller than the full
+  // document, so print expansion stays observable regardless of column width.
+  await page.setViewportSize({ width: 1024, height: 400 });
   await gotoApp(page);
   await expectReaderReady(page);
   const before = await page.locator('.doc-block').count();
