@@ -264,6 +264,11 @@ See `docs/task-tracker.md`.
   measured ~11ms so the cache was a minor win. An autonomous native
   UI-verification harness (CDP-driven real build, no UI automation) is deferred
   as P11.15.
+- 2026-06-07: Repo cleanup — deleted orphaned `TocSidebar.svelte` and
+  `MetadataPanel.svelte` (superseded by Minimap/Masthead, no importers); now
+  commit all generated `frontend/wailsjs/` bindings (dropped the `**/*.ts`
+  ignore) so they stay consistent and the frontend builds in CI without a
+  Go/Wails toolchain.
   the missing reusable Svelte `Callout`, `CodeBlockChrome`, `Popover`, `Tab`,
   `TocItem`, `Toolbar`, and `Wikilink` primitives; migrated live toolbar, tab,
   outline, and code-block chrome to the shared contracts; expanded the

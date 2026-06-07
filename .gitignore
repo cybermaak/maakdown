@@ -32,7 +32,9 @@ yarn-debug.log*
 build/bin/
 /dist/
 frontend/package.json.md5
-frontend/wailsjs/**/*.ts
+# Generated Wails bindings (frontend/wailsjs/) are committed so the frontend
+# type-checks/builds in CI without a Go/Wails toolchain. Regenerate with
+# `wails generate module`.
 *.app
 *.dmg
 *.pkg

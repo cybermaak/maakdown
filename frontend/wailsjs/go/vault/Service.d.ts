@@ -3,3 +3,5 @@
 import {vault} from '../models';
 
 export function GetVaultIndex(arg1:string):Promise<vault.VaultIndex>;
+
+export function Invalidate():Promise<void>;

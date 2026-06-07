@@ -5,3 +5,7 @@
 export function GetVaultIndex(arg1) {
   return window['go']['vault']['Service']['GetVaultIndex'](arg1);
 }
+
+export function Invalidate() {
+  return window['go']['vault']['Service']['Invalidate']();
+}
