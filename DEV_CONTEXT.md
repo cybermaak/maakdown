@@ -221,7 +221,18 @@ See `docs/task-tracker.md`.
   instead of a text I-beam; (5) right-clicking a text selection no longer clears
   the highlight (the menu skips focus while a selection exists, with a
   window-level Escape fallback).
-- 2026-06-07: Audited P8/P9 completion against the implementation plan. Added
+- 2026-06-07: Added `CFBundleIdentifier` (com.maak.maakdown) and `APPL` package
+  type to `build/darwin/Info.plist`; the bundle had none, so macOS never
+  registered the app (also required for signing/notarization).
+- 2026-06-07: Implemented design-handoff Panels option A ("Masthead + minimap",
+  from claude.ai/design, two separate commits). (1) Metadata masthead: the right
+  metadata rail is replaced by a quiet frontmatter band atop the reading column
+  (path, status badge, tags, remaining key/values); it scrolls with the document
+  and scroll-spy discounts its height; the metadata toggle shows/hides it.
+  (2) Outline minimap: the left TOC rail is replaced by an edge tick strip that
+  hover-expands to a floating outline; the closed panel is `inert`. The reader is
+  now a single column with both panels summoned on demand. Build artifacts
+  (`package.json.md5`, generated `wailsjs/*.ts`) are gitignored.
   the missing reusable Svelte `Callout`, `CodeBlockChrome`, `Popover`, `Tab`,
   `TocItem`, `Toolbar`, and `Wikilink` primitives; migrated live toolbar, tab,
   outline, and code-block chrome to the shared contracts; expanded the
