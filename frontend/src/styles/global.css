@@ -83,10 +83,20 @@ a {
   margin-left: auto;
 }
 
+/* The toolbar title is a label, never selectable text. */
+.toolbar-leading,
+.toolbar-leading strong,
+.brand-mark {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 /* Frameless custom title bar: the toolbar is the drag handle; interactive
-   groups opt out so clicks reach their controls. */
+   groups opt out so clicks reach their controls. Use the default arrow cursor
+   over the drag region instead of a text I-beam. */
 .workspace-shell.frameless .workspace-toolbar {
   --wails-draggable: drag;
+  cursor: default;
 }
 
 .workspace-shell.frameless .toolbar-nav,
