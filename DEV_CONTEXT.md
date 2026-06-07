@@ -211,6 +211,16 @@ See `docs/task-tracker.md`.
   region plus minimise/maximise/close), new Go window methods and IPC wrappers,
   desktop-runtime gated (`docs/design-system/custom-titlebar.md`). Cross-platform
   title-bar visual acceptance on Windows/Linux remains a platform-owner step.
+- 2026-06-07: Title-bar/context-menu follow-ups (five separate commits):
+  (1) the title bar and metadata panel suppress the native menu without a
+  redundant custom menu — the custom menu is limited to reader, tabs, and
+  outline; (2) OS-dependent window controls — macOS shows left-aligned
+  traffic lights (close/minimise/zoom, glyphs on hover) while Windows/Linux keep
+  the trailing cluster, via `isMacPlatform()`; (3) the toolbar title is a
+  non-selectable label; (4) the frameless drag region uses the default cursor
+  instead of a text I-beam; (5) right-clicking a text selection no longer clears
+  the highlight (the menu skips focus while a selection exists, with a
+  window-level Escape fallback).
 - 2026-06-07: Audited P8/P9 completion against the implementation plan. Added
   the missing reusable Svelte `Callout`, `CodeBlockChrome`, `Popover`, `Tab`,
   `TocItem`, `Toolbar`, and `Wikilink` primitives; migrated live toolbar, tab,
