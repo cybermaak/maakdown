@@ -10,6 +10,10 @@ sidebar outline and search, and pick up right where you left off next time.
 
 Works on Windows, macOS, and Linux.
 
+<br />
+
+<img src="docs/screenshots/reading-light.png" alt="Maakdown reading view with an outline sidebar, rendered document, and metadata panel" width="900" />
+
 </div>
 
 ---
@@ -46,6 +50,37 @@ Works on Windows, macOS, and Linux.
 | **Commands** | Native menus, keyboard shortcuts, and an in-app command palette |
 | **Output** | Print and system print-to-PDF of the complete document, not just the visible slice |
 | **Appearance** | Light/dark themes, focus mode, and configurable font, size, line height, and measure |
+
+## Screenshots
+
+<table>
+  <tr>
+    <td width="50%">
+      <img src="docs/screenshots/reading-dark.png" alt="Dark theme showing rendered Mermaid diagrams" />
+      <p align="center"><em>Dark theme with rendered Mermaid diagrams</em></p>
+    </td>
+    <td width="50%">
+      <img src="docs/screenshots/code-and-math.png" alt="Syntax-highlighted code and KaTeX math" />
+      <p align="center"><em>Syntax-highlighted code and KaTeX math</em></p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <img src="docs/screenshots/command-palette.png" alt="Command palette open over a document" />
+      <p align="center"><em>Command palette for fast keyboard navigation</em></p>
+    </td>
+    <td width="50%" valign="top">
+      <p>Every screenshot above is generated from the real app rendering the sample documents in
+      <code>fixtures/</code>. Regenerate them at any time with:</p>
+      <pre><code>cd frontend
+node scripts/capture-readme-screenshots.mjs</code></pre>
+      <p>The script drives the actual Svelte frontend in headless Chromium via the dev fixture
+      loader, so the images always reflect current rendering.</p>
+    </td>
+  </tr>
+</table>
+
+> Screenshots use the bundled `fixtures/medium-technical-doc.md` evaluation document.
 
 ## Architecture
 
