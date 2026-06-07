@@ -111,6 +111,11 @@
   }
 
   function handleScroll() {
+    // A queued scroll event can fire while the surface is being detached during
+    // tab close; bail before touching the (possibly cleared) model.
+    if (!surface || !surface.isConnected) {
+      return;
+    }
     updateRange();
     const startBlock = model.blocks[virtualizer.indexAt(surface?.scrollTop ?? 0)];
     const activeHeadingId = getActiveHeading(model, {
