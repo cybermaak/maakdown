@@ -2,10 +2,11 @@
   import { ArrowLeft, ArrowRight, Eye, FolderOpen, Focus, Moon, PanelLeft, PanelRight, Plus, RefreshCw, Search, Settings2, Sun } from '@lucide/svelte';
   import { IconButton, StatusIndicator, Toolbar } from '../design-system';
   import WindowControls from './WindowControls.svelte';
-  import { isDesktopRuntime } from '@ipc';
+  import { isDesktopRuntime, isMacPlatform } from '@ipc';
   import type { AppConfig } from '../stores/configStore';
 
   const desktop = isDesktopRuntime();
+  const mac = desktop && isMacPlatform();
 
   interface Props {
     title: string;
@@ -31,6 +32,7 @@
 </script>
 
 <header class="workspace-toolbar">
+  {#if mac}<WindowControls mac />{/if}
   <div class="toolbar-leading">
     <span class="brand-mark" aria-hidden="true">M</span>
     <strong>{title || 'Maakdown'}</strong>
@@ -56,5 +58,5 @@
     <IconButton icon={Settings2} label="Command palette" onclick={() => window.dispatchEvent(new CustomEvent('maakdown:palette'))} />
     <IconButton icon={config.theme === 'dark' ? Sun : Moon} label={`Theme: ${config.theme}`} onclick={onTheme} />
   </Toolbar>
-  {#if desktop}<WindowControls />{/if}
+  {#if desktop && !mac}<WindowControls />{/if}
 </header>

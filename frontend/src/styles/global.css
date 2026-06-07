@@ -128,6 +128,31 @@ a {
 .window-control:hover { background: var(--active); color: var(--text); }
 .window-control.close:hover { background: var(--danger); color: #fff; }
 
+/* macOS traffic lights: leading edge, 12px dots, glyphs revealed on hover. */
+.window-controls.mac {
+  gap: 8px;
+  margin-right: 8px;
+  padding-left: 4px;
+  align-items: center;
+}
+
+.window-controls.mac .traffic {
+  display: inline-grid;
+  width: 12px;
+  height: 12px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: transparent; /* Lucide glyph uses currentColor; hidden until hover */
+  cursor: default;
+}
+
+.window-controls.mac .traffic.close { background: #ff5f57; }
+.window-controls.mac .traffic.minimise { background: #febc2e; }
+.window-controls.mac .traffic.maximise { background: #28c840; }
+.window-controls.mac:hover .traffic { color: rgba(0, 0, 0, 0.55); }
+
 .context-menu {
   position: fixed;
   z-index: 61;

@@ -249,6 +249,10 @@ export function isDesktopRuntime(): boolean {
   return false;
 }
 
+export function isMacPlatform(): boolean {
+  return false;
+}
+
 export async function windowMinimise(): Promise<void> {
   // no-op
 }

@@ -118,6 +118,11 @@ export function isDesktopRuntime(): boolean {
   return typeof window !== 'undefined' && Boolean((window as unknown as { runtime?: unknown }).runtime);
 }
 
+export function isMacPlatform(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  return /Mac|iPhone|iPad/i.test(navigator.userAgent ?? '');
+}
+
 export async function windowMinimise(): Promise<void> {
   await WindowMinimise();
 }
