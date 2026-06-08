@@ -1,0 +1,59 @@
+{
+  "fill" : {
+    "automatic-gradient" : "srgb:0.80502,0.87846,0.86551,1.00000"
+  },
+  "groups" : [
+    {
+      "layers" : [
+        {
+          "hidden" : false,
+          "image-name" : "maakdown_light 2.png",
+          "name" : "maakdown_light 2",
+          "opacity-specializations" : [
+            {
+              "appearance" : "dark",
+              "value" : 0
+            }
+          ],
+          "position" : {
+            "scale" : 1.05,
+            "translation-in-points" : [
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "image-name" : "maakdown_dark 3.png",
+          "name" : "maakdown_dark 3",
+          "opacity-specializations" : [
+            {
+              "appearance" : "light",
+              "value" : 0
+            }
+          ],
+          "position" : {
+            "scale" : 1.05,
+            "translation-in-points" : [
+              0,
+              0
+            ]
+          }
+        }
+      ],
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "squares" : [
+      "macOS"
+    ]
+  }
+}

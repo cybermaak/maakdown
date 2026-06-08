@@ -10,6 +10,10 @@
   <string>Maakdown</string>
   <key>CFBundleName</key>
   <string>Maakdown</string>
+  <key>CFBundleIconFile</key>
+  <string>maakdown</string>
+  <key>CFBundleIconName</key>
+  <string>maakdown</string>
   <key>NSHighResolutionCapable</key>
   <true/>
   <key>NSSupportsAutomaticGraphicsSwitching</key>

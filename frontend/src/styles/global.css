@@ -294,6 +294,7 @@ a {
   flex: 0 0 28px;
   object-fit: contain;
   border-radius: var(--radius-sm);
+  filter: var(--brand-mark-shadow);
 }
 
 .brand-wordmark {

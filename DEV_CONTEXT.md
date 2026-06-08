@@ -49,6 +49,9 @@ when the user is ready to supply external signing infrastructure.
   build and static fixture host for reader/workspace benchmarks, visual smoke
   checks, and UAT.
 - `build/darwin/`, `build/windows/`, `build/signing/`: signing and packaging templates/documentation; secrets excluded.
+- `scripts/postbuild-darwin.sh`: compiles `docs/design-system/maakdown.icon` via
+  `actool` into `Assets.car` + `maakdown.icns`, replaces the Wails-generated
+  `iconfile.icns`, and touches the bundle for Finder.
 - `.github/workflows/ci.yml`: frontend, Go, Wails, and reader benchmark checks.
 - `.github/workflows/release-smoke.yml`: manually dispatched unsigned build,
   test, artifact-validation, and short-lived artifact-upload matrix for macOS,
@@ -116,6 +119,15 @@ when the user is ready to supply external signing infrastructure.
   than one trailing cluster, per Apple HIG, Windows Fluent, and GNOME HIG.
 - Build the Shiki theme from the live semantic reader tokens so both
   highlighters share one palette.
+- Use Apple's `.icon` format (Icon Composer) for the macOS app icon; compile it
+  with `xcrun actool` in `scripts/postbuild-darwin.sh` to produce `Assets.car`
+  (themed) and `maakdown.icns` (legacy fallback).  `Info.plist` carries both
+  `CFBundleIconFile` and `CFBundleIconName` pointing to `maakdown`.  The
+  Wails-generated `iconfile.icns` is removed so it cannot compete.
+- Use `maakdown_light.png` for `build/appicon.png` (Windows/Linux) and for the
+  light-theme title bar mark; use `maakdown_dark.png` for the dark-theme title
+  bar mark.  The toolbar brand switches via
+  `config.theme === 'dark' ? appIconDark : appIconLight`.
 
 ## Planned Tasks
 
@@ -281,6 +293,14 @@ See `docs/task-tracker.md`.
   watching is ambient) and the existing changed dot. The toolbar keeps a static
   app brand (real `app-icon.png` + "Maakdown" wordmark) — app identity, not the
   active document.
+- 2026-06-08: Implemented the full app icon pipeline.  macOS uses the `.icon`
+  bundle compiled by `actool` into `Assets.car` + `maakdown.icns` via
+  `scripts/postbuild-darwin.sh`; `Info.plist` uses `CFBundleIconFile` and
+  `CFBundleIconName` pointing to `maakdown`.  Windows/Linux uses the light PNG
+  via `build/appicon.png`.  The toolbar brand mark switches between
+  `app-icon-light.png` and `app-icon-dark.png` based on the active theme, with
+  a theme-aware `--brand-mark-shadow` drop-shadow token that follows the icon's
+  alpha contour.  Documented the full update procedure in `AGENTS.md`.
   the missing reusable Svelte `Callout`, `CodeBlockChrome`, `Popover`, `Tab`,
   `TocItem`, `Toolbar`, and `Wikilink` primitives; migrated live toolbar, tab,
   outline, and code-block chrome to the shared contracts; expanded the

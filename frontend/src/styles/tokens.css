@@ -130,6 +130,7 @@
   --duration-fast: 120ms;
   --duration-base: 180ms;
   --motion-fast: var(--duration-fast) var(--ease-standard);
+  --brand-mark-shadow: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.2));
 }
 
 :root[data-theme="dark"] {
@@ -179,4 +180,5 @@
   --syntax-built-in: #d8a7e8;
   --syntax-attribute: #8fd0c2;
   --syntax-variable: #f0c987;
+  --brand-mark-shadow: drop-shadow(0 1px 3px rgba(255, 255, 255, 0.25));
 }

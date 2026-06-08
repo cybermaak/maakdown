@@ -4,7 +4,8 @@
   import WindowControls from './WindowControls.svelte';
   import { isDesktopRuntime, isMacPlatform } from '@ipc';
   import type { AppConfig } from '../stores/configStore';
-  import appIcon from '../assets/app-icon.png';
+  import appIconLight from '../assets/app-icon-light.png';
+  import appIconDark from '../assets/app-icon-dark.png';
 
   const desktop = isDesktopRuntime();
   const mac = desktop && isMacPlatform();
@@ -33,7 +34,7 @@
        watch state) lives in the tab strip, like VS Code and browsers; the
        toolbar never re-states the active tab's title. -->
   <div class="toolbar-leading">
-    <img src={appIcon} class="brand-mark" alt="Maakdown" />
+    <img src={config.theme === 'dark' ? appIconDark : appIconLight} class="brand-mark" alt="Maakdown" />
     <strong class="brand-wordmark">Maakdown</strong>
   </div>
   <!-- Structural and navigation controls sit at the leading edge (HIG/Fluent/GNOME). -->

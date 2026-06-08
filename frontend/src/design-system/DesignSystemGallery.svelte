@@ -13,6 +13,7 @@
   import TocItem from './TocItem.svelte';
   import Toolbar from './Toolbar.svelte';
   import Wikilink from './Wikilink.svelte';
+  import appIconLight from '../assets/app-icon-light.png';
 
   let theme = $state<'system' | 'light' | 'dark'>('system');
   let activeTab = $state('guide');
@@ -21,7 +22,7 @@
 
 <main class="gallery">
   <header>
-    <span class="brand-mark" aria-hidden="true">M</span>
+    <img src={appIconLight} class="brand-mark" aria-hidden="true" alt="Maakdown Icon" />
     <div>
       <h1>Maakdown Design System</h1>
       <p>Production controls and semantic states</p>

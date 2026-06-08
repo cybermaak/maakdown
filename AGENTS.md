@@ -130,6 +130,78 @@ Beast mode increases autonomy for implementation choices, not for remote pushes 
 - Keep workflow and release documentation aligned with the actual scripts and
   triggers.
 
+## App Icon Update Procedure
+
+The app has three icon surfaces that must be updated together:
+
+### Source Files
+
+| File | Purpose |
+|---|---|
+| `docs/design-system/maakdown.icon` | Apple Icon Composer bundle (layered, supports macOS light/dark/tinted theming) |
+| `docs/design-system/maakdown_light.png` | Light-theme variant (used for non-macOS `build/appicon.png` and title bar) |
+| `docs/design-system/maakdown_dark.png` | Dark-theme variant (used for title bar in dark mode) |
+
+### 1. macOS App Icon (Finder / Dock)
+
+Wails auto-generates a legacy `iconfile.icns` from `build/appicon.png`, but macOS
+theming requires the `.icon` bundle compiled by Apple's `actool` into `Assets.car`
+plus a proper `maakdown.icns` fallback. The postbuild script handles this:
+
+```bash
+wails build -platform darwin/universal
+scripts/postbuild-darwin.sh            # compiles .icon → Assets.car + maakdown.icns
+```
+
+`scripts/postbuild-darwin.sh` does the following:
+1. Runs `xcrun actool` to compile `docs/design-system/maakdown.icon` into
+   `Assets.car` (themed asset catalog) and `maakdown.icns` (legacy fallback).
+2. Copies both into `Maakdown.app/Contents/Resources/`.
+3. Removes the Wails-generated `iconfile.icns` so it cannot compete.
+4. Touches the app bundle so Finder re-reads icon metadata.
+
+`build/darwin/Info.plist` uses both `CFBundleIconFile` and `CFBundleIconName`
+pointing to `maakdown` (matching the `actool --app-icon` name).
+
+Requires: Xcode command-line tools (`xcrun actool`).
+
+### 2. Windows / Linux App Icon
+
+Wails generates the Windows `.ico` and Linux icon from `build/appicon.png`.
+Update it by copying the light-theme PNG:
+
+```bash
+cp docs/design-system/maakdown_light.png build/appicon.png
+```
+
+This is done before `wails build`; Wails handles the rest automatically.
+
+### 3. Title Bar Icon (Frontend)
+
+The toolbar brand mark uses theme-aware icons imported as Vite assets:
+
+- `frontend/src/assets/app-icon-light.png` — shown when theme is light
+- `frontend/src/assets/app-icon-dark.png` — shown when theme is dark
+
+Regenerate from the source PNGs (scaled to 64×64):
+
+```bash
+sips -z 64 64 docs/design-system/maakdown_light.png --out frontend/src/assets/app-icon-light.png
+sips -z 64 64 docs/design-system/maakdown_dark.png  --out frontend/src/assets/app-icon-dark.png
+```
+
+The icon switch is wired in `WorkspaceToolbar.svelte` via
+`config.theme === 'dark' ? appIconDark : appIconLight`.
+
+### Full Update Checklist
+
+1. Update source files in `docs/design-system/`.
+2. Regenerate title bar icons: `sips -z 64 64 ...` (see above).
+3. Copy light PNG to `build/appicon.png`.
+4. Run `wails build -platform darwin/universal`.
+5. Run `scripts/postbuild-darwin.sh`.
+6. Optionally `killall Dock; killall Finder` to clear macOS icon cache.
+
 ## Current Repo Expectations
 
 - `docs/markdown-viewer-design-spec.md` and `docs/markdown-viewer-implementation-plan.md` are the current source of product and architecture truth.
