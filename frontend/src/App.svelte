@@ -285,8 +285,10 @@
   }
 
   function cycleTheme() {
-    const order = ['system', 'light', 'dark'] as const;
-    const next = { ...$appConfig, theme: order[(order.indexOf($appConfig.theme) + 1) % order.length] };
+    // Toggle against the currently *resolved* mode so one click always flips the
+    // visible theme. Cycling through 'system' previously produced a no-op when it
+    // resolved to the same mode already showing (e.g. dark -> system on a dark OS).
+    const next = { ...$appConfig, theme: resolveTheme($appConfig.theme) === 'dark' ? 'light' as const : 'dark' as const };
     appConfig.set(next);
     if (!fixture) void setConfig(next);
   }

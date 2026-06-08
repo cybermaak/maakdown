@@ -301,6 +301,10 @@ See `docs/task-tracker.md`.
   `app-icon-light.png` and `app-icon-dark.png` based on the active theme, with
   a theme-aware `--brand-mark-shadow` drop-shadow token that follows the icon's
   alpha contour.  Documented the full update procedure in `AGENTS.md`.
+- 2026-06-08: Fixed the theme toggle needing two clicks. The button cycled
+  system -> light -> dark, so e.g. dark -> system on a dark OS resolved to the
+  same visible mode (icon changed, theme didn't). It now toggles against the
+  resolved mode (light <-> dark), so one click always flips the visible theme.
   the missing reusable Svelte `Callout`, `CodeBlockChrome`, `Popover`, `Tab`,
   `TocItem`, `Toolbar`, and `Wikilink` primitives; migrated live toolbar, tab,
   outline, and code-block chrome to the shared contracts; expanded the
