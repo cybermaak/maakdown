@@ -245,6 +245,7 @@ a {
 
 .tab-title { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .document-tab i { width: 6px; height: 6px; flex: 0 0 6px; border-radius: 50%; background: var(--warning); }
+.document-tab i.watching { background: var(--success); }
 
 .tab-close {
   display: inline-grid;
@@ -288,15 +289,11 @@ a {
 }
 
 .brand-mark {
-  display: inline-grid;
   width: 28px;
   height: 28px;
-  place-items: center;
   flex: 0 0 28px;
+  object-fit: contain;
   border-radius: var(--radius-sm);
-  background: var(--brand);
-  color: var(--brand-ink);
-  font-weight: 700;
 }
 
 .toolbar-actions {

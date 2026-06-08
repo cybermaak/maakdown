@@ -1,6 +1,6 @@
 <script lang="ts">
   import { ArrowLeft, ArrowRight, Eye, FolderOpen, Focus, Moon, RefreshCw, Search, Settings2, Sun } from '@lucide/svelte';
-  import { IconButton, StatusIndicator, Toolbar } from '../design-system';
+  import { IconButton, Toolbar } from '../design-system';
   import WindowControls from './WindowControls.svelte';
   import { isDesktopRuntime, isMacPlatform } from '@ipc';
   import type { AppConfig } from '../stores/configStore';
@@ -9,9 +9,6 @@
   const mac = desktop && isMacPlatform();
 
   interface Props {
-    title: string;
-    watching: boolean;
-    changed: boolean;
     reloading: boolean;
     canBack: boolean;
     canForward: boolean;
@@ -26,18 +23,13 @@
     onForward: () => void;
   }
 
-  let { title, watching, changed, reloading, canBack, canForward, config, onOpen, onTheme, onSearch, onSettings, onFocus, onReload, onBack, onForward }: Props = $props();
+  let { reloading, canBack, canForward, config, onOpen, onTheme, onSearch, onSettings, onFocus, onReload, onBack, onForward }: Props = $props();
 </script>
 
 <header class="workspace-toolbar">
   {#if mac}<WindowControls mac />{/if}
-  <div class="toolbar-leading">
-    <span class="brand-mark" aria-hidden="true">M</span>
-    <strong>{title || 'Maakdown'}</strong>
-    {#if reloading}<StatusIndicator label="Reloading" tone="neutral" />
-    {:else if changed}<StatusIndicator label="Changed" tone="warning" />
-    {:else if watching}<StatusIndicator label="Watching" tone="success" />{/if}
-  </div>
+  <!-- Document identity (icon + title + watch state) lives in the tab strip, like
+       VS Code and browsers; the toolbar never re-states the active tab. -->
   <!-- Structural and navigation controls sit at the leading edge (HIG/Fluent/GNOME). -->
   <Toolbar class="toolbar-nav" label="Navigation">
     <IconButton icon={FolderOpen} label="Open document" onclick={onOpen} />

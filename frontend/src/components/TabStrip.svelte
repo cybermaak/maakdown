@@ -38,6 +38,7 @@
         label={tab.title}
         active={tab.id === activeTabId}
         changed={tab.changed}
+        watching={tab.watching}
         tabindex={tab.id === activeTabId ? 0 : -1}
         onactivate={() => onActivate(tab.id)}
         onclose={() => onClose(tab.id)}

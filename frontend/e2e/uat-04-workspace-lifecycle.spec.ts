@@ -67,9 +67,10 @@ test.describe('UAT-04 Desktop workspace lifecycle', () => {
     const before = await surface.evaluate((el) => el.scrollTop);
     expect(before).toBeGreaterThan(0);
 
-    // External change triggers a reload that keeps the reading position
+    // External change triggers a reload that keeps the reading position.
+    // Watch state now lives on the tab (the toolbar no longer restates identity).
     await emitNative(page, 'file-changed', DOSSIER);
-    await expect(page.getByText('Watching', { exact: true })).toBeVisible();
+    await expect(page.locator('.tab-dot.watching').first()).toBeVisible();
     await expect
       .poll(() => surface.evaluate((el) => el.scrollTop))
       .toBeGreaterThan(before - 100);

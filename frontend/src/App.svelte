@@ -615,9 +615,6 @@
   >
     <section class="workspace-main">
       <WorkspaceToolbar
-        title={activeTab?.title ?? ''}
-        watching={activeTab?.watching ?? false}
-        changed={activeTab?.changed ?? false}
         reloading={activeTab?.reloading ?? false}
         canBack={(activeHistory?.index ?? -1) > 0}
         canForward={Boolean(activeHistory && activeHistory.index < activeHistory.entries.length - 1)}
