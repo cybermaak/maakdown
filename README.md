@@ -5,14 +5,14 @@
 **A beautiful, distraction-free desktop app for reading your Markdown.**
 
 Open any Markdown file and see it the way you meant it — clean typography, rich code, math, and
-diagrams, all in a calm reading workspace. Keep many documents open in tabs, jump around with a
-sidebar outline and search, and pick up right where you left off next time.
+diagrams, all in a calm reading workspace. Keep many documents open in tabs, jump around with the
+outline and search, and pick up right where you left off next time.
 
 Works on Windows, macOS, and Linux.
 
 <br />
 
-<img src="docs/screenshots/reading-light.png" alt="Maakdown reading view with an outline sidebar, rendered document, and metadata panel" width="900" />
+<img src="docs/screenshots/reading-light.png" alt="Maakdown reading view showing the app toolbar, open document tab, and a rendered document with its frontmatter masthead" width="900" />
 
 </div>
 
@@ -40,10 +40,10 @@ Works on Windows, macOS, and Linux.
 | **Code** | Fenced-code highlighting via highlight.js (default), with optional Shiki |
 | **Math** | Inline and block math rendered with KaTeX |
 | **Diagrams** | Mermaid fenced diagrams, lazy-loaded and rendered on viewport entry |
-| **Frontmatter** | YAML frontmatter extracted to a metadata panel, never body-rendered |
+| **Frontmatter** | YAML frontmatter surfaced as a document masthead, never body-rendered |
 | **Callouts** | GitHub / Obsidian-style callouts with a sanitized class allowlist |
 | **Images** | Local relative images resolved through a bounded loopback asset service |
-| **Navigation** | Sidebar TOC with scroll-spy, internal `#anchors`, footnotes, and per-tab history |
+| **Navigation** | Hover-revealed outline with scroll-spy, internal `#anchors`, footnotes, and per-tab history |
 | **Wikilinks** | `[[Note Name]]` resolved through a Go-built vault index |
 | **Workspace** | Tabbed documents, session restoration, recent files, and drag-and-drop |
 | **Find** | Current-document search with true match counts, next/previous, and a case-sensitive toggle |

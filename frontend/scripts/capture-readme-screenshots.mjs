@@ -16,6 +16,7 @@ const frontendRoot = resolve(import.meta.dirname, '..');
 const outputDir = resolve(frontendRoot, '..', 'docs', 'screenshots');
 const port = Number(process.env.MAAKDOWN_SHOT_PORT ?? 5193);
 const fixture = 'medium-technical-doc.md';
+const SCROLLER = '.document-scroll';
 
 const candidateBrowsers = [
   process.env.MAAKDOWN_CHROMIUM,
@@ -52,49 +53,56 @@ async function openReader({ width, height, colorScheme }) {
   return page;
 }
 
-/** Click a heading in the outline and wait for the virtualizer to land on it. */
-async function gotoHeading(page, name) {
-  await page.locator('.toc button', { hasText: name }).first().click();
-  await page.waitForTimeout(500);
-}
-
 async function settle(page, ms = 900) {
   await page.waitForTimeout(ms);
 }
 
 /**
- * Scroll the virtualized reader until a code block containing `needle` mounts,
- * then position its top `offsetTop` px below the scroll container's top edge.
+ * Scroll the virtualized reader (blocks mount on scroll) until an element
+ * matching `waitSelector` (optionally containing `waitNeedle`) exists, then park
+ * the first `centerSelector` element (optionally containing `centerNeedle`)
+ * `offsetTop` px below the scroll container's top edge. The wait and center
+ * targets are independent so we can stop on one block but frame a nearby one.
  */
-async function scrollToCodeSample(page, needle, offsetTop) {
-  const scroller = '.document-scroll';
+async function scrollToBlock(page, {
+  waitSelector,
+  waitNeedle = null,
+  centerSelector = waitSelector,
+  centerNeedle = null,
+  offsetTop
+}) {
   for (let i = 0; i < 80; i++) {
     const found = await page.evaluate(
-      (text) => Array.from(document.querySelectorAll('.doc-block-code')).some((el) => el.textContent?.includes(text)),
-      needle
+      ({ sel, text }) => {
+        const els = Array.from(document.querySelectorAll(sel));
+        return text ? els.some((el) => el.textContent?.includes(text)) : els.length > 0;
+      },
+      { sel: waitSelector, text: waitNeedle }
     );
     if (found) break;
     await page.evaluate((sel) => {
       document.querySelector(sel).scrollTop += 700;
-    }, scroller);
+    }, SCROLLER);
     await page.waitForTimeout(60);
   }
   await page.waitForTimeout(400);
   await page.evaluate(
-    ({ sel, text, offset }) => {
-      const container = document.querySelector(sel);
-      const block = Array.from(document.querySelectorAll('.doc-block-code')).find((el) => el.textContent?.includes(text));
-      if (container && block) {
-        const top = block.getBoundingClientRect().top - container.getBoundingClientRect().top;
+    ({ scroller, sel, text, offset }) => {
+      const container = document.querySelector(scroller);
+      const els = Array.from(document.querySelectorAll(sel));
+      const el = text ? els.find((node) => node.textContent?.includes(text)) : els[0];
+      if (container && el) {
+        const top = el.getBoundingClientRect().top - container.getBoundingClientRect().top;
         container.scrollTop += top - offset;
       }
     },
-    { sel: scroller, text: needle, offset: offsetTop }
+    { scroller: SCROLLER, sel: centerSelector, text: centerNeedle, offset: offsetTop }
   );
 }
 
 try {
-  // 1. Hero: full reading view in light theme (outline + document + metadata).
+  // 1. Hero: top of the document in light theme (toolbar brand + tabs, minimap
+  //    rail, and the frontmatter masthead).
   {
     const page = await openReader({ width: 1500, height: 940, colorScheme: 'light' });
     await settle(page);
@@ -102,22 +110,33 @@ try {
     await page.close();
   }
 
-  // 2. Dark theme showcasing a rendered Mermaid diagram.
+  // 2. Dark theme showcasing a rendered Mermaid diagram. Anchor on the section
+  //    heading so the preceding block scrolls cleanly off the top.
   {
     const page = await openReader({ width: 1500, height: 940, colorScheme: 'dark' });
-    await gotoHeading(page, 'System architecture');
+    await scrollToBlock(page, {
+      waitSelector: '.doc-block-mermaid svg',
+      centerSelector: '.doc-block-heading',
+      centerNeedle: 'System architecture',
+      offsetTop: 28
+    });
     await page.locator('.doc-block-mermaid svg').first().waitFor({ timeout: 20_000 });
     await settle(page);
     await page.screenshot({ path: resolve(outputDir, 'reading-dark.png') });
     await page.close();
   }
 
-  // 3. Code highlighting + KaTeX math. Scroll-search for the unique typescript
-  //    sample (block-level virtualization mounts on scroll), then park it low
-  //    enough that the display equation above it stays in frame.
+  // 3. Code highlighting + KaTeX math. The typescript sample is unique, so the
+  //    needle keeps us on the right scenario; park it low enough that the
+  //    display equation above stays in frame.
   {
     const page = await openReader({ width: 1320, height: 1040, colorScheme: 'light' });
-    await scrollToCodeSample(page, 'openAndParse', 600);
+    await scrollToBlock(page, {
+      waitSelector: '.doc-block-code',
+      waitNeedle: 'openAndParse',
+      centerNeedle: 'openAndParse',
+      offsetTop: 600
+    });
     await page.locator('.doc-block-code .hljs, .doc-block-code code').first().waitFor({ timeout: 20_000 });
     await settle(page);
     await page.screenshot({ path: resolve(outputDir, 'code-and-math.png') });
