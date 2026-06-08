@@ -276,9 +276,11 @@ See `docs/task-tracker.md`.
   a separate credentialed step). `release-smoke.yml` remains the manual
   build-verify-only path. Documented in `docs/release-checklist.md` (P7.8).
 - 2026-06-07: Document identity now lives only in the tab strip (like VS Code /
-  browsers). Removed the toolbar's doc-identity cluster (app icon + active title +
-  watch badge); the `Tab` shows file icon + title + a watching dot (success tone,
-  decorative/aria-hidden since watching is ambient) and the existing changed dot.
+  browsers). Removed the toolbar's doc title + watch badge; the `Tab` shows file
+  icon + title + a watching dot (success tone, decorative/aria-hidden since
+  watching is ambient) and the existing changed dot. The toolbar keeps a static
+  app brand (real `app-icon.png` + "Maakdown" wordmark) — app identity, not the
+  active document.
   the missing reusable Svelte `Callout`, `CodeBlockChrome`, `Popover`, `Tab`,
   `TocItem`, `Toolbar`, and `Wikilink` primitives; migrated live toolbar, tab,
   outline, and code-block chrome to the shared contracts; expanded the

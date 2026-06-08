@@ -4,6 +4,7 @@
   import WindowControls from './WindowControls.svelte';
   import { isDesktopRuntime, isMacPlatform } from '@ipc';
   import type { AppConfig } from '../stores/configStore';
+  import appIcon from '../assets/app-icon.png';
 
   const desktop = isDesktopRuntime();
   const mac = desktop && isMacPlatform();
@@ -28,8 +29,13 @@
 
 <header class="workspace-toolbar">
   {#if mac}<WindowControls mac />{/if}
-  <!-- Document identity (icon + title + watch state) lives in the tab strip, like
-       VS Code and browsers; the toolbar never re-states the active tab. -->
+  <!-- App brand (icon + wordmark) only. Document identity (file icon + title +
+       watch state) lives in the tab strip, like VS Code and browsers; the
+       toolbar never re-states the active tab's title. -->
+  <div class="toolbar-leading">
+    <img src={appIcon} class="brand-mark" alt="Maakdown" />
+    <strong class="brand-wordmark">Maakdown</strong>
+  </div>
   <!-- Structural and navigation controls sit at the leading edge (HIG/Fluent/GNOME). -->
   <Toolbar class="toolbar-nav" label="Navigation">
     <IconButton icon={FolderOpen} label="Open document" onclick={onOpen} />

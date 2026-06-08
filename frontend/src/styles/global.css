@@ -296,6 +296,12 @@ a {
   border-radius: var(--radius-sm);
 }
 
+.brand-wordmark {
+  font-size: 14px;
+  font-weight: 650;
+  letter-spacing: 0;
+}
+
 .toolbar-actions {
   display: flex;
   gap: 8px;
