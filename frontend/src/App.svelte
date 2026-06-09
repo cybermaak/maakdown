@@ -66,6 +66,9 @@
   let removeListeners: Array<() => void> = [];
   let persistTimer = 0;
   let dragActive = $state(false);
+  // dragenter/dragleave fire per child element, so a depth counter keeps the
+  // drop overlay steady instead of flickering as the pointer crosses elements.
+  let dragDepth = 0;
   let activeHeadingId = $state<string | null>(null);
   let searchOpen = $state(false);
   let searchQuery = $state('');
@@ -548,9 +551,43 @@
     window.addEventListener('keydown', handleKeydown);
     const openPaletteEvent = () => openPalette();
     window.addEventListener('maakdown:palette', openPaletteEvent);
-    window.addEventListener('dragenter', () => (dragActive = true));
-    window.addEventListener('dragleave', () => (dragActive = false));
-    window.addEventListener('drop', () => (dragActive = false));
+    // File drag-and-drop: preventDefault is required so the webview does not
+    // navigate to the dropped file (otherwise WebKitGTK on Linux opens it as a
+    // text view) and so the window is a valid drop target on macOS. The actual
+    // file paths arrive via the native OnFileDrop event (onFilesDropped), since
+    // the browser File API does not expose filesystem paths.
+    const dragHasFiles = (event: DragEvent) => Array.from(event.dataTransfer?.types ?? []).includes('Files');
+    const onDragEnter = (event: DragEvent) => {
+      if (!dragHasFiles(event)) return;
+      event.preventDefault();
+      dragDepth += 1;
+      dragActive = true;
+    };
+    const onDragOver = (event: DragEvent) => {
+      if (!dragHasFiles(event)) return;
+      event.preventDefault();
+    };
+    const onDragLeave = (event: DragEvent) => {
+      if (!dragActive) return;
+      event.preventDefault();
+      dragDepth = Math.max(0, dragDepth - 1);
+      if (dragDepth === 0) dragActive = false;
+    };
+    const onDrop = (event: DragEvent) => {
+      event.preventDefault();
+      dragDepth = 0;
+      dragActive = false;
+    };
+    window.addEventListener('dragenter', onDragEnter);
+    window.addEventListener('dragover', onDragOver);
+    window.addEventListener('dragleave', onDragLeave);
+    window.addEventListener('drop', onDrop);
+    removeListeners.push(
+      () => window.removeEventListener('dragenter', onDragEnter),
+      () => window.removeEventListener('dragover', onDragOver),
+      () => window.removeEventListener('dragleave', onDragLeave),
+      () => window.removeEventListener('drop', onDrop)
+    );
     if (fixture) {
       void loadFixture(fixture);
       return;
@@ -569,11 +606,11 @@
       commit({ ...workspace, activeTabId: active?.id ?? workspace.activeTabId, restoring: false });
       activeHeadingId = active?.position.activeHeadingId ?? null;
     });
-    removeListeners = [
+    removeListeners.push(
       onFileChanged((path) => void reloadDocument(path)),
       onFilesDropped((paths) => paths.filter((path) => /\.md(?:own|arkdown)?$/i.test(path)).forEach((path) => void openPath(path))),
       onAppCommand(handleCommand)
-    ];
+    );
     removeListeners.push(() => window.removeEventListener('maakdown:palette', openPaletteEvent));
     removeListeners.push(() => narrowQuery.removeEventListener('change', updateNarrow));
   });

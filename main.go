@@ -55,6 +55,10 @@ func main() {
 		Menu:      appMenu,
 		DragAndDrop: &options.DragAndDrop{
 			EnableFileDrop: true,
+			// Disable the webview's own drag-and-drop so a dropped file is not
+			// opened/navigated to inside the webview (notably WebKitGTK on Linux).
+			// The native layer still delivers the dropped paths via OnFileDrop.
+			DisableWebViewDrop: true,
 		},
 		AssetServer: &assetserver.Options{
 			Assets: assets,

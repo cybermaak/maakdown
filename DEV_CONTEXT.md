@@ -383,3 +383,10 @@ The user plans to sign macOS and Windows builds using their own certificates. Th
   expectReaderReady's default 5s on the slower Windows runner (app chrome was
   up, reader not yet mounted). Bumped that wait to 30s and made the functional
   UAT suite run on macOS/Windows/Linux.
+- 2026-06-09: Fixed file drag-and-drop. The app used the Go-side OnFileDrop, so
+  Wails' JS drop handlers (which preventDefault and suppress webview
+  navigation) were never registered: Linux WebKitGTK opened the dropped file
+  in the webview, and macOS flickered/ignored the drop. Set
+  `DisableWebViewDrop: true` (native still delivers paths via OnFileDrop) and
+  added frontend dragenter/over/leave/drop handlers that preventDefault file
+  drags and use a depth counter so the drop overlay no longer flickers.
