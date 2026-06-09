@@ -390,3 +390,7 @@ The user plans to sign macOS and Windows builds using their own certificates. Th
   `DisableWebViewDrop: true` (native still delivers paths via OnFileDrop) and
   added frontend dragenter/over/leave/drop handlers that preventDefault file
   drags and use a depth counter so the drop overlay no longer flickers.
+- 2026-06-09: Drop overlay no longer sticks. With DisableWebViewDrop the JS
+  'drop' event does not fire, so the overlay is now cleared when the native
+  files-dropped event arrives, plus a 250ms post-dragover safety timeout that
+  covers cancelled drags.

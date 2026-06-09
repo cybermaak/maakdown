@@ -69,6 +69,7 @@
   // dragenter/dragleave fire per child element, so a depth counter keeps the
   // drop overlay steady instead of flickering as the pointer crosses elements.
   let dragDepth = 0;
+  let dragClearTimer = 0;
   let activeHeadingId = $state<string | null>(null);
   let searchOpen = $state(false);
   let searchQuery = $state('');
@@ -557,26 +558,39 @@
     // file paths arrive via the native OnFileDrop event (onFilesDropped), since
     // the browser File API does not expose filesystem paths.
     const dragHasFiles = (event: DragEvent) => Array.from(event.dataTransfer?.types ?? []).includes('Files');
+    const clearDrag = () => {
+      dragDepth = 0;
+      dragActive = false;
+    };
+    // Safety net: DisableWebViewDrop means the JS 'drop' event may not fire, so
+    // clear the overlay shortly after dragover stops (drop, cancel, or leave).
+    const armDragTimeout = () => {
+      window.clearTimeout(dragClearTimer);
+      dragClearTimer = window.setTimeout(clearDrag, 250);
+    };
     const onDragEnter = (event: DragEvent) => {
       if (!dragHasFiles(event)) return;
       event.preventDefault();
       dragDepth += 1;
       dragActive = true;
+      armDragTimeout();
     };
     const onDragOver = (event: DragEvent) => {
       if (!dragHasFiles(event)) return;
       event.preventDefault();
+      dragActive = true;
+      armDragTimeout();
     };
     const onDragLeave = (event: DragEvent) => {
       if (!dragActive) return;
       event.preventDefault();
       dragDepth = Math.max(0, dragDepth - 1);
-      if (dragDepth === 0) dragActive = false;
+      if (dragDepth === 0) clearDrag();
     };
     const onDrop = (event: DragEvent) => {
       event.preventDefault();
-      dragDepth = 0;
-      dragActive = false;
+      window.clearTimeout(dragClearTimer);
+      clearDrag();
     };
     window.addEventListener('dragenter', onDragEnter);
     window.addEventListener('dragover', onDragOver);
@@ -586,7 +600,8 @@
       () => window.removeEventListener('dragenter', onDragEnter),
       () => window.removeEventListener('dragover', onDragOver),
       () => window.removeEventListener('dragleave', onDragLeave),
-      () => window.removeEventListener('drop', onDrop)
+      () => window.removeEventListener('drop', onDrop),
+      () => window.clearTimeout(dragClearTimer)
     );
     if (fixture) {
       void loadFixture(fixture);
@@ -608,7 +623,13 @@
     });
     removeListeners.push(
       onFileChanged((path) => void reloadDocument(path)),
-      onFilesDropped((paths) => paths.filter((path) => /\.md(?:own|arkdown)?$/i.test(path)).forEach((path) => void openPath(path))),
+      onFilesDropped((paths) => {
+        // DisableWebViewDrop means the JS 'drop' event never fires, so clear the
+        // drop overlay here when the native drop completes.
+        dragActive = false;
+        dragDepth = 0;
+        paths.filter((path) => /\.md(?:own|arkdown)?$/i.test(path)).forEach((path) => void openPath(path));
+      }),
       onAppCommand(handleCommand)
     );
     removeListeners.push(() => window.removeEventListener('maakdown:palette', openPaletteEvent));
