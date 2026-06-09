@@ -640,10 +640,20 @@ a {
 .metadata-wrap .metadata-panel { height: 100%; }
 
 .workspace-loading {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   height: calc(100vh - var(--toolbar-height) - var(--tabbar-height));
-  place-items: center;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
   color: var(--muted);
+}
+.workspace-loading .spinner {
+  color: var(--muted);
+  animation: maak-spin 0.8s linear infinite;
+}
+@keyframes maak-spin {
+  to { transform: rotate(360deg); }
 }
 
 .empty-state {

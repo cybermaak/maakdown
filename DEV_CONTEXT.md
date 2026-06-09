@@ -394,3 +394,7 @@ The user plans to sign macOS and Windows builds using their own certificates. Th
   'drop' event does not fire, so the overlay is now cleared when the native
   files-dropped event arrives, plus a 250ms post-dragover safety timeout that
   covers cancelled drags.
+- 2026-06-09: Added a spinner to the "Opening document..." placeholder. A real
+  percentage is not feasible (the file read is one atomic Go call; parsing is a
+  single worker pass with no incremental progress), so the indeterminate
+  spinner (reduced-motion aware) signals activity while a long file parses.

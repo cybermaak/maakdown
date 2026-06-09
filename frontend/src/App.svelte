@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte';
+  import { LoaderCircle } from '@lucide/svelte';
   import DesignSystemGallery from './design-system/DesignSystemGallery.svelte';
   import DocumentView from './components/DocumentView.svelte';
   import TabStrip from './components/TabStrip.svelte';
@@ -743,7 +744,10 @@
           />
         </div>
       {:else if activeTab?.loading || workspace.restoring}
-        <div class="workspace-loading" role="status">Opening document...</div>
+        <div class="workspace-loading" role="status">
+          <LoaderCircle class="spinner" size={24} aria-hidden="true" />
+          <span>Opening document…</span>
+        </div>
       {:else}
         <WorkspaceEmptyState recents={workspace.recents} onOpen={handleOpen} onOpenRecent={openPath} />
       {/if}
