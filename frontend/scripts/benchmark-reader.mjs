@@ -39,6 +39,8 @@ async function navigateToHeading(label) {
   const surface = page.locator('.document-scroll');
   await page.waitForTimeout(500);
   const before = await surface.evaluate((element) => element.scrollTop);
+  // The outline is a hover-reveal minimap; its items only render while open.
+  await page.locator('.minimap').hover();
   await page.getByRole('button', { name: label, exact: true }).first().click();
   await page.waitForFunction(
     ({ previous }) => {
