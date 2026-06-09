@@ -91,8 +91,10 @@ export async function readMockState<T>(page: Page, selector: (state: Record<stri
 
 /** Wait for the active document reader surface to render. */
 export async function expectReaderReady(page: Page): Promise<void> {
-  await expect(page.getByRole('document', { name: 'Markdown document' })).toBeVisible();
-  await expect.poll(() => page.locator('.doc-block').count()).toBeGreaterThan(0);
+  // Large fixtures parse in a worker; slower runners (notably Windows CI) can
+  // exceed the default 5s, so wait generously for the reader to mount.
+  await expect(page.getByRole('document', { name: 'Markdown document' })).toBeVisible({ timeout: 30_000 });
+  await expect.poll(() => page.locator('.doc-block').count(), { timeout: 30_000 }).toBeGreaterThan(0);
 }
 
 /**

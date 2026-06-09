@@ -79,14 +79,16 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-  # Functional UAT suite stays on Linux (its established gate). Cross-platform
-  # UAT-suite parity is tracked separately; Windows surfaces UAT-03/UAT-06
-  # failures that are out of scope for the screenshot work.
+  # Functional UAT suite runs on macOS, Windows, and Linux.
   uat:
     needs: frontend
     if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -107,7 +109,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: uat-failure-artifacts
+          name: uat-failure-artifacts-${{ matrix.os }}
           path: |
             frontend/uat-results/
             frontend/test-results/

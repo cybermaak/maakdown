@@ -378,3 +378,8 @@ scripts/release-check.sh
 ## Signing Context
 
 The user plans to sign macOS and Windows builds using their own certificates. The repo should include signing-safe templates and documentation, but no certificates, private keys, provisioning profiles, notarization credentials, or signed release artifacts.
+- 2026-06-09: Investigated the Windows UAT failures (UAT-03 search, UAT-06
+  print). Both use the large evaluation fixture; the worker parse exceeded
+  expectReaderReady's default 5s on the slower Windows runner (app chrome was
+  up, reader not yet mounted). Bumped that wait to 30s and made the functional
+  UAT suite run on macOS/Windows/Linux.
