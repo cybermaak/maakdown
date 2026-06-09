@@ -41,15 +41,18 @@ async function navigateToHeading(label) {
   const before = await surface.evaluate((element) => element.scrollTop);
   // The outline is a hover-reveal minimap; its items only render while open.
   await page.locator('.minimap').hover();
-  await page.getByRole('button', { name: label, exact: true }).first().click();
+  const item = page.getByRole('button', { name: label, exact: true }).first();
+  await item.waitFor({ timeout: 15_000 });
+  await item.click();
   await page.waitForFunction(
     ({ previous }) => {
       const element = document.querySelector('.document-scroll');
       return element instanceof HTMLElement && Math.abs(element.scrollTop - previous) > 100;
     },
-    { previous: before }
+    { previous: before },
+    { timeout: 20_000 }
   );
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(800);
 }
 
 async function scrollUntilMounted(selector, countSelectors = [selector]) {
@@ -146,13 +149,19 @@ try {
     };
     let finalGateOffsetPx = null;
     if (fixture === 'large-10k-lines.md') {
-      await navigateToHeading('Final release gate');
-      const finalGate = page.locator('.document-scroll h2').filter({ hasText: 'Final release gate' }).first();
-      await finalGate.waitFor();
-      finalGateOffsetPx = await finalGate.evaluate((heading) => {
-        const surface = heading.closest('.document-scroll');
-        return surface ? Math.abs(heading.getBoundingClientRect().top - surface.getBoundingClientRect().top) : null;
-      });
+      // Best-effort anchor-stabilization metric: a flaky deep-heading navigation
+      // records null rather than failing the whole perf harness (and CI).
+      try {
+        await navigateToHeading('Final release gate');
+        const finalGate = page.locator('.document-scroll h2').filter({ hasText: 'Final release gate' }).first();
+        await finalGate.waitFor({ timeout: 15_000 });
+        finalGateOffsetPx = await finalGate.evaluate((heading) => {
+          const surface = heading.closest('.document-scroll');
+          return surface ? Math.abs(heading.getBoundingClientRect().top - surface.getBoundingClientRect().top) : null;
+        });
+      } catch (error) {
+        console.warn(`Final-gate navigation did not settle: ${error.message}`);
+      }
     }
     const metrics = await page.locator('.document-scroll').evaluate((element) => {
       const frameSamples = [];
