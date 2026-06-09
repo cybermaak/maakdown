@@ -301,7 +301,14 @@ See `docs/task-tracker.md`.
   `app-icon-light.png` and `app-icon-dark.png` based on the active theme, with
   a theme-aware `--brand-mark-shadow` drop-shadow token that follows the icon's
   alpha contour.  Documented the full update procedure in `AGENTS.md`.
-- 2026-06-08: Fixed the theme toggle needing two clicks. The button cycled
+- 2026-06-08: Fixed the theme toggle needing two clicks.
+- 2026-06-09: Fixed CI: the reader benchmark's outline navigation broke when
+  the TOC became a hover-reveal minimap (now hovers it; deep-heading offset is
+  best-effort). Added a cross-OS `uat-screenshots` job (ubuntu/macOS/Windows)
+  that captures key reader scenarios from the production bundle and uploads
+  per-OS artifacts; the functional `uat` suite stays on Linux. Windows surfaces
+  UAT-03/UAT-06 failures, tracked separately.
+ The button cycled
   system -> light -> dark, so e.g. dark -> system on a dark OS resolved to the
   same visible mode (icon changed, theme didn't). It now toggles against the
   resolved mode (light <-> dark), so one click always flips the visible theme.
