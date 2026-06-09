@@ -10,10 +10,15 @@ import { mkdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { chromium } from 'playwright';
-import { createServer } from 'vite';
+import { startFixtureApp } from './fixture-app-server.mjs';
 
 const frontendRoot = resolve(import.meta.dirname, '..');
-const outputDir = resolve(frontendRoot, '..', 'docs', 'screenshots');
+const repoRoot = resolve(frontendRoot, '..');
+// Defaults to the committed README screenshots; CI overrides MAAKDOWN_SHOT_OUTDIR
+// to collect per-OS UAT screenshots for cross-platform verification.
+const outputDir = process.env.MAAKDOWN_SHOT_OUTDIR
+  ? resolve(process.env.MAAKDOWN_SHOT_OUTDIR)
+  : resolve(frontendRoot, '..', 'docs', 'screenshots');
 const port = Number(process.env.MAAKDOWN_SHOT_PORT ?? 5193);
 const fixture = 'medium-technical-doc.md';
 const SCROLLER = '.document-scroll';
@@ -24,12 +29,16 @@ const candidateBrowsers = [
 ].filter(Boolean);
 const executablePath = candidateBrowsers.find((path) => existsSync(path));
 
-const server = await createServer({
-  root: frontendRoot,
-  server: { host: '127.0.0.1', port, strictPort: true },
-  logLevel: 'error'
+// Serve a production (benchmark-mode) bundle rather than a dev server so the
+// parser worker and chunks are pre-built — deterministic and free of the Vite
+// cold-cache dynamic-import race, which matters for reliable CI screenshots.
+const server = await startFixtureApp({
+  frontendRoot,
+  repoRoot,
+  outputDir: resolve(repoRoot, 'output/performance/screenshot-app'),
+  port,
+  mode: 'benchmark'
 });
-await server.listen();
 await mkdir(outputDir, { recursive: true });
 
 const browser = await chromium.launch({

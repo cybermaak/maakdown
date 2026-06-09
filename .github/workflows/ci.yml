@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   frontend:
@@ -41,9 +42,13 @@ jobs:
 
   uat:
     needs: frontend
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    timeout-minutes: 12
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -57,6 +62,22 @@ jobs:
       - name: Install Playwright Chromium
         working-directory: frontend
         run: npx playwright install --with-deps chromium
+      # Cross-platform visual verification: capture key reader scenarios on each
+      # OS (production benchmark bundle, headless Chromium) and publish them so
+      # the app's rendering can be reviewed per platform.
+      - name: Capture key-scenario screenshots
+        working-directory: frontend
+        env:
+          MAAKDOWN_SHOT_OUTDIR: ${{ github.workspace }}/uat-screenshots
+        run: node scripts/capture-readme-screenshots.mjs
+      - name: Upload UAT screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: uat-screenshots-${{ matrix.os }}
+          path: uat-screenshots/
+          if-no-files-found: error
+          retention-days: 14
       - name: Run UI-driven UAT suite
         working-directory: frontend
         run: npm run uat
@@ -64,7 +85,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: uat-failure-artifacts
+          name: uat-failure-artifacts-${{ matrix.os }}
           path: |
             frontend/uat-results/
             frontend/test-results/
