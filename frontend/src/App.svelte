@@ -28,12 +28,14 @@
     type ReaderPosition
   } from './core/workspace/workspace';
   import {
+    consumePendingOpenFiles,
     getConfig,
     getSession,
     getVaultIndex,
     onAppCommand,
     onFileChanged,
     onFilesDropped,
+    onOpenFile,
     isDesktopRuntime,
     openDocument,
     openDocumentAt,
@@ -621,9 +623,16 @@
       const active = workspace.tabs.find((tab) => canonicalIdentity(tab.path) === canonicalIdentity(session.activePath ?? ''));
       commit({ ...workspace, activeTabId: active?.id ?? workspace.activeTabId, restoring: false });
       activeHeadingId = active?.position.activeHeadingId ?? null;
+      // Files the OS handed us before this point (double-click launch); opened
+      // after restore so they land as the active tab. Live opens arrive via the
+      // "open-file" event; tab dedup makes any overlap harmless.
+      for (const pending of await consumePendingOpenFiles()) {
+        await openPath(pending);
+      }
     });
     removeListeners.push(
       onFileChanged((path) => void reloadDocument(path)),
+      onOpenFile((path) => void openPath(path)),
       onFilesDropped((paths) => {
         // DisableWebViewDrop means the JS 'drop' event never fires, so clear the
         // drop overlay here when the native drop completes.

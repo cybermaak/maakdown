@@ -1,6 +1,8 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import type { AppConfig } from '../stores/configStore';
   import { SegmentedControl } from '../design-system';
+  import { isDefaultMarkdownHandler, markdownHandlerSupported, setDefaultMarkdownHandler } from '@ipc';
 
   interface Props {
     config: AppConfig;
@@ -9,6 +11,33 @@
   }
   let { config, onChange, onClose }: Props = $props();
   const update = (patch: Partial<AppConfig>) => onChange({ ...config, ...patch });
+
+  // File association: hidden unless the platform supports querying/setting the
+  // default Markdown opener (currently macOS in the desktop runtime).
+  let handlerSupported = $state(false);
+  let isDefault = $state(false);
+  let handlerError = $state('');
+
+  onMount(() => {
+    void markdownHandlerSupported()
+      .then(async (supported) => {
+        handlerSupported = supported;
+        if (supported) isDefault = await isDefaultMarkdownHandler();
+      })
+      .catch(() => (handlerSupported = false));
+  });
+
+  async function makeDefault() {
+    handlerError = '';
+    try {
+      // The OS call is silent; this click is the user's explicit consent.
+      await setDefaultMarkdownHandler();
+      isDefault = await isDefaultMarkdownHandler();
+      if (!isDefault) handlerError = 'The system did not accept the change.';
+    } catch (error) {
+      handlerError = error instanceof Error ? error.message : String(error);
+    }
+  }
 </script>
 
 <div class="reader-settings" role="dialog" aria-label="Reader appearance">
@@ -42,4 +71,17 @@
     value={config.highlighterEngine}
     onchange={(value: AppConfig['highlighterEngine']) => update({ highlighterEngine: value })}
   />
+  {#if handlerSupported}
+    <div class="settings-association">
+      <span class="settings-association-label">File association</span>
+      {#if isDefault}
+        <span class="settings-association-status">Maakdown opens Markdown files by default.</span>
+      {:else}
+        <button type="button" class="settings-association-button" onclick={() => void makeDefault()}>
+          Set as default for Markdown
+        </button>
+      {/if}
+      {#if handlerError}<span class="settings-association-error" role="alert">{handlerError}</span>{/if}
+    </div>
+  {/if}
 </div>

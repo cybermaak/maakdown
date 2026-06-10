@@ -1,8 +1,9 @@
 # macOS Markdown File Association — Design
 
 **Date:** 2026-06-09
-**Status:** Approved (design); pending spec review
-**Scope:** macOS only. Windows and Linux are deferred to a follow-up spec.
+**Status:** macOS implemented and verified; Windows/Linux planned below
+**Scope:** macOS implemented in this iteration. Windows and Linux are specified
+in "Future iterations" and slot into the same IPC surface and Settings UI.
 
 ## Goal
 
@@ -134,11 +135,60 @@ Settings popover -> isDefaultMarkdownHandler() -> show status
 - `npm run check` and the UAT suite stay green (IPC mock covers the new calls;
   the settings row is hidden in the browser/UAT runtime).
 
-## Deferred (separate spec)
+## Future iterations: Windows and Linux
 
-- **Linux:** install a `.desktop` file with `MimeType=text/markdown` to
-  `~/.local/share/applications` at runtime; "set default" via `xdg-mime default`.
-- **Windows:** register an HKCU ProgId + `OpenWithProgIds` for `.md` at runtime;
-  "set default" via `SHOpenWithDialog` (Win10+ cannot set default silently).
-  The `isDefault`/`setDefault` IPC and the Settings UI already exist; only the
-  platform implementations are added.
+The cross-platform plumbing already exists after the macOS iteration:
+`markdownHandlerSupported` / `isDefaultMarkdownHandler` /
+`setDefaultMarkdownHandler` (per-OS Go files behind build tags), the
+`QueueOpenFile` + `ConsumePendingOpenFiles` + `open-file` event path (args and
+second-instance launches already feed it on every OS), and the Settings row
+(shown whenever the platform reports support). Each platform below only adds a
+`fileassoc_<os>.go` implementation and replaces the `!darwin` stub with
+per-platform stubs.
+
+### Linux (`fileassoc_linux.go`)
+
+- **Capable opener:** on startup (idempotent), write
+  `~/.local/share/applications/com.maak.maakdown.desktop` with
+  `Exec=<resolved-binary> %f`, `MimeType=text/markdown;`, `Icon`, `Terminal=false`,
+  then `update-desktop-database ~/.local/share/applications` (best-effort).
+  Writing a user-level desktop entry only adds an "Open With" candidate; it does
+  not change the user's default.
+- **Is default:** `xdg-mime query default text/markdown` ==
+  `com.maak.maakdown.desktop`.
+- **Set default (user-initiated):** `xdg-mime default
+  com.maak.maakdown.desktop text/markdown`.
+- **Open path:** file managers pass the path as an argv argument — already
+  handled by the existing args + SingleInstanceLock wiring.
+- **Notes:** depends on `xdg-utils` (ubiquitous); report a clear error when
+  missing. AppImage/Flatpak packaging would need `Exec` adjustments — out of
+  scope until a packaging story exists.
+
+### Windows (`fileassoc_windows.go`)
+
+- **Capable opener:** on startup (idempotent), write HKCU (no admin):
+  - `HKCU\Software\Classes\Maakdown.md` ProgId with `shell\open\command =
+    "<exe>" "%1"` and a `DefaultIcon`;
+  - `HKCU\Software\Classes\.md\OpenWithProgIds\Maakdown.md`;
+  - `HKCU\Software\RegisteredApplications` + a `Software\Maakdown\Capabilities`
+    block (`FileAssociations: .md/.markdown/...`) so Maakdown appears in
+    Settings > Default apps.
+  Registering only adds Maakdown to "Open with"; the default is untouched.
+- **Is default:** compare the resolved default via
+  `AssocQueryString(ASSOCSTR_EXECUTABLE, ".md")` to our executable path.
+- **Set default (user-initiated):** Windows 10+ forbids silently setting
+  defaults; the button instead launches the system chooser —
+  `SHOpenWithDialog(OAIF_REGISTER_EXT)` (or deep-link to
+  `ms-settings:defaultapps`) — and the Settings row re-queries on focus return.
+  The UI copy for Windows should say "Choose default app..." to reflect that the
+  OS prompt makes the final decision.
+- **Open path:** Explorer passes the path as an argv argument — already handled
+  by args + SingleInstanceLock.
+
+### Acceptance for each follow-up
+
+Mirror the macOS acceptance: registration visible in the OS "Open With" UI
+without changing the default; double-click opens a tab in the running instance
+(single window); the Settings row queries/sets (or opens the chooser) and
+reflects the result. Verify on a real session of that OS; CI cannot exercise
+OS association state.

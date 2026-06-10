@@ -3,11 +3,21 @@
 
 export function AppName():Promise<string>;
 
+export function ConsumePendingOpenFiles():Promise<Array<string>>;
+
 export function EmitCommand(arg1:string):Promise<void>;
+
+export function IsDefaultMarkdownHandler():Promise<boolean>;
+
+export function MarkdownHandlerSupported():Promise<boolean>;
 
 export function Print():Promise<void>;
 
+export function QueueOpenFile(arg1:string):Promise<void>;
+
 export function Quit():Promise<void>;
+
+export function SetDefaultMarkdownHandler():Promise<void>;
 
 export function SetWindowTitle(arg1:string):Promise<void>;
 

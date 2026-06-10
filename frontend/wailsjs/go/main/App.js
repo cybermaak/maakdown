@@ -6,16 +6,36 @@ export function AppName() {
   return window['go']['main']['App']['AppName']();
 }
 
+export function ConsumePendingOpenFiles() {
+  return window['go']['main']['App']['ConsumePendingOpenFiles']();
+}
+
 export function EmitCommand(arg1) {
   return window['go']['main']['App']['EmitCommand'](arg1);
+}
+
+export function IsDefaultMarkdownHandler() {
+  return window['go']['main']['App']['IsDefaultMarkdownHandler']();
+}
+
+export function MarkdownHandlerSupported() {
+  return window['go']['main']['App']['MarkdownHandlerSupported']();
 }
 
 export function Print() {
   return window['go']['main']['App']['Print']();
 }
 
+export function QueueOpenFile(arg1) {
+  return window['go']['main']['App']['QueueOpenFile'](arg1);
+}
+
 export function Quit() {
   return window['go']['main']['App']['Quit']();
+}
+
+export function SetDefaultMarkdownHandler() {
+  return window['go']['main']['App']['SetDefaultMarkdownHandler']();
 }
 
 export function SetWindowTitle(arg1) {

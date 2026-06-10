@@ -43,9 +43,12 @@ interface MockState {
   savedSessions: PersistedSession[];
   watched: string[];
   quit: boolean;
+  pendingOpenFiles: string[];
+  markdownHandlerSupported: boolean;
+  defaultMarkdownHandler: boolean;
 }
 
-type EventName = 'file-changed' | 'files-dropped' | 'app-command';
+type EventName = 'file-changed' | 'files-dropped' | 'app-command' | 'open-file';
 
 interface UatController {
   state: MockState;
@@ -73,7 +76,8 @@ const defaultConfig: AppConfig = {
 const listeners: Record<EventName, Array<(payload: unknown) => void>> = {
   'file-changed': [],
   'files-dropped': [],
-  'app-command': []
+  'app-command': [],
+  'open-file': []
 };
 
 function readDurable<T>(key: string, fallback: T): T {
@@ -118,7 +122,10 @@ function buildState(): MockState {
     savedConfigs: [],
     savedSessions: [],
     watched: [],
-    quit: false
+    quit: false,
+    pendingOpenFiles: seeded.pendingOpenFiles ?? [],
+    markdownHandlerSupported: seeded.markdownHandlerSupported ?? false,
+    defaultMarkdownHandler: seeded.defaultMarkdownHandler ?? false
   };
 }
 
@@ -263,6 +270,32 @@ export async function windowToggleMaximise(): Promise<void> {
 
 export async function windowIsMaximised(): Promise<boolean> {
   return false;
+}
+
+export async function consumePendingOpenFiles(): Promise<string[]> {
+  const pending = state.pendingOpenFiles;
+  state.pendingOpenFiles = [];
+  return pending;
+}
+
+export async function markdownHandlerSupported(): Promise<boolean> {
+  return state.markdownHandlerSupported;
+}
+
+export async function isDefaultMarkdownHandler(): Promise<boolean> {
+  return state.defaultMarkdownHandler;
+}
+
+export async function setDefaultMarkdownHandler(): Promise<void> {
+  state.defaultMarkdownHandler = true;
+}
+
+export function onOpenFile(callback: (path: string) => void): () => void {
+  const wrapped = (payload: unknown) => callback(payload as string);
+  listeners['open-file'].push(wrapped);
+  return () => {
+    listeners['open-file'] = listeners['open-file'].filter((item) => item !== wrapped);
+  };
 }
 
 export function onFileChanged(callback: (path: string) => void): () => void {

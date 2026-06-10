@@ -3,12 +3,14 @@ package main
 import (
 	"embed"
 	"fmt"
+	"os"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/menu/keys"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"github.com/wailsapp/wails/v2/pkg/options/mac"
 )
 
 //go:embed all:frontend/dist
@@ -16,6 +18,11 @@ var assets embed.FS
 
 func main() {
 	app := NewApp()
+	// Cover `Maakdown file.md` and platforms that pass the path as an argument
+	// (also the basis for the Windows/Linux association follow-up).
+	for _, arg := range os.Args[1:] {
+		app.QueueOpenFile(arg)
+	}
 	appMenu := menu.NewMenu()
 	fileMenu := appMenu.AddSubmenu("File")
 	fileMenu.AddText("Open...", keys.CmdOrCtrl("o"), func(_ *menu.CallbackData) { app.EmitCommand("open") })
@@ -62,6 +69,21 @@ func main() {
 		},
 		AssetServer: &assetserver.Options{
 			Assets: assets,
+		},
+		Mac: &mac.Options{
+			// Fired for Finder double-click / "Open With" (Apple Events), both
+			// at launch and while running.
+			OnFileOpen: app.QueueOpenFile,
+		},
+		// Route a second launch (e.g. double-clicking another .md) to the
+		// running instance as new tabs instead of spawning a second window.
+		SingleInstanceLock: &options.SingleInstanceLock{
+			UniqueId: appBundleID,
+			OnSecondInstanceLaunch: func(data options.SecondInstanceData) {
+				for _, arg := range data.Args {
+					app.QueueOpenFile(arg)
+				}
+			},
 		},
 		OnStartup:  app.Startup,
 		OnShutdown: app.Shutdown,

@@ -37,6 +37,9 @@ export interface SeedOptions {
   session?: SeedSession;
   config?: Record<string, unknown>;
   vaultIndex?: { version: string; notes: Record<string, string> };
+  pendingOpenFiles?: string[];
+  markdownHandlerSupported?: boolean;
+  defaultMarkdownHandler?: boolean;
 }
 
 /**
@@ -56,7 +59,10 @@ export async function seedApp(page: Page, options: SeedOptions = {}): Promise<vo
     pickerQueue: options.pickerQueue ?? [],
     session: options.session ?? { tabs: [], recents: [] },
     config: options.config ?? {},
-    vaultIndex: options.vaultIndex ?? { version: 'uat-vault-0', notes: {} }
+    vaultIndex: options.vaultIndex ?? { version: 'uat-vault-0', notes: {} },
+    pendingOpenFiles: options.pendingOpenFiles ?? [],
+    markdownHandlerSupported: options.markdownHandlerSupported ?? false,
+    defaultMarkdownHandler: options.defaultMarkdownHandler ?? false
   };
   await page.addInitScript((seed) => {
     (window as unknown as { __uat: { state: unknown } }).__uat = { state: seed };

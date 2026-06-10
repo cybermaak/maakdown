@@ -20,6 +20,7 @@
 | P9 | Done | Desktop workspace | tabs, sessions, recents, desktop open flows, and native commands work |
 | P10 | Done | Reading productivity | search, history, reader tools, and complete-document printing work |
 | P11 | In Progress | Editorial experience | local editorial and accessibility work is complete; hosted acceptance remains |
+| P12 | In Progress | OS integration | Maakdown registers as a Markdown opener with a user-consented default option on macOS, Windows, and Linux |
 
 ## P0 - Scaffold
 
@@ -177,3 +178,11 @@
 | P11.13 | Done | Trim toolbar controls | Frontend | P11.12 | outline/metadata toggle buttons and the redundant New tab button removed; show/hide wiring kept via command ids; Open always opens a new tab | `npm run check`, UAT-04/08 |
 | P11.14 | Done | Resolve open-path responsiveness regression | Frontend/Backend | P11.12 | opening a second document after a large file no longer stalls (confirmed on-device); vault index cached/invalidated and minimap outline lazily rendered cut open-path work | frontend long-task probe (0 tasks, ~0.6s open); vault walk measured ~11ms; user-confirmed |
 | P11.15 | Deferred | Autonomous native UI verification harness | Frontend/Release | P11.14 | drive the real built app over CDP (remote-debug + open-at-path command + Go/JS timing) to verify native-shell behavior without UI automation; AppleScript/accessibility only as last resort | design noted; revisit when native-shell regressions need coverage |
+
+## P12 - OS Integration
+
+| ID | Status | Task | Owner | Depends On | Exit Criteria | Verification |
+|---|---|---|---|---|---|---|
+| P12.1 | Done | macOS Markdown file association | Full stack | P7 | bundle declares a Viewer/Alternate claim for net.daringfireball.markdown (no default takeover); OS-handed files open as tabs in the single running instance (cold start buffered); Reader Settings offers user-initiated "Set as default" via LaunchServices | LS dump shows rank Alternate/role Viewer; open -a cold + running-instance tab checks via session state; user default verified untouched; UAT-09 (4 scenarios); go build/wails build |
+| P12.2 | Todo | Linux Markdown file association | Full stack | P12.1 | user-level .desktop entry with MimeType=text/markdown registers an Open With candidate; xdg-mime query/default drives the Settings row | spec section "Future iterations: Linux"; verify on a real Linux session |
+| P12.3 | Todo | Windows Markdown file association | Full stack | P12.1 | HKCU ProgId + RegisteredApplications add Maakdown to Open With/Default Apps; Settings row launches the system chooser (no silent default on Win10+) | spec section "Future iterations: Windows"; verify on a real Windows session |

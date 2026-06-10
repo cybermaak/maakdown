@@ -2,7 +2,10 @@ package main
 
 import (
 	"context"
+	"os"
 	"path/filepath"
+	"strings"
+	"sync"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"maakdown/internal/assetservice"
@@ -13,6 +16,9 @@ import (
 	"maakdown/internal/watcher"
 )
 
+// appBundleID must match CFBundleIdentifier in build/darwin/Info.plist.
+const appBundleID = "com.maak.maakdown"
+
 type App struct {
 	ctx context.Context
 
@@ -22,6 +28,11 @@ type App struct {
 	Vault   *vault.Service
 	Config  *config.Service
 	Watcher *watcher.Service
+
+	// Files handed to us by the OS before the frontend subscribed (cold start).
+	pendingMu     sync.Mutex
+	pendingOpens  []string
+	frontendReady bool
 }
 
 func NewApp() *App {
@@ -110,4 +121,68 @@ func (a *App) WindowIsMaximised() bool {
 		return runtime.WindowIsMaximised(a.ctx)
 	}
 	return false
+}
+
+// isMarkdownPath mirrors the reader's accepted Markdown extensions.
+func isMarkdownPath(path string) bool {
+	switch strings.ToLower(filepath.Ext(path)) {
+	case ".md", ".markdown", ".mdown", ".mkd", ".mdwn":
+		return true
+	}
+	return false
+}
+
+// QueueOpenFile routes an OS-handed file to the frontend: emitted live when the
+// app is running, buffered for ConsumePendingOpenFiles during cold start.
+// Non-Markdown or unreadable paths are ignored.
+func (a *App) QueueOpenFile(path string) {
+	if !isMarkdownPath(path) {
+		return
+	}
+	if _, err := os.Stat(path); err != nil {
+		return
+	}
+	a.pendingMu.Lock()
+	if !a.frontendReady {
+		// Buffer until the frontend drains once; the event may fire before the
+		// frontend has subscribed, and tab dedup makes any overlap idempotent.
+		a.pendingOpens = append(a.pendingOpens, path)
+	}
+	a.pendingMu.Unlock()
+	if a.ctx != nil {
+		runtime.EventsEmit(a.ctx, "open-file", path)
+	}
+}
+
+// ConsumePendingOpenFiles drains files queued before the frontend subscribed
+// and marks the frontend ready, after which opens flow only through the
+// "open-file" event. The frontend calls this once after restoring its session.
+func (a *App) ConsumePendingOpenFiles() []string {
+	a.pendingMu.Lock()
+	defer a.pendingMu.Unlock()
+	a.frontendReady = true
+	pending := a.pendingOpens
+	a.pendingOpens = nil
+	if pending == nil {
+		return []string{}
+	}
+	return pending
+}
+
+// MarkdownHandlerSupported reports whether this platform supports querying and
+// setting the default Markdown opener (currently macOS only).
+func (a *App) MarkdownHandlerSupported() bool {
+	return markdownHandlerSupported
+}
+
+// IsDefaultMarkdownHandler reports whether Maakdown is the OS default opener
+// for Markdown files.
+func (a *App) IsDefaultMarkdownHandler() bool {
+	return isDefaultMarkdownHandler()
+}
+
+// SetDefaultMarkdownHandler makes Maakdown the OS default Markdown opener. The
+// OS call is silent, so this must only run from an explicit user action.
+func (a *App) SetDefaultMarkdownHandler() error {
+	return setDefaultMarkdownHandler()
 }

@@ -360,6 +360,22 @@ a {
 .settings-heading { display: flex; align-items: center; justify-content: space-between; }
 .settings-heading button { border: 0; color: var(--link); background: transparent; cursor: pointer; }
 
+.settings-association { display: grid; gap: 6px; padding-top: 10px; border-top: 1px solid var(--border); }
+.settings-association-label { color: var(--muted); font-size: 12px; font-weight: 600; }
+.settings-association-status { color: var(--muted); font-size: 12.5px; }
+.settings-association-button {
+  justify-self: start;
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  background: var(--panel-bg);
+  cursor: pointer;
+  font-size: 12.5px;
+}
+.settings-association-button:hover { background: var(--active); }
+.settings-association-error { color: var(--danger); font-size: 12px; }
+
 .document-surface {
   max-width: 860px;
   padding: 36px 48px;

@@ -398,3 +398,14 @@ The user plans to sign macOS and Windows builds using their own certificates. Th
   percentage is not feasible (the file read is one atomic Go call; parsing is a
   single worker pass with no incremental progress), so the indeterminate
   spinner (reduced-motion aware) signals activity while a long file parses.
+- 2026-06-09: Implemented macOS Markdown file association (P12.1, spec
+  2026-06-09). Info.plist declares a Viewer/Alternate claim for
+  net.daringfireball.markdown (capable opener, no default takeover);
+  Mac.OnFileOpen + SingleInstanceLock + argv feed QueueOpenFile, with
+  cold-start buffering drained by the frontend after session restore;
+  LaunchServices cgo backs a user-initiated "Set as default for Markdown"
+  row in Reader Settings (hidden where unsupported; stub on other OSes).
+  Verified on-device: LS rank Alternate/role Viewer, cold + running-instance
+  opens land as tabs (session-state check), user's default untouched. UAT-09
+  covers the row, hidden state, live open, and cold-start drain (suite 23/23).
+  Windows/Linux follow-ups are specced in the same design doc (P12.2/P12.3).

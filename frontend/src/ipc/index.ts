@@ -3,7 +3,18 @@ import { GetConfig, GetSession, SetConfig, SetSession } from '../../wailsjs/go/c
 import { ResolveAsset, RevokeAsset } from '../../wailsjs/go/assetservice/Service';
 import { OpenExternal } from '../../wailsjs/go/linkservice/Service';
 import { UnwatchDocument, WatchDocument } from '../../wailsjs/go/watcher/Service';
-import { Print, Quit, SetWindowTitle, WindowIsMaximised, WindowMinimise, WindowToggleMaximise } from '../../wailsjs/go/main/App';
+import {
+  ConsumePendingOpenFiles,
+  IsDefaultMarkdownHandler,
+  MarkdownHandlerSupported,
+  Print,
+  Quit,
+  SetDefaultMarkdownHandler,
+  SetWindowTitle,
+  WindowIsMaximised,
+  WindowMinimise,
+  WindowToggleMaximise
+} from '../../wailsjs/go/main/App';
 import { GetVaultIndex } from '../../wailsjs/go/vault/Service';
 import { EventsOn } from '../../wailsjs/runtime/runtime';
 import { config } from '../../wailsjs/go/models';
@@ -133,6 +144,26 @@ export async function windowToggleMaximise(): Promise<void> {
 
 export async function windowIsMaximised(): Promise<boolean> {
   return WindowIsMaximised();
+}
+
+export async function consumePendingOpenFiles(): Promise<string[]> {
+  return ConsumePendingOpenFiles();
+}
+
+export async function markdownHandlerSupported(): Promise<boolean> {
+  return MarkdownHandlerSupported();
+}
+
+export async function isDefaultMarkdownHandler(): Promise<boolean> {
+  return IsDefaultMarkdownHandler();
+}
+
+export async function setDefaultMarkdownHandler(): Promise<void> {
+  await SetDefaultMarkdownHandler();
+}
+
+export function onOpenFile(callback: (path: string) => void): () => void {
+  return EventsOn('open-file', (path: string) => callback(path));
 }
 
 export function onFileChanged(callback: (path: string) => void): () => void {
