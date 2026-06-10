@@ -101,6 +101,11 @@ func (a *App) AppName() string {
 	return "Maakdown"
 }
 
+// Version reports the build version ("dev" outside tagged release builds).
+func (a *App) Version() string {
+	return appVersion
+}
+
 // WindowMinimise minimises the frameless window from the custom title bar.
 func (a *App) WindowMinimise() {
 	if a.ctx != nil {

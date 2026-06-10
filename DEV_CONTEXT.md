@@ -409,3 +409,11 @@ The user plans to sign macOS and Windows builds using their own certificates. Th
   opens land as tabs (session-state check), user's default untouched. UAT-09
   covers the row, hidden state, live open, and cold-start drain (suite 23/23).
   Windows/Linux follow-ups are specced in the same design doc (P12.2/P12.3).
+- 2026-06-09: UI polish and cleanup: fixed Mermaid diagram background/borders to match code blocks, resolved text selection issues in the settings panel (`-webkit-user-select: none`), updated toolbar icons (`Settings2` and `Command`) with reordering, renamed "Reader appearance" to "Settings", fixed diagram modal dismissal when clicking zoom controls, and fixed callout CSS specificity to correctly apply theme-aware accent colors.
+- 2026-06-09: Added an About dialog (Dialog primitive): theme-aware app icon,
+  name, build version, MIT license, and a GitHub link through openExternal.
+  Version comes from `main.appVersion` ("dev" locally, tag-injected via
+  -ldflags in release.yml) exposed as App.Version()/appVersion(). Entry
+  points: File menu "About Maakdown", command palette, and a link at the
+  bottom of Settings. UAT-10 covers palette open, version/license, repo link,
+  and close.

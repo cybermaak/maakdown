@@ -11,6 +11,7 @@ import {
   Quit,
   SetDefaultMarkdownHandler,
   SetWindowTitle,
+  Version,
   WindowIsMaximised,
   WindowMinimise,
   WindowToggleMaximise
@@ -148,6 +149,10 @@ export async function windowIsMaximised(): Promise<boolean> {
 
 export async function consumePendingOpenFiles(): Promise<string[]> {
   return ConsumePendingOpenFiles();
+}
+
+export async function appVersion(): Promise<string> {
+  return Version();
 }
 
 export async function markdownHandlerSupported(): Promise<boolean> {

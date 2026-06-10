@@ -11,6 +11,7 @@
   import ReaderSettings from './components/ReaderSettings.svelte';
   import CommandPalette from './components/CommandPalette.svelte';
   import ReaderError from './components/ReaderError.svelte';
+  import AboutDialog from './components/AboutDialog.svelte';
   import ContextMenu from './components/ContextMenu.svelte';
   import { openContextMenu, type ContextMenuItem } from './stores/contextMenu';
   import { isInternalHref } from './core/navigation/navigation';
@@ -79,6 +80,7 @@
   let searchIndex = $state(0);
   let searchCaseSensitive = $state(false);
   let settingsOpen = $state(false);
+  let aboutOpen = $state(false);
   let paletteOpen = $state(false);
   let printing = $state(false);
   let narrowWindow = $state(false);
@@ -419,6 +421,7 @@
     if (command === 'print') void printDocument();
     if (command === 'palette') openPalette();
     if (command === 'settings') settingsOpen = true;
+    if (command === 'about') aboutOpen = true;
     if (command === 'quit') void quitApp();
   }
 
@@ -713,7 +716,7 @@
         />
       {/if}
       {#if settingsOpen}
-        <ReaderSettings config={$appConfig} onChange={updateConfig} onClose={() => (settingsOpen = false)} />
+        <ReaderSettings config={$appConfig} onChange={updateConfig} onClose={() => (settingsOpen = false)} onAbout={() => { settingsOpen = false; aboutOpen = true; }} />
       {/if}
       {#if paletteOpen}
         <CommandPalette
@@ -770,5 +773,6 @@
       <p class="sr-only" aria-live="polite">{announcement}</p>
     </section>
     <ContextMenu />
+    <AboutDialog open={aboutOpen} onClose={() => (aboutOpen = false)} />
   </main>
 {/if}

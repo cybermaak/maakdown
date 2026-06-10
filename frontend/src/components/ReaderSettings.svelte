@@ -8,8 +8,9 @@
     config: AppConfig;
     onChange: (config: AppConfig) => void;
     onClose: () => void;
+    onAbout?: () => void;
   }
-  let { config, onChange, onClose }: Props = $props();
+  let { config, onChange, onClose, onAbout }: Props = $props();
   const update = (patch: Partial<AppConfig>) => onChange({ ...config, ...patch });
 
   // File association: hidden unless the platform supports querying/setting the
@@ -40,8 +41,8 @@
   }
 </script>
 
-<div class="reader-settings" role="dialog" aria-label="Reader appearance">
-  <div class="settings-heading"><strong>Reader appearance</strong><button onclick={onClose}>Done</button></div>
+<div class="reader-settings" role="dialog" aria-label="Settings">
+  <div class="settings-heading"><strong>Settings</strong><button onclick={onClose}>Done</button></div>
   <SegmentedControl
     label="Typeface"
     options={[{ value: 'sans', label: 'Sans' }, { value: 'serif', label: 'Serif' }]}
@@ -83,5 +84,8 @@
       {/if}
       {#if handlerError}<span class="settings-association-error" role="alert">{handlerError}</span>{/if}
     </div>
+  {/if}
+  {#if onAbout}
+    <button type="button" class="settings-about-link" onclick={onAbout}>About Maakdown</button>
   {/if}
 </div>

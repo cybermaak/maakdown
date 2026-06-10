@@ -42,6 +42,10 @@ export function SetWindowTitle(arg1) {
   return window['go']['main']['App']['SetWindowTitle'](arg1);
 }
 
+export function Version() {
+  return window['go']['main']['App']['Version']();
+}
+
 export function WindowIsMaximised() {
   return window['go']['main']['App']['WindowIsMaximised']();
 }

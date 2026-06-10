@@ -21,6 +21,8 @@ export function SetDefaultMarkdownHandler():Promise<void>;
 
 export function SetWindowTitle(arg1:string):Promise<void>;
 
+export function Version():Promise<string>;
+
 export function WindowIsMaximised():Promise<boolean>;
 
 export function WindowMinimise():Promise<void>;

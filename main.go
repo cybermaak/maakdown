@@ -16,6 +16,10 @@ import (
 //go:embed all:frontend/dist
 var assets embed.FS
 
+// appVersion is injected at release time via
+// `-ldflags "-X main.appVersion=<tag>"`; local builds show "dev".
+var appVersion = "dev"
+
 func main() {
 	app := NewApp()
 	// Cover `Maakdown file.md` and platforms that pass the path as an argument
@@ -34,6 +38,7 @@ func main() {
 	fileMenu.AddText("Reload", keys.CmdOrCtrl("r"), func(_ *menu.CallbackData) { app.EmitCommand("reload") })
 	fileMenu.AddText("Print...", keys.CmdOrCtrl("p"), func(_ *menu.CallbackData) { app.EmitCommand("print") })
 	fileMenu.AddSeparator()
+	fileMenu.AddText("About Maakdown", nil, func(_ *menu.CallbackData) { app.EmitCommand("about") })
 	fileMenu.AddText("Quit Maakdown", keys.CmdOrCtrl("q"), func(_ *menu.CallbackData) { app.Quit() })
 	viewMenu := appMenu.AddSubmenu("View")
 	viewMenu.AddText("Command Palette", keys.CmdOrCtrl("k"), func(_ *menu.CallbackData) {

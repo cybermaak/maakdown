@@ -23,7 +23,8 @@
     { id: 'reload', label: 'Reload document', hint: 'Cmd R' },
     { id: 'print', label: 'Print or save as PDF', hint: 'Cmd P' },
     { id: 'focus', label: 'Toggle focus mode', hint: 'Cmd Shift F' },
-    { id: 'settings', label: 'Reader appearance' }
+    { id: 'settings', label: 'Reader appearance' },
+    { id: 'about', label: 'About Maakdown' }
   ];
   let visibleCommands = $derived(commands.filter((item) => item.label.toLowerCase().includes(query.toLowerCase())));
   let visibleTabs = $derived(tabs.filter((tab) => tab.title.toLowerCase().includes(query.toLowerCase())));

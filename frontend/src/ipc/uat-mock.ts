@@ -272,6 +272,10 @@ export async function windowIsMaximised(): Promise<boolean> {
   return false;
 }
 
+export async function appVersion(): Promise<string> {
+  return 'uat-test';
+}
+
 export async function consumePendingOpenFiles(): Promise<string[]> {
   const pending = state.pendingOpenFiles;
   state.pendingOpenFiles = [];

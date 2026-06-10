@@ -72,7 +72,8 @@ jobs:
 
       - name: Build unsigned native application
         shell: bash
-        run: '"$(go env GOPATH)/bin/wails" build -clean'
+        # Inject the tag so the in-app About dialog reports the release version.
+        run: '"$(go env GOPATH)/bin/wails" build -clean -ldflags "-X main.appVersion=${VERSION}"'
 
       - name: Verify native build artifact
         shell: bash
