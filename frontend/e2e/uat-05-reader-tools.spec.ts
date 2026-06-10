@@ -43,7 +43,7 @@ test.describe('UAT-05 reader productivity tools', () => {
     await page.keyboard.press('Escape');
     await expect(dialog).toBeHidden();
 
-    await page.getByRole('button', { name: 'Reader appearance' }).click();
+    await page.getByRole('button', { name: 'Settings', exact: true }).click();
     await page.getByLabel(/Text size/).fill('18');
     await expect(page.locator('html')).toHaveCSS('--reader-font-size', '18px');
     await page.getByRole('button', { name: 'Done' }).click();

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ArrowLeft, ArrowRight, Eye, FolderOpen, Focus, Moon, RefreshCw, Search, Settings2, Sun } from '@lucide/svelte';
+  import { ArrowLeft, ArrowRight, Command, Eye, FolderOpen, Focus, Moon, RefreshCw, Search, Settings2, Sun } from '@lucide/svelte';
   import { IconButton, Toolbar } from '../design-system';
   import WindowControls from './WindowControls.svelte';
   import { isDesktopRuntime, isMacPlatform } from '@ipc';
@@ -47,9 +47,9 @@
   <!-- View and meta controls sit at the trailing edge. -->
   <Toolbar class="toolbar-actions" label="View and tools">
     <IconButton icon={Search} label="Find in document" onclick={onSearch} />
-    <IconButton icon={Eye} label="Reader appearance" onclick={onSettings} />
     <IconButton icon={Focus} label="Focus mode" active={config.focusMode} onclick={onFocus} />
-    <IconButton icon={Settings2} label="Command palette" onclick={() => window.dispatchEvent(new CustomEvent('maakdown:palette'))} />
+    <IconButton icon={Settings2} label="Settings" onclick={onSettings} />
+    <IconButton icon={Command} label="Command palette" onclick={() => window.dispatchEvent(new CustomEvent('maakdown:palette'))} />
     <IconButton icon={config.theme === 'dark' ? Sun : Moon} label={`Theme: ${config.theme}`} onclick={onTheme} />
   </Toolbar>
   {#if desktop && !mac}<WindowControls />{/if}

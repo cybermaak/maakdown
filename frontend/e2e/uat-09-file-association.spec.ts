@@ -13,7 +13,7 @@ test.describe('UAT-09 OS file association', () => {
     await gotoApp(page);
     await expectReaderReady(page);
 
-    await page.getByRole('button', { name: 'Reader appearance' }).click();
+    await page.getByRole('button', { name: 'Settings', exact: true }).click();
     const setDefault = page.getByRole('button', { name: 'Set as default for Markdown' });
     await expect(setDefault).toBeVisible();
     await setDefault.click();
@@ -28,8 +28,8 @@ test.describe('UAT-09 OS file association', () => {
     await gotoApp(page);
     await expectReaderReady(page);
 
-    await page.getByRole('button', { name: 'Reader appearance' }).click();
-    await expect(page.getByRole('dialog', { name: 'Reader appearance' })).toBeVisible();
+    await page.getByRole('button', { name: 'Settings', exact: true }).click();
+    await expect(page.getByRole('dialog', { name: 'Settings' })).toBeVisible();
     await expect(page.getByText('File association')).toHaveCount(0);
   });
 

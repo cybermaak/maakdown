@@ -42,7 +42,7 @@
 
 {#if open}
   <div class="diagram-backdrop" role="presentation" onclick={onClose}>
-    <div bind:this={dialog} class="diagram-dialog" role="dialog" aria-modal="true" aria-label={title} tabindex="-1" onkeydown={handleKeydown}>
+    <div bind:this={dialog} class="diagram-dialog" role="dialog" aria-modal="true" aria-label={title} tabindex="-1" onkeydown={handleKeydown} onclick={(e) => e.stopPropagation()}>
       <header>
         <strong>{title}</strong>
         <div class="diagram-tools" role="toolbar" aria-label="Diagram zoom">
