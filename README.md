@@ -75,15 +75,15 @@ We built Maakdown because reading Markdown shouldn't feel like staring at a raw 
 
 ## 🚀 Download & Installation
 
-*Releases are currently available as automated builds.*
+Grab the latest build for your OS from the [GitHub Releases](https://github.com/cybermaak/maakdown/releases) page — or visit the [project homepage](https://cybermaak.github.io/maakdown/):
 
-Download the latest artifacts for your operating system from our [GitHub Releases](https://github.com/cybermaak/maakdown/releases) page:
+| Platform | Artifact | Notes |
+|---|---|---|
+| **macOS** (Apple silicon) | `.dmg` or `.zip` | **Signed & notarized** — opens without Gatekeeper warnings |
+| **Windows** (x64) | `.zip` | Unsigned for now — SmartScreen may warn on first launch |
+| **Linux** (x64) | `.tar.gz` | Requires WebKit2GTK (preinstalled on most desktop distros) |
 
-- **macOS** (Universal)
-- **Windows** (x64)
-- **Linux** (x64 / tar.gz)
-
-Simply extract the archive and launch the application.
+Extract (or drag the dmg's app to Applications) and launch.
 
 ---
 

@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Maakdown — fast, local-first desktop Markdown viewer for macOS, Windows &amp; Linux</title>
+  <meta name="description" content="Maakdown is a free, open-source desktop Markdown reader. Clean typography, syntax-highlighted code, KaTeX math, Mermaid diagrams, wikilinks, and tabs — fast even on 10,000-line files. Signed &amp; notarized for macOS; Windows and Linux builds too.">
+  <link rel="canonical" href="https://cybermaak.github.io/maakdown/">
+  <link rel="icon" type="image/png" href="icon.png">
+
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Maakdown — a beautiful, distraction-free Markdown reader">
+  <meta property="og:description" content="Free, open-source, local-first desktop Markdown viewer. Typography, code, KaTeX, Mermaid, wikilinks, tabs. macOS (signed &amp; notarized), Windows, Linux.">
+  <meta property="og:url" content="https://cybermaak.github.io/maakdown/">
+  <meta property="og:image" content="https://cybermaak.github.io/maakdown/social-preview.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Maakdown — a beautiful, distraction-free Markdown reader">
+  <meta name="twitter:description" content="Free, open-source, local-first desktop Markdown viewer for macOS, Windows, and Linux.">
+  <meta name="twitter:image" content="https://cybermaak.github.io/maakdown/social-preview.png">
+
+  <style>
+    :root {
+      --paper-0:#ffffff; --paper-50:#faf9f4; --paper-100:#f7f7f4; --paper-150:#f1f0ea;
+      --paper-200:#efeee8; --paper-300:#deddd6; --paper-400:#d8d8d2;
+      --ink-900:#232320; --ink-500:#6b6a61; --link:#075cc7;
+    }
+    * { margin:0; box-sizing:border-box; }
+    body { font-family:-apple-system,'Inter','Segoe UI',system-ui,sans-serif;
+      background:var(--paper-100); color:var(--ink-900); line-height:1.6; }
+    a { color:var(--link); text-decoration:none; }
+    a:hover { text-decoration:underline; }
+    .wrap { max-width:980px; margin:0 auto; padding:0 24px; }
+
+    header { padding:72px 0 40px; text-align:center;
+      background:linear-gradient(180deg,var(--paper-50),var(--paper-100)); }
+    .brand { display:inline-flex; align-items:center; gap:18px; }
+    .brand img { width:84px; height:84px; border-radius:19px; box-shadow:0 8px 24px rgba(35,35,32,.16); }
+    .brand h1 { font-size:52px; letter-spacing:-1px; }
+    .tagline { font-size:24px; font-weight:600; margin-top:18px; }
+    .sub { color:var(--ink-500); font-size:17px; max-width:640px; margin:10px auto 0; }
+    .chips { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:22px; }
+    .chip { padding:6px 14px; border-radius:999px; font-size:14px; font-weight:600;
+      background:var(--paper-0); border:1px solid var(--paper-400); }
+    .cta { margin-top:30px; display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
+    .btn { display:inline-block; padding:13px 26px; border-radius:10px; font-weight:700; font-size:16px; }
+    .btn.primary { background:var(--link); color:#fff; }
+    .btn.primary:hover { text-decoration:none; filter:brightness(1.08); }
+    .btn.ghost { border:1px solid var(--paper-400); background:var(--paper-0); color:var(--ink-900); }
+    .btn.ghost:hover { text-decoration:none; background:var(--paper-150); }
+    .platforms { margin-top:14px; color:var(--ink-500); font-size:14px; }
+
+    .hero { margin:44px auto 0; }
+    .hero img { width:100%; border-radius:12px; border:1px solid var(--paper-400);
+      box-shadow:0 24px 60px rgba(35,35,32,.18); }
+
+    section { padding:56px 0; }
+    section h2 { font-size:30px; letter-spacing:-.5px; margin-bottom:24px; text-align:center; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px; }
+    .card { background:var(--paper-0); border:1px solid var(--paper-400); border-radius:12px; padding:22px; }
+    .card h3 { font-size:18px; margin-bottom:8px; }
+    .card p { color:var(--ink-500); font-size:15px; }
+
+    .shots { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:20px; }
+    .shots figure img { width:100%; border-radius:10px; border:1px solid var(--paper-400);
+      box-shadow:0 10px 30px rgba(35,35,32,.12); }
+    .shots figcaption { text-align:center; color:var(--ink-500); font-size:14px; margin-top:8px; }
+
+    footer { border-top:1px solid var(--paper-300); padding:34px 0 48px;
+      text-align:center; color:var(--ink-500); font-size:14px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="brand"><img src="icon.png" alt="Maakdown app icon"><h1>Maakdown</h1></div>
+    <p class="tagline">A beautiful, distraction-free desktop reader for your Markdown.</p>
+    <p class="sub">Open any Markdown file and see it the way you meant it — clean typography,
+      rich code, math, and diagrams in a calm reading workspace. Local-first: your files never
+      leave your machine.</p>
+    <div class="chips">
+      <span class="chip">Free &amp; open source (MIT)</span>
+      <span class="chip">Signed &amp; notarized for macOS</span>
+      <span class="chip">No account · no telemetry</span>
+      <span class="chip">Fast on 10,000-line files</span>
+    </div>
+    <div class="cta">
+      <a class="btn primary" href="https://github.com/cybermaak/maakdown/releases/latest">Download</a>
+      <a class="btn ghost" href="https://github.com/cybermaak/maakdown">View on GitHub</a>
+    </div>
+    <p class="platforms">macOS (Apple silicon) · Windows x64 · Linux x64</p>
+    <div class="hero wrap">
+      <img src="reading-light.png" alt="Maakdown reading view: toolbar, document tab, and a rendered technical document with frontmatter masthead">
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <h2>Why Maakdown?</h2>
+    <div class="grid">
+      <div class="card"><h3>A genuinely nice reading experience</h3>
+        <p>Warm, book-like light and dark themes, careful typography, and a focus mode that clears
+        everything but the words. Tune font, size, line height, and measure to taste.</p></div>
+      <div class="card"><h3>Fast on massive files</h3>
+        <p>A virtualized reader keeps 10,000-line documents scrolling smoothly and light on memory.
+        Text appears instantly; code highlighting, math, and diagrams fill in as you read.</p></div>
+      <div class="card"><h3>Built for technical documents</h3>
+        <p>Syntax-highlighted code, KaTeX math, Mermaid diagrams, GFM tables, task lists, callouts,
+        footnotes, and local images all just work — safely sanitized.</p></div>
+      <div class="card"><h3>Made for working across notes</h3>
+        <p>Tabs, recent files, drag-and-drop, wikilinks between notes, full-document search, a
+        command palette, and a session that restores itself on relaunch.</p></div>
+      <div class="card"><h3>Local-first &amp; private</h3>
+        <p>A reader, not a cloud app: no account, no telemetry, works offline. Print or export to
+        PDF whenever you need a copy to share.</p></div>
+      <div class="card"><h3>Open source</h3>
+        <p>MIT-licensed, built with Go (Wails) and Svelte. Issues, ideas, and pull requests are
+        welcome on <a href="https://github.com/cybermaak/maakdown">GitHub</a>.</p></div>
+    </div>
+  </div>
+</section>
+
+<section style="background:var(--paper-150);">
+  <div class="wrap">
+    <h2>See it in action</h2>
+    <div class="shots">
+      <figure><img src="reading-dark.png" alt="Dark theme with rendered Mermaid diagrams" loading="lazy">
+        <figcaption>Dark theme with rendered Mermaid diagrams</figcaption></figure>
+      <figure><img src="code-and-math.png" alt="Syntax-highlighted code and KaTeX math" loading="lazy">
+        <figcaption>Syntax-highlighted code and KaTeX math</figcaption></figure>
+      <figure><img src="command-palette.png" alt="Command palette open over a document" loading="lazy">
+        <figcaption>Command palette for fast keyboard navigation</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p><strong>Maakdown</strong> — MIT License ·
+      <a href="https://github.com/cybermaak/maakdown">GitHub</a> ·
+      <a href="https://github.com/cybermaak/maakdown/releases">Releases</a> ·
+      <a href="https://github.com/cybermaak/maakdown/discussions">Discussions</a></p>
+  </div>
+</footer>
+
+</body>
+</html>
