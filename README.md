@@ -14,7 +14,7 @@ Maakdown is a fast, local-first Markdown viewer designed for technical documents
 
 <br />
 
-<img src="docs/screenshots/reading-light.png" alt="Maakdown reading view showing the app toolbar, open document tab, and a rendered document with its frontmatter masthead" width="900" style="border-radius: 8px; box-shadow: 0 4px 14px rgba(0,0,0,0.1);" />
+<img src="docs/assets/maakdown_demo.webp" alt="Animated demo: reading a technical document, jumping via the outline minimap, running focus mode from the command palette, and switching to the dark theme with a rendered Mermaid diagram" width="900" />
 
 </div>
 

@@ -430,3 +430,9 @@ The user plans to sign macOS and Windows builds using their own certificates. Th
   the matrix (Win/Linux unsigned in CI; mac signed locally). Verified
   end-to-end: published, downloaded back, app copied out of the dmg passes
   spctl "Notarized Developer ID" + stapler validate. Runbook: docs/RELEASING.md.
+- 2026-06-11: Cut v0.1.0 (signed/notarized macOS dmg+zip via release-mac.sh, CI
+  Win/Linux; curated release notes flag Windows as WIP/unstable, also noted in
+  README + landing page). Added the animated README/landing demo:
+  frontend/scripts/capture-readme-demo.mjs records a Playwright-driven flow
+  (scroll → minimap jump → palette focus mode → dark theme + Mermaid) and
+  assembles docs/assets/maakdown_demo.webp via ffmpeg frames + img2webp.
