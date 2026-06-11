@@ -112,6 +112,9 @@ jobs:
       - name: Create or update GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # This job does not check out the repo, so point gh at the repository
+          # explicitly — otherwise gh tries (and fails) to infer it from git.
+          GH_REPO: ${{ github.repository }}
           TAG: ${{ github.ref_name }}
         run: |
           notes="Windows and Linux builds are unsigned. The macOS .dmg/.zip are signed with a Developer ID and notarized, uploaded separately by the maintainer (see docs/RELEASING.md)."

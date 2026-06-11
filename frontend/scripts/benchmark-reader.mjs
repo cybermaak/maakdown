@@ -135,7 +135,7 @@ try {
     );
     await revealEnhancedCode();
     const highlightedBlocks = await page.locator('[data-highlight-engine]').count();
-    await page.getByRole('button', { name: 'Reader appearance', exact: true }).click();
+    await page.getByRole('button', { name: 'Settings', exact: true }).click();
     await page.getByRole('button', { name: 'Shiki', exact: true }).click();
     await page.locator('[data-highlight-engine="shiki-js-regex"]').first().waitFor();
     const shikiBlocks = await page.locator('[data-highlight-engine="shiki-js-regex"]').count();
