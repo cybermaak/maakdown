@@ -12,19 +12,23 @@ This directory is for non-secret signing documentation and templates only.
 - signed `.app`, `.dmg`, `.pkg`, `.exe`, `.msi`, or `.zip` artifacts
 - notarization logs containing credentials or account identifiers
 
+The authoritative release runbook is **[`docs/RELEASING.md`](../../docs/RELEASING.md)**.
+macOS is signed + notarized locally via `scripts/release-mac.sh`; Windows/Linux
+build unsigned in CI.
+
 ## macOS Release Inputs
 
-Use environment variables or CI secrets:
+In `.env` (gitignored) — never in CI:
 
-- `MAAKDOWN_MACOS_CODESIGN_IDENTITY`
-- `MAAKDOWN_MACOS_KEYCHAIN_PROFILE`
-- `MAAKDOWN_APPLE_ID`
-- `MAAKDOWN_APPLE_TEAM_ID`
-- `MAAKDOWN_NOTARY_PROFILE`
+- `MAAKDOWN_MACOS_CODESIGN_IDENTITY` — Developer ID Application identity
+- `MAAKDOWN_NOTARY_PROFILE` — keychain profile from `xcrun notarytool store-credentials`
+- `MAAKDOWN_MACOS_ENTITLEMENTS` — optional entitlements override
 
-## Windows Release Inputs
+GitHub publishing reuses the `gh` CLI login; no token is stored.
 
-Use environment variables or CI secrets:
+## Windows Release Inputs (future)
+
+Not active until a certificate is available; builds are unsigned until then.
 
 - `MAAKDOWN_WINDOWS_CERT_PATH`
 - `MAAKDOWN_WINDOWS_CERT_PASSWORD`

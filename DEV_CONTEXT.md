@@ -419,3 +419,14 @@ The user plans to sign macOS and Windows builds using their own certificates. Th
   points: File menu "About Maakdown", command palette, and a link at the
   bottom of Settings. UAT-10 covers palette open, version/license, repo link,
   and close.
+- 2026-06-10: Local macOS release/signing process. `scripts/release-mac.sh`
+  builds arm64 (version via -ldflags), signs Developer ID + hardened runtime,
+  then a two-round-trip notarization: notarize+staple the .app first (so it
+  stays notarized after being dragged out of the .dmg), then build/notarize/
+  staple the .dmg, and zip the stapled app. Helpers: sign-macos.sh (sign-only),
+  notarize-macos.sh (submit+staple via MAAKDOWN_NOTARY_PROFILE keychain
+  profile), make-dmg.sh (hdiutil drag-to-Applications dmg). Publishes both
+  artifacts to the tag's GitHub Release via gh. `release.yml` drops macOS from
+  the matrix (Win/Linux unsigned in CI; mac signed locally). Verified
+  end-to-end: published, downloaded back, app copied out of the dmg passes
+  spctl "Notarized Developer ID" + stapler validate. Runbook: docs/RELEASING.md.

@@ -1,13 +1,15 @@
 name: Release
 
-# Publishes downloadable native artifacts to a GitHub Release.
-# Push a version tag (e.g. v0.1.0) to build macOS, Windows, and Linux and attach
-# the packaged executables to the release. workflow_dispatch builds + uploads
-# workflow artifacts only (no Release), for dry runs.
+# Publishes the UNSIGNED Windows and Linux artifacts to a GitHub Release.
+# Push a version tag (e.g. v0.1.0) to build both and attach them to the release.
+# workflow_dispatch builds + uploads workflow artifacts only (no Release), for
+# dry runs.
 #
-# Artifacts are UNSIGNED. Code signing / notarization is a separate, credentialed
-# step (scripts/sign-macos.sh, scripts/sign-windows.ps1) owned by the release
-# operator with their certificates.
+# macOS is intentionally NOT built here. The signed + notarized macOS .dmg/.zip
+# are produced locally on the maintainer's Mac via scripts/release-mac.sh (it
+# uploads to the same tag's Release with --clobber). See docs/RELEASING.md.
+# Windows signing (scripts/sign-windows.ps1) is staged for when a certificate is
+# available; until then Windows builds are unsigned.
 
 on:
   push:
@@ -30,8 +32,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - label: macOS
-            os: macos-14
           - label: Windows
             os: windows-2022
           - label: Linux
@@ -114,7 +114,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ github.ref_name }}
         run: |
-          notes="Unsigned native builds for macOS, Windows, and Linux. Signing and notarization are performed separately by the release operator."
+          notes="Windows and Linux builds are unsigned. The macOS .dmg/.zip are signed with a Developer ID and notarized, uploaded separately by the maintainer (see docs/RELEASING.md)."
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" dist/* --clobber
           else
