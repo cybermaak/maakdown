@@ -139,8 +139,12 @@ The app has three icon surfaces that must be updated together:
 | File | Purpose |
 |---|---|
 | `docs/design-system/maakdown.icon` | Apple Icon Composer bundle (layered, supports macOS light/dark/tinted theming) |
-| `docs/design-system/maakdown_light.png` | Light-theme variant (used for non-macOS `build/appicon.png` and title bar) |
-| `docs/design-system/maakdown_dark.png` | Dark-theme variant (used for title bar in dark mode) |
+| `docs/design-system/maakdown.icon/Assets/maakdown_light.png` | Light-theme master image. Single source — also derives `build/appicon.png` and the light title-bar mark |
+| `docs/design-system/maakdown.icon/Assets/maakdown_dark.png` | Dark-theme master image. Single source — also derives the dark title-bar mark |
+
+The masters live **only** inside the `.icon` bundle's `Assets/` directory (the same
+files `icon.json` references), so there is one copy of each. All other icon
+surfaces below are *derived* from these and regenerated, never hand-edited.
 
 ### 1. macOS App Icon (Finder / Dock)
 
@@ -149,7 +153,7 @@ theming requires the `.icon` bundle compiled by Apple's `actool` into `Assets.ca
 plus a proper `maakdown.icns` fallback. The postbuild script handles this:
 
 ```bash
-wails build -platform darwin/universal
+wails build -platform darwin/arm64
 scripts/postbuild-darwin.sh            # compiles .icon → Assets.car + maakdown.icns
 ```
 
@@ -171,7 +175,7 @@ Wails generates the Windows `.ico` and Linux icon from `build/appicon.png`.
 Update it by copying the light-theme PNG:
 
 ```bash
-cp docs/design-system/maakdown_light.png build/appicon.png
+cp docs/design-system/maakdown.icon/Assets/maakdown_light.png build/appicon.png
 ```
 
 This is done before `wails build`; Wails handles the rest automatically.
@@ -183,11 +187,11 @@ The toolbar brand mark uses theme-aware icons imported as Vite assets:
 - `frontend/src/assets/app-icon-light.png` — shown when theme is light
 - `frontend/src/assets/app-icon-dark.png` — shown when theme is dark
 
-Regenerate from the source PNGs (scaled to 64×64):
+Regenerate from the bundle masters (scaled to 64×64):
 
 ```bash
-sips -z 64 64 docs/design-system/maakdown_light.png --out frontend/src/assets/app-icon-light.png
-sips -z 64 64 docs/design-system/maakdown_dark.png  --out frontend/src/assets/app-icon-dark.png
+sips -z 64 64 docs/design-system/maakdown.icon/Assets/maakdown_light.png --out frontend/src/assets/app-icon-light.png
+sips -z 64 64 docs/design-system/maakdown.icon/Assets/maakdown_dark.png  --out frontend/src/assets/app-icon-dark.png
 ```
 
 The icon switch is wired in `WorkspaceToolbar.svelte` via
@@ -195,10 +199,10 @@ The icon switch is wired in `WorkspaceToolbar.svelte` via
 
 ### Full Update Checklist
 
-1. Update source files in `docs/design-system/`.
+1. Update the masters in `docs/design-system/maakdown.icon/Assets/` (and `icon.json` if layers change).
 2. Regenerate title bar icons: `sips -z 64 64 ...` (see above).
-3. Copy light PNG to `build/appicon.png`.
-4. Run `wails build -platform darwin/universal`.
+3. Copy the light master to `build/appicon.png` (see above).
+4. Run `wails build -platform darwin/arm64`.
 5. Run `scripts/postbuild-darwin.sh`.
 6. Optionally `killall Dock; killall Finder` to clear macOS icon cache.
 

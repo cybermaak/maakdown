@@ -6,9 +6,10 @@
     {
       "layers" : [
         {
+          "glass" : false,
           "hidden" : false,
-          "image-name" : "maakdown_light 2.png",
-          "name" : "maakdown_light 2",
+          "image-name" : "maakdown_light.png",
+          "name" : "maakdown_light",
           "opacity-specializations" : [
             {
               "appearance" : "dark",
@@ -24,8 +25,9 @@
           }
         },
         {
-          "image-name" : "maakdown_dark 3.png",
-          "name" : "maakdown_dark 3",
+          "glass" : true,
+          "image-name" : "maakdown_dark.png",
+          "name" : "maakdown_dark",
           "opacity-specializations" : [
             {
               "appearance" : "light",

@@ -124,9 +124,11 @@ when the user is ready to supply external signing infrastructure.
   (themed) and `maakdown.icns` (legacy fallback).  `Info.plist` carries both
   `CFBundleIconFile` and `CFBundleIconName` pointing to `maakdown`.  The
   Wails-generated `iconfile.icns` is removed so it cannot compete.
-- Use `maakdown_light.png` for `build/appicon.png` (Windows/Linux) and for the
-  light-theme title bar mark; use `maakdown_dark.png` for the dark-theme title
-  bar mark.  The toolbar brand switches via
+- The icon masters live only inside the `.icon` bundle at
+  `docs/design-system/maakdown.icon/Assets/maakdown_{light,dark}.png` (single
+  source, same files `icon.json` references). Derive `build/appicon.png`
+  (Windows/Linux) and the light title-bar mark from the light master, and the
+  dark title-bar mark from the dark master. The toolbar brand switches via
   `config.theme === 'dark' ? appIconDark : appIconLight`.
 
 ## Planned Tasks

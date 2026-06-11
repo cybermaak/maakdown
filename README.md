@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/design-system/maakdown_light.png" alt="Maakdown Icon" width="128" />
+<img src="docs/design-system/maakdown.icon/Assets/maakdown_light.png" alt="Maakdown Icon" width="128" />
 
 # Maakdown
 
