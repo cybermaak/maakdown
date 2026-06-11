@@ -117,7 +117,7 @@ jobs:
           GH_REPO: ${{ github.repository }}
           TAG: ${{ github.ref_name }}
         run: |
-          notes="Windows and Linux builds are unsigned. The macOS .dmg/.zip are signed with a Developer ID and notarized, uploaded separately by the maintainer (see docs/RELEASING.md)."
+          notes="The macOS .dmg/.zip are signed with a Developer ID and notarized, uploaded separately by the maintainer (see docs/RELEASING.md). Linux builds are unsigned. ⚠️ The Windows build is a work in progress — the current build is unstable and a fix is underway; it is unsigned (SmartScreen may warn)."
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" dist/* --clobber
           else

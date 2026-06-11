@@ -80,7 +80,7 @@ Grab the latest build for your OS from the [GitHub Releases](https://github.com/
 | Platform | Artifact | Notes |
 |---|---|---|
 | **macOS** (Apple silicon) | `.dmg` or `.zip` | **Signed & notarized** — opens without Gatekeeper warnings |
-| **Windows** (x64) | `.zip` | Unsigned for now — SmartScreen may warn on first launch |
+| **Windows** (x64) | `.zip` | ⚠️ **Work in progress** — the current build is glitchy; a fix is underway. Unsigned (SmartScreen may warn) |
 | **Linux** (x64) | `.tar.gz` | Requires WebKit2GTK (preinstalled on most desktop distros) |
 
 Extract (or drag the dmg's app to Applications) and launch.
