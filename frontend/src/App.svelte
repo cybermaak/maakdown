@@ -65,7 +65,12 @@
   const desktopRuntime = isDesktopRuntime();
   const showDesignSystem = (import.meta.env.DEV || import.meta.env.MODE === 'benchmark') && query.has('design-system');
   const fixture = (import.meta.env.DEV || import.meta.env.MODE === 'benchmark') ? query.get('fixture') : null;
-  let workspace = $state(createWorkspace());
+  // $state.raw: workspace is only ever replaced wholesale via commit(), and the
+  // deep proxy of plain $state gave tab.model a fresh proxy identity on every
+  // commit — each scroll-position commit re-fired DocumentView's restore effect,
+  // which rebuilt the virtualizer and oscillated the scroll position after
+  // outline navigation. Raw state keeps object identities stable.
+  let workspace = $state.raw(createWorkspace());
   let documentView = $state<DocumentView | undefined>();
   let removeListeners: Array<() => void> = [];
   let persistTimer = 0;

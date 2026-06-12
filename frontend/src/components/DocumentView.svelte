@@ -39,9 +39,18 @@
   // during virtualized scrolling re-attach their image without re-resolving.
   let assetUrlCache = new Map<string, string>();
 
+  // Reading the props here subscribes this effect to the parent's `activeTab`
+  // derived, which is replaced by every scroll-position commit — so this effect
+  // re-fires constantly while the user scrolls. Rebuilding the virtualizer
+  // (discarding measured heights) on those no-op runs made the restore write
+  // fight the browser's scroll anchoring and oscillate the document after
+  // outline jumps. Only a genuinely new document/model may rebuild.
+  let restoredModel: DocumentModel | null = null;
   $effect(() => {
-    model;
-    documentPath;
+    if (restoredPath === documentPath && restoredModel === model) {
+      return;
+    }
+    restoredModel = model;
     if (restoredPath !== documentPath) {
       assetUrlCache = new Map();
     }
@@ -216,7 +225,11 @@
     await Promise.all(
       images.map(async (image) => {
         const raw = image.getAttribute('src');
-        if (!raw || !shouldResolveAsset(raw) || image.dataset.assetResolved === 'true') {
+        // assetError marks a failed attempt: without it, every range change
+        // re-set the broken image's src, restarting the failed load — the
+        // resulting relayout re-measured the block, changed the range, and
+        // retried again in an endless loop that jittered the scroll position.
+        if (!raw || !shouldResolveAsset(raw) || image.dataset.assetResolved === 'true' || image.dataset.assetError) {
           return;
         }
         const cached = assetUrlCache.get(raw);

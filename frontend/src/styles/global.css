@@ -507,6 +507,12 @@ a {
 .document-scroll {
   min-width: 0;
   overflow: auto;
+  /* The virtualizer swaps blocks for spacer height as you scroll; measured
+     heights exclude margins, so each swap nudges total layout height. Native
+     scroll anchoring would "compensate" scrollTop for those nudges, flipping
+     the mount boundary back and forth in a visible oscillation loop. Standard
+     virtualized-list requirement: the surface opts out of scroll anchoring. */
+  overflow-anchor: none;
   padding: 36px 48px;
   color: var(--reader-ink);
   background: var(--reader-bg);

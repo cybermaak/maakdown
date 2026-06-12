@@ -436,3 +436,14 @@ The user plans to sign macOS and Windows builds using their own certificates. Th
   frontend/scripts/capture-readme-demo.mjs records a Playwright-driven flow
   (scroll → minimap jump → palette focus mode → dark theme + Mermaid) and
   assembles docs/assets/maakdown_demo.webp via ffmpeg frames + img2webp.
+- 2026-06-11: Fixed post-outline-navigation scroll oscillation (subtle macOS,
+  erratic Windows). Three layers: (1) workspace is now $state.raw — deep-proxy
+  identity churn re-fired DocumentView's restore effect on every scroll commit;
+  (2) the rebuild/restore effect bails unless documentPath/model actually
+  changed (it rebuilt the virtualizer, losing measured heights, on each run);
+  (3) .document-scroll sets overflow-anchor: none — measured heights exclude
+  margins, so mount/unmount swaps nudged layout height and native scroll
+  anchoring fed scrollTop back into the range boundary, a bistable 30-40Hz
+  flap. Also: failed image resolutions are marked (assetError) so they aren't
+  re-fetched on every range change. UAT-11 regression test (proven failing
+  pre-fix); demo webp re-recorded without the glitch.

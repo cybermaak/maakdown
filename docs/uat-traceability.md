@@ -42,6 +42,7 @@ user-visible outcome and the verification that covers it.
 | Accessibility release gate (P11.9–P11.10) | Keyboard tabs/modals, labels, announcements, and reduced motion pass with no serious/critical axe findings | UAT-07 | Executable |
 | Custom context menus | Native menu suppressed; consistent per-surface custom menu for reader, tabs, outline, and toolbar | UAT-08 | Executable |
 | OS file association (P12.1) | OS-handed files open as tabs (live and cold start); Settings offers user-consented "Set as default" only where supported | UAT-09 + on-device macOS acceptance | Executable |
+| Scroll stability after outline navigation (P5/P9.11) | The document comes to rest after a minimap jump; no self-sustaining scroll oscillation | UAT-11 | Executable |
 
 Cross-platform acceptance remains tracked by P7.7/P11.11 and begins after the
 GitHub repository exists and the hosted workflow has produced its first matrix.
