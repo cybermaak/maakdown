@@ -117,6 +117,16 @@ that has never seen the app opens it without the "unidentified developer" block.
   `com.apple.security.cs.allow-unsigned-executable-memory` to
   `build/darwin/entitlements.plist` and re-run. (The current entitlements ship
   `allow-jit` + `disable-library-validation`, which is expected to suffice.)
+- **"No Keychain password item found for profile"** even though you created it —
+  newer `store-credentials` defaults to the data-protection ("Local Items")
+  keychain, which can become unreadable across sessions. Re-store the profile
+  explicitly into the file-based login keychain (reads then work with no extra
+  flags):
+  ```bash
+  xcrun notarytool store-credentials cybermaak-notary \
+    --key /path/to/AuthKey_XXXX.p8 --key-id XXXXXXXXXX --issuer <issuer-uuid> \
+    --keychain ~/Library/Keychains/login.keychain-db
+  ```
 - **Multiple Developer ID identities** — pin the exact one in
   `MAAKDOWN_MACOS_CODESIGN_IDENTITY`.
 - **`spctl` says "rejected"** — the ticket isn't stapled or notarization didn't
