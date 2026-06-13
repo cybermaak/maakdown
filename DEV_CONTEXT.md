@@ -465,3 +465,9 @@ The user plans to sign macOS and Windows builds using their own certificates. Th
   and fingerprints cache content. Native captures show class/ER structure
   restored and the wide flowchart readable; physical-machine acceptance is
   still pending.
+- 2026-06-13: Cross-platform CI exposed a print preparation race in UAT-06:
+  measurements from the fully mounted print DOM scheduled a virtualizer range
+  update that collapsed the document back to ten visible blocks before the
+  system print call. `DocumentView` now suspends normal range recalculation
+  while a print range is active. The existing complete-document print UAT is
+  the regression test.

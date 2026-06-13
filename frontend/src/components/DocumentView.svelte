@@ -283,7 +283,7 @@
   }
 
   function updateRange() {
-    if (!surface) {
+    if (!surface || printRange) {
       return;
     }
     range = virtualizer.range(surface.scrollTop, surface.clientHeight);
