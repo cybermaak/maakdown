@@ -159,7 +159,7 @@
 | P10.13 | Done | Add unified Settings surface through the palette | Frontend | P10.5/P9.4 | theme, metadata, reader, panel, and dev/evaluation settings have one persistent home; Shiki remains dev-only | persistence, keyboard, and visual tests |
 | P10.14 | Done | Add standing multi-tab active-render benchmark | Frontend/CI | P9.11 | several large open tabs retain one mounted reader and bounded enhancement work after P10 changes | production-bundled UAT-mode `npm run benchmark:workspace`; CI thresholds for one reader, mounted blocks, and activation latency |
 | P10.15 | Done | Keep the accessibility baseline continuously green | Frontend/CI | P8/P9 | existing and new controls retain visible focus, names, semantics, reduced-motion behavior, and dialog/palette focus management before P11 async-announcement completion | automated accessibility checks plus manual keyboard smoke per P10 milestone |
-| P10.16 | In Progress | Preserve full-document range during print preparation | Frontend | P10.6/P5.2 | asynchronous block measurements cannot restore virtualization before the system print call; the complete document is mounted and enhanced for the print snapshot | UAT-06 locally; cross-platform `ci/sandbox` verification pending |
+| P10.16 | Done | Preserve full-document range during print preparation | Frontend | P10.6/P5.2 | asynchronous block measurements cannot restore virtualization before the system print call; the complete document is mounted and enhanced for the print snapshot | local UAT 25/25; CI run 27470447128 passed UAT on macOS, Ubuntu, and Windows |
 
 ## P11 - Editorial Experience
 

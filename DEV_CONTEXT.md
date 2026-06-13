@@ -471,3 +471,10 @@ The user plans to sign macOS and Windows builds using their own certificates. Th
   system print call. `DocumentView` now suspends normal range recalculation
   while a print range is active. The existing complete-document print UAT is
   the regression test.
+- 2026-06-13: CI run 27470447128 passed frontend/backend verification, UAT on
+  macOS, Ubuntu, and Windows, and screenshot capture on all three runners.
+  Reviewed the macOS and Ubuntu light reader, dark Mermaid, code/math, and
+  command-palette artifacts side by side: layout, local fonts/icons, themes,
+  KaTeX, highlighting, and Mermaid output showed no regression. The screenshot
+  workflow uses headless Chromium on every runner, so this is cross-OS asset/CSS
+  coverage rather than native WebKit/WebKitGTK rendering coverage.
