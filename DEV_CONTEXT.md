@@ -10,8 +10,8 @@ The app is a viewer, not an editor. It renders CommonMark/GFM, code, KaTeX math,
 
 **Phase:** P8/P9 completion audit finished; P7 and P10 complete; P11 locally
 complete; P11.11 signing acceptance remains blocked
-**Active focus:** credentialed signing and cross-platform editorial acceptance
-when the user is ready to supply external signing infrastructure.
+**Active focus:** Windows/WebView2 Mermaid rendering acceptance, followed by
+credentialed signing and the remaining cross-platform editorial acceptance.
 
 ## Major Files And Directories
 
@@ -74,6 +74,14 @@ when the user is ready to supply external signing infrastructure.
   anchor correction.
 - Configure Mermaid with strict security and render failures as inert reader
   error blocks.
+- Keep Mermaid's diagram-specific label modes intact. On Windows/WebView2,
+  wait for document fonts before layout, add a small SVG viewBox gutter for
+  edge-label rounding, and render exceptionally wide flowcharts at a readable
+  intrinsic width inside their own horizontal scroller. macOS and Linux retain
+  Mermaid's existing responsive sizing.
+- Key progressive-enhancement cache entries by content as well as block
+  identity so two documents with the same generated block id cannot reuse each
+  other's rendered Mermaid SVG.
 - Build the vault index in Go and render only indexed wikilinks as navigable.
 - Use the reviewed Maakdown design system as the visual source of truth from P8
   onward: warm paper/ink themes, semantic tokens, restrained blue interaction
@@ -447,3 +455,13 @@ The user plans to sign macOS and Windows builds using their own certificates. Th
   flap. Also: failed image resolutions are marked (assetError) so they aren't
   re-fetched on every range change. UAT-11 regression test (proven failing
   pre-fix); demo webp re-recorded without the glitch.
+- 2026-06-12: Established a native Windows/WebView2 Mermaid baseline with
+  `fixtures/mermaid-cases.md` and isolated one-diagram documents. The baseline
+  confirmed a 1.5 device scale factor, a genuinely wide flowchart viewBox
+  rather than a CSS viewport error, and a cross-document enhancement-cache
+  collision when generated block ids matched. The candidate fix preserves
+  Mermaid's class/ER HTML labels, waits for fonts, adds a Windows-only viewBox
+  gutter, gives very wide flowcharts an internal scroller at readable scale,
+  and fingerprints cache content. Native captures show class/ER structure
+  restored and the wide flowchart readable; physical-machine acceptance is
+  still pending.

@@ -2,7 +2,7 @@
 
 **Purpose:** project task breakdown and progress tracker.  
 **Status values:** Todo, In Progress, Blocked, Done, Deferred.  
-**Last updated:** 2026-06-07.
+**Last updated:** 2026-06-12.
 
 ## Summary
 
@@ -74,6 +74,7 @@
 | P4.3 | Done | Instrument highlighter timings | P4.1 | timing report emitted for fixtures | `npm run benchmark` |
 | P4.4 | Done | Implement Mermaid manager | P1 | visible diagrams render lazily and show errors safely | Playwright benchmark and visual pass |
 | P4.5 | Done | Implement theme propagation | P4.1/P4.4 | document, highlighter, Mermaid update without reparse | Svelte check and Playwright visual pass |
+| P4.6 | In Progress | Stabilize Mermaid rendering on Windows/WebView2 | Frontend | P4.4/P11.11 | fixture diagrams preserve their diagram-specific label modes, edge content is not clipped, wide flowcharts remain readable without creating a page-level scrollbar, and cache entries never cross documents | native WebView2 baseline/candidate captures; 29 frontend tests; `npm run check`; `npm run build`; physical-machine acceptance pending |
 
 ## P5 - Virtualized Large Docs
 

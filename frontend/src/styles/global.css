@@ -670,6 +670,9 @@ a {
   height: auto;
 }
 
+.mermaid-rendered-scrollable { text-align: left; }
+.mermaid-rendered-scrollable svg { min-width: 100%; max-width: none; }
+
 .mermaid-error {
   border-left: 4px solid #b63a3a;
 }

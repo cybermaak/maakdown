@@ -34,7 +34,8 @@ class EnhancementManager {
 
   async enhance(block: Block): Promise<string> {
     await this.configuration;
-    const key = `${this.engine}:${this.theme}:${block.id}`;
+    const content = block.text ?? block.html;
+    const key = `${this.engine}:${this.theme}:${block.enhancement}:${block.language ?? ''}:${block.id}:${contentFingerprint(content)}`;
     const cached = this.cache.get(key);
     if (cached) {
       return cached;
@@ -63,3 +64,12 @@ class EnhancementManager {
 }
 
 export const enhancementManager = new EnhancementManager();
+
+export function contentFingerprint(value: string): string {
+  let hash = 0x811c9dc5;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return `${value.length}-${(hash >>> 0).toString(36)}`;
+}
