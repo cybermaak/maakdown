@@ -2,7 +2,7 @@
 
 **Purpose:** project task breakdown and progress tracker.  
 **Status values:** Todo, In Progress, Blocked, Done, Deferred.  
-**Last updated:** 2026-06-12.
+**Last updated:** 2026-06-13.
 
 ## Summary
 
@@ -12,15 +12,15 @@
 | P1 | Done | Safe base renderer | GFM fixture renders safely; frontmatter panel/hide works |
 | P2 | Done | Navigation model | TOC, anchors, and footnote backlinks work before virtualization |
 | P3 | Done | Assets and watcher | trusted-root images work; traversal blocked; safe-save reload works |
-| P4 | Done | Rich enhancements | code, math, Mermaid, and theme propagation work |
+| P4 | In Progress | Rich enhancements | code, math, Mermaid, and theme propagation work; Windows/WebView2 Mermaid acceptance remains |
 | P5 | Done | Virtualized large docs | 10k-line fixture has bounded DOM and working anchors |
 | P6 | Done | Notes support | wikilinks navigate within configured vault |
-| P7 | Done | Release hardening | local and GitHub-hosted unsigned release verification is complete; signing remains credentialed release work |
+| P7 | Done | Release hardening | v0.1.0 artifacts publish for all three OSes; macOS is signed/notarized and Windows/Linux remain unsigned |
 | P8 | Done | Design system foundation | approved design language, themes, fonts, icons, primitives, and visual harness land |
 | P9 | Done | Desktop workspace | tabs, sessions, recents, desktop open flows, and native commands work |
 | P10 | Done | Reading productivity | search, history, reader tools, and complete-document printing work |
-| P11 | In Progress | Editorial experience | local editorial and accessibility work is complete; hosted acceptance remains |
-| P12 | In Progress | OS integration | Maakdown registers as a Markdown opener with a user-consented default option on macOS, Windows, and Linux |
+| P11 | In Progress | Editorial experience | browser-level cross-OS UAT is green; native WebView2/WebKitGTK acceptance remains |
+| P12 | In Progress | OS integration | macOS Markdown association is complete; Windows and Linux association remain |
 
 ## P0 - Scaffold
 
@@ -102,9 +102,9 @@
 | P7.3 | Done | Add macOS signing/notarization runbook | P0 | non-secret signing docs and script exist | doc/script review; credentials remain external |
 | P7.4 | Done | Add Windows signing runbook | P0 | non-secret signing docs and script exist | doc/script review; credentials remain external |
 | P7.5 | Done | Cross-platform packaging verification | P7.3/P7.4/P7.7 | unsigned builds validated on Windows/macOS/Linux | sandbox run 27083374632 built, validated, and uploaded all three native artifacts |
-| P7.6 | Done | UI-driven UAT regression suite | P8-P11 | optimized spec-level Playwright suite covers UAT-01 through UAT-07 with deterministic mocked native boundaries | production-bundled UAT-mode `npm run uat` (14 tests); `docs/uat-traceability.md` |
+| P7.6 | Done | UI-driven UAT regression suite | P8-P11 | optimized spec-level Playwright suite covers UAT-01 through UAT-11 with deterministic mocked native boundaries | production-bundled UAT-mode `npm run uat` (25 tests); CI run 27470447128 passed on macOS, Ubuntu, and Windows; `docs/uat-traceability.md` |
 | P7.7 | Done | Create GitHub repository and activate hosted verification | User/Release | repository exists, Actions are enabled, and manually dispatched `Cross-platform release smoke` passes | first `ci/sandbox` attempt passed on Linux/macOS/Windows: Actions run 27083374632; no signing secrets committed |
-| P7.8 | Done | Publish release artifacts to GitHub Releases | Release | tag-triggered `Release` workflow builds macOS/Windows/Linux, packages via `scripts/package-artifact.sh`, and attaches archives to a GitHub Release | workflow YAML validated; packaging script verified locally (macOS zip); first real publish pending a version tag on `ci/sandbox` |
+| P7.8 | Done | Publish release artifacts to GitHub Releases | Release | tag-triggered CI publishes unsigned Windows/Linux archives while the local macOS release flow uploads signed/notarized DMG and ZIP artifacts | v0.1.0 published with Linux x64, Windows x64, and signed/notarized macOS arm64 artifacts |
 
 ## P8 - Design System Foundation
 
@@ -175,7 +175,7 @@
 | P11.8 | Done | Finalize provisional brand mark usage | Design/Frontend | P8.1/P11.1 | square `M` mark is consistently applied and remains replaceable without layout changes | brand review and icon-size screenshots |
 | P11.9 | Done | Complete keyboard and semantic accessibility | Frontend | P10/P11.1-P11.7 | tabs, toolbars, search, palette, dialogs, drawers, and reader are keyboard/screen-reader operable | zero-warning Svelte check, axe serious/critical gate, and UAT keyboard paths |
 | P11.10 | Done | Add reduced-motion, high-contrast, and async announcements | Frontend | P8/P11.9 | system preferences are respected and loading/reload/search/copy/error state is announced | media-query coverage and UAT-07 |
-| P11.11 | Blocked | Run cross-platform editorial acceptance pass | Release | P11.1-P11.10/P7.7 | empty, tabs, search, focus, narrow, light, dark, diagram, and print workflows pass on supported platforms | hosted unsigned-build checklist first; signed-build checklist after credentials are supplied |
+| P11.11 | Blocked | Run cross-platform native editorial acceptance pass | Release | P11.1-P11.10/P7.7/P4.6 | empty, tabs, search, focus, narrow, light, dark, diagram, drag/drop, window chrome, and print workflows pass in WKWebView, WebView2, and WebKitGTK | browser-level CI is green on all three OSes; blocked on Windows Mermaid physical acceptance, native Windows/Linux UI passes, and Windows signing credentials |
 | P11.12 | Done | Adopt design-handoff Panels option A (masthead + minimap) | Design/Frontend | P11.1 | metadata moves to a scrolling masthead and the outline to a hover-reveal edge minimap (fixed decorative collapsed glyph); single reading column; supersedes the persistent two-rail layout and its resizers/drawers from P11.2-P11.3 | `npm run check`, UAT 19/19, render screenshots |
 | P11.13 | Done | Trim toolbar controls | Frontend | P11.12 | outline/metadata toggle buttons and the redundant New tab button removed; show/hide wiring kept via command ids; Open always opens a new tab | `npm run check`, UAT-04/08 |
 | P11.14 | Done | Resolve open-path responsiveness regression | Frontend/Backend | P11.12 | opening a second document after a large file no longer stalls (confirmed on-device); vault index cached/invalidated and minimap outline lazily rendered cut open-path work | frontend long-task probe (0 tasks, ~0.6s open); vault walk measured ~11ms; user-confirmed |

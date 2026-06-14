@@ -8,10 +8,9 @@ The app is a viewer, not an editor. It renders CommonMark/GFM, code, KaTeX math,
 
 ## Current Phase
 
-**Phase:** P8/P9 completion audit finished; P7 and P10 complete; P11 locally
-complete; P11.11 signing acceptance remains blocked
-**Active focus:** Windows/WebView2 Mermaid rendering acceptance, followed by
-credentialed signing and the remaining cross-platform editorial acceptance.
+**Phase:** P4.6, P11.11, and P12 are active; P0-P10 are otherwise complete
+**Active focus:** Windows/WebView2 Mermaid physical acceptance, native
+Windows/Linux editorial verification, and Windows/Linux Markdown association.
 
 ## Major Files And Directories
 
@@ -36,7 +35,8 @@ credentialed signing and the remaining cross-platform editorial acceptance.
 - `frontend/src/core/workspace/`: tab lifecycle, canonical identity, recents,
   durable session projection, and workspace tests.
 - `frontend/src/design-system/`: production Svelte primitives and deterministic gallery.
-- `frontend/src/components/`: reader surface, table of contents, and metadata panel.
+- `frontend/src/components/`: reader surface, masthead, hover minimap, workspace
+  chrome, dialogs, settings, and native-window controls.
 - `fixtures/`: deterministic Markdown evaluation documents and local fixture assets.
 - `frontend/e2e/`: Playwright UI-driven UAT journeys and the mock-IPC seeding support.
 - `frontend/src/ipc/uat-mock.ts`: deterministic Wails IPC mock used only in `vite --mode uat`.
@@ -52,7 +52,8 @@ credentialed signing and the remaining cross-platform editorial acceptance.
 - `scripts/postbuild-darwin.sh`: compiles `docs/design-system/maakdown.icon` via
   `actool` into `Assets.car` + `maakdown.icns`, replaces the Wails-generated
   `iconfile.icns`, and touches the bundle for Finder.
-- `.github/workflows/ci.yml`: frontend, Go, Wails, and reader benchmark checks.
+- `.github/workflows/ci.yml`: frontend/Go verification, reader benchmarks,
+  cross-OS Chromium UAT, and cross-OS screenshot artifacts.
 - `.github/workflows/release-smoke.yml`: manually dispatched unsigned build,
   test, artifact-validation, and short-lived artifact-upload matrix for macOS,
   Windows, and Linux.
@@ -312,21 +313,18 @@ See `docs/task-tracker.md`.
   a theme-aware `--brand-mark-shadow` drop-shadow token that follows the icon's
   alpha contour.  Documented the full update procedure in `AGENTS.md`.
 - 2026-06-08: Fixed the theme toggle needing two clicks.
-- 2026-06-09: Fixed CI: the reader benchmark's outline navigation broke when
-  the TOC became a hover-reveal minimap (now hovers it; deep-heading offset is
-  best-effort). Added a cross-OS `uat-screenshots` job (ubuntu/macOS/Windows)
-  that captures key reader scenarios from the production bundle and uploads
-  per-OS artifacts; the functional `uat` suite stays on Linux. Windows surfaces
-  UAT-03/UAT-06 failures, tracked separately.
- The button cycled
-  system -> light -> dark, so e.g. dark -> system on a dark OS resolved to the
-  same visible mode (icon changed, theme didn't). It now toggles against the
-  resolved mode (light <-> dark), so one click always flips the visible theme.
-  the missing reusable Svelte `Callout`, `CodeBlockChrome`, `Popover`, `Tab`,
-  `TocItem`, `Toolbar`, and `Wikilink` primitives; migrated live toolbar, tab,
-  outline, and code-block chrome to the shared contracts; expanded the
-  deterministic light/dark gallery; added in-place missing-file relocation for
-  restored tabs; and strengthened workspace unit/UAT coverage.
+- 2026-06-09: Fixed CI after the outline became a hover-reveal minimap: the
+  reader benchmark now hovers the minimap before navigation and treats the deep
+  heading offset as best-effort. Added cross-OS screenshot artifacts on Ubuntu,
+  macOS, and Windows; functional UAT later expanded to all three runners.
+- 2026-06-09: Fixed the theme toggle requiring two clicks. It now toggles
+  against the resolved light/dark mode, so one click always changes the visible
+  theme even when the configured mode began as `system`.
+- 2026-06-09: Completed the P8/P9 audit by adding the missing reusable Svelte
+  `Callout`, `CodeBlockChrome`, `Popover`, `Tab`, `TocItem`, `Toolbar`, and
+  `Wikilink` primitives; migrated the live UI to those contracts; expanded the
+  design-system gallery; added in-place missing-file relocation; and strengthened
+  workspace unit/UAT coverage.
 
 ## Verification Commands
 
@@ -349,25 +347,24 @@ scripts/release-check.sh
 
 ## Current Verification Blockers
 
-- P11.11 signed editorial acceptance requires the user's external macOS and
-  Windows signing credentials. Unsigned hosted builds now pass on all supported
-  platforms.
+- P4.6 needs final physical Windows/WebView2 acceptance for Mermaid class,
+  entity-relationship, and very wide flowchart cases.
+- P11.11 needs native WKWebView/WebView2/WebKitGTK editorial acceptance.
+  Cross-OS CI currently runs the frontend in Chromium, so it does not validate
+  native webview rendering, window chrome, drag/drop, or system print behavior.
+- macOS signing and notarization are operational. Windows release signing
+  remains blocked on the user's external certificate; Linux remains unsigned
+  by design.
 
 ## Verification Notes
 
-- The P8/P9 completion audit passes 24 frontend unit tests, zero-warning Svelte
-  checks, the production frontend build, all Go tests, light/dark visual smoke,
-  the reader and three-tab workspace benchmarks, and 19 headless Chromium UAT
-  tests in 35.6 seconds. The workspace benchmark kept one reader and 12 blocks
-  mounted with a maximum measured activation of 335 ms.
-- The current P10/P11 slice passes zero-warning Svelte checks, 17 frontend
-  tests, the frontend production build, and all Go tests.
-- Current verification passes zero-warning Svelte checks, 19 frontend tests,
-  the production frontend build, and all Go tests. Browser frame sampling
-  confirmed a stable light code background through highlight.js enhancement
-  and successful switching to Shiki.
-- The completed production-bundled UAT suite passes 14 tests in 15.4 seconds on local headless
-  Chromium and includes an axe serious/critical accessibility gate.
+- Current frontend verification includes 29 unit tests, zero-warning Svelte
+  checks, the production build, reader/workspace benchmarks, visual smoke, and
+  25 production-bundled UAT tests with an axe serious/critical accessibility
+  gate.
+- CI run 27470447128 passed all 25 UAT tests and screenshot capture on macOS,
+  Ubuntu, and Windows. These jobs use Playwright Chromium on every runner and
+  therefore prove portable frontend behavior, not native webview parity.
 - The production-bundle reader benchmark passes repeatedly in headless Chromium;
   the current 10,726-line fixture opens to readable text in about 1.3 seconds,
   keeps one reader and a bounded DOM mounted, renders both highlighters and
@@ -387,7 +384,10 @@ scripts/release-check.sh
 
 ## Signing Context
 
-The user plans to sign macOS and Windows builds using their own certificates. The repo should include signing-safe templates and documentation, but no certificates, private keys, provisioning profiles, notarization credentials, or signed release artifacts.
+The user signs macOS releases with their own Developer ID credentials and plans
+to sign Windows releases with their own certificate. The repo includes
+signing-safe templates and documentation but no certificates, private keys,
+provisioning profiles, notarization credentials, or signed release artifacts.
 - 2026-06-09: Investigated the Windows UAT failures (UAT-03 search, UAT-06
   print). Both use the large evaluation fixture; the worker parse exceeded
   expectReaderReady's default 5s on the slower Windows runner (app chrome was
