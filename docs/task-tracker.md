@@ -105,6 +105,7 @@
 | P7.6 | Done | UI-driven UAT regression suite | P8-P11 | optimized spec-level Playwright suite covers UAT-01 through UAT-11 with deterministic mocked native boundaries | production-bundled UAT-mode `npm run uat` (25 tests); CI run 27470447128 passed on macOS, Ubuntu, and Windows; `docs/uat-traceability.md` |
 | P7.7 | Done | Create GitHub repository and activate hosted verification | User/Release | repository exists, Actions are enabled, and manually dispatched `Cross-platform release smoke` passes | first `ci/sandbox` attempt passed on Linux/macOS/Windows: Actions run 27083374632; no signing secrets committed |
 | P7.8 | Done | Publish release artifacts to GitHub Releases | Release | tag-triggered CI publishes unsigned Windows/Linux archives while the local macOS release flow uploads signed/notarized DMG and ZIP artifacts | v0.1.0 published with Linux x64, Windows x64, and signed/notarized macOS arm64 artifacts |
+| P7.9 | In Progress | Add native rendering screenshot smoke | Release | every push captures minimal light/dark screenshots from the packaged WKWebView, WebView2, and WebKitGTK applications without gating the build | `native-rendering-smoke.yml` sandbox run and manual artifact inspection |
 
 ## P8 - Design System Foundation
 

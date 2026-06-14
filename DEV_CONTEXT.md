@@ -54,6 +54,9 @@ Windows/Linux editorial verification, and Windows/Linux Markdown association.
   `iconfile.icns`, and touches the bundle for Finder.
 - `.github/workflows/ci.yml`: frontend/Go verification, reader benchmarks,
   cross-OS Chromium UAT, and cross-OS screenshot artifacts.
+- `.github/workflows/native-rendering-smoke.yml`: non-blocking light/dark
+  screenshot capture from packaged WKWebView, WebView2, and WebKitGTK apps on
+  every push; artifacts expire after seven days.
 - `.github/workflows/release-smoke.yml`: manually dispatched unsigned build,
   test, artifact-validation, and short-lived artifact-upload matrix for macOS,
   Windows, and Linux.
@@ -478,3 +481,8 @@ provisioning profiles, notarization credentials, or signed release artifacts.
   KaTeX, highlighting, and Mermaid output showed no regression. The screenshot
   workflow uses headless Chromium on every runner, so this is cross-OS asset/CSS
   coverage rather than native WebKit/WebKitGTK rendering coverage.
+- 2026-06-13: Began P7.9 native rendering smoke coverage. A compact fixture and
+  platform capture scripts launch the packaged app with isolated light/dark
+  settings and upload two screenshots per OS. This lane is intentionally
+  non-blocking and does not alter the functional UAT suite or its ten-minute
+  release target.
