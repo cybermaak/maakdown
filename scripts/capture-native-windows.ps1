@@ -40,9 +40,10 @@ foreach ($Theme in @("light", "dark")) {
         }
     } finally {
         Stop-Process -Id $Process.Id -Force -ErrorAction SilentlyContinue
+        Wait-Process -Id $Process.Id -ErrorAction SilentlyContinue
         if (Test-Path "$Log.stderr") {
             Get-Content "$Log.stderr" | Add-Content $Log
-            Remove-Item "$Log.stderr"
+            Remove-Item "$Log.stderr" -Force -ErrorAction SilentlyContinue
         }
         Remove-Item -Recurse -Force $ConfigRoot -ErrorAction SilentlyContinue
     }

@@ -20,7 +20,7 @@ const renderReady = (theme: "light" | "dark"): boolean =>
   document.documentElement.dataset.theme === theme;
 ```
 
-The renderer should preserve \(T_{\mathrm{frame}} < 16.7\ \mathrm{ms}\).
+The renderer should preserve $T_{\mathrm{frame}} < 16.7\ \mathrm{ms}$.
 
 ## Diagram
 
