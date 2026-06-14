@@ -481,8 +481,10 @@ provisioning profiles, notarization credentials, or signed release artifacts.
   KaTeX, highlighting, and Mermaid output showed no regression. The screenshot
   workflow uses headless Chromium on every runner, so this is cross-OS asset/CSS
   coverage rather than native WebKit/WebKitGTK rendering coverage.
-- 2026-06-13: Began P7.9 native rendering smoke coverage. A compact fixture and
+- 2026-06-13: Completed P7.9 native rendering smoke coverage. A compact fixture and
   platform capture scripts launch the packaged app with isolated light/dark
   settings and upload two screenshots per OS. This lane is intentionally
   non-blocking and does not alter the functional UAT suite or its ten-minute
-  release target.
+  release target. Sandbox run 27490613627 passed WKWebView, WebView2, and
+  WebKitGTK capture in about two minutes per OS; all six artifacts were manually
+  inspected for native chrome, theme propagation, code, KaTeX, and Mermaid.
