@@ -13,7 +13,7 @@ const state = {
   config: {
     theme,
     highlighterEngine: 'highlightjs',
-    frontmatterDisplay: 'panel',
+    frontmatterDisplay: 'hidden',
     readerTheme: 'editorial',
     readerFont: 'sans',
     readerFontSize: 15,
@@ -33,4 +33,3 @@ const state = {
 const output = resolve(destination);
 await mkdir(dirname(output), { recursive: true });
 await writeFile(output, `${JSON.stringify(state, null, 2)}\n`, 'utf8');
-
