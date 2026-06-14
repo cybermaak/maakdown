@@ -488,3 +488,15 @@ provisioning profiles, notarization credentials, or signed release artifacts.
   release target. Sandbox run 27490613627 passed WKWebView, WebView2, and
   WebKitGTK capture in about two minutes per OS; all six artifacts were manually
   inspected for native chrome, theme propagation, code, KaTeX, and Mermaid.
+- 2026-06-13: RDP-specific Mermaid investigation confirmed that a WebView2
+  created in the physical 150% DPI session remains correct after RDP connects,
+  while a WebView2 created in the 100% DPI RDP session renders wide flowcharts
+  at the old hard-coded 65% scale and paints class/ER `foreignObject` labels at
+  a severely reduced scale. Windows now uses SVG labels, wide flowchart sizing
+  derives from `devicePixelRatio`, and state/class/ER diagrams are reframed from
+  their mounted bounds after fonts settle. The class pass also restores rank
+  spacing and removes an empty trailing compartment. GPU disablement, WebView
+  zoom, offscreen render zoom, rasterization, and compositor layer promotion
+  were discarded. `fixtures/mermaid-cases.md` was accepted in both RDP-created
+  and physical Windows sessions; frontend checks, tests, build, and Go tests
+  passed. macOS and Linux retain the existing HTML-label path.

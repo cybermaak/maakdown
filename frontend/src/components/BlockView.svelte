@@ -2,6 +2,7 @@
   import { onDestroy } from 'svelte';
   import type { Block } from '../core/model/types';
   import { enhancementManager } from '../core/enhancement/enhancementManager';
+  import { stabilizeMountedMermaid } from '../core/mermaid/mermaidManager';
   import { appConfig } from '../stores/configStore';
   import { Copy, Maximize2 } from '@lucide/svelte';
   import { CodeBlockChrome, IconButton } from '../design-system';
@@ -63,7 +64,12 @@
     searchQuery;
     caseSensitive;
     currentSearchBlockId;
-    queueMicrotask(markSearchResults);
+    queueMicrotask(() => {
+      markSearchResults();
+      if (element && block.kind === 'mermaid') {
+        void stabilizeMountedMermaid(element);
+      }
+    });
   });
 
   async function enhance() {

@@ -9,7 +9,7 @@ describe('prepareSvg', () => {
 
   it('adds a Windows viewBox gutter without changing normal diagram sizing mode', () => {
     const prepared = prepareSvg(
-      '<svg viewBox="0 0 700 500" style="max-width: 700px" aria-roledescription="stateDiagram"></svg>',
+      '<svg viewBox="0 0 700 500" style="max-width: 700px" aria-roledescription="sequence"></svg>',
       true
     );
     const root = parseSvg(prepared.svg);
@@ -18,15 +18,39 @@ describe('prepareSvg', () => {
     expect(prepared.scrollable).toBe(false);
   });
 
-  it('keeps very wide Windows flowcharts readable inside their own scroller', () => {
+  it('gives affected Windows diagrams an explicit viewBox-sized canvas', () => {
     const prepared = prepareSvg(
-      '<svg viewBox="0 0 2500 400" style="max-width: 2500px" aria-roledescription="flowchart-v2"></svg>',
+      '<svg viewBox="0 0 700 500" style="max-width: 700px" aria-roledescription="class"></svg>',
       true
     );
     const root = parseSvg(prepared.svg);
-    expect(root.style.width).toBe('1656px');
+    expect(root.style.width).toBe('748px');
+    expect(root.style.height).toBe('548px');
+    expect(root.style.maxWidth).toBe('none');
+  });
+
+  it('keeps very wide Windows flowcharts readable inside their own scroller', () => {
+    const prepared = prepareSvg(
+      '<svg viewBox="0 0 2500 400" style="max-width: 2500px" aria-roledescription="flowchart-v2"></svg>',
+      true,
+      1.5
+    );
+    const root = parseSvg(prepared.svg);
+    expect(root.style.width).toBe('1699px');
+    expect(root.style.height).toBe('299px');
     expect(root.style.maxWidth).toBe('none');
     expect(prepared.scrollable).toBe(true);
+  });
+
+  it('does not underscale wide flowcharts in a 100% RDP session', () => {
+    const prepared = prepareSvg(
+      '<svg viewBox="0 0 2500 400" style="max-width: 2500px" aria-roledescription="flowchart-v2"></svg>',
+      true,
+      1
+    );
+    const root = parseSvg(prepared.svg);
+    expect(root.style.width).toBe('2548px');
+    expect(root.style.height).toBe('448px');
   });
 });
 
