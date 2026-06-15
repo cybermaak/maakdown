@@ -46,6 +46,8 @@ interface MockState {
   pendingOpenFiles: string[];
   markdownHandlerSupported: boolean;
   defaultMarkdownHandler: boolean;
+  windowsPlatform: boolean;
+  defaultMarkdownHandlerRequests: number;
 }
 
 type EventName = 'file-changed' | 'files-dropped' | 'app-command' | 'open-file';
@@ -125,7 +127,9 @@ function buildState(): MockState {
     quit: false,
     pendingOpenFiles: seeded.pendingOpenFiles ?? [],
     markdownHandlerSupported: seeded.markdownHandlerSupported ?? false,
-    defaultMarkdownHandler: seeded.defaultMarkdownHandler ?? false
+    defaultMarkdownHandler: seeded.defaultMarkdownHandler ?? false,
+    windowsPlatform: seeded.windowsPlatform ?? false,
+    defaultMarkdownHandlerRequests: 0
   };
 }
 
@@ -260,6 +264,10 @@ export function isMacPlatform(): boolean {
   return false;
 }
 
+export function isWindowsPlatform(): boolean {
+  return state.windowsPlatform;
+}
+
 export async function windowMinimise(): Promise<void> {
   // no-op
 }
@@ -291,7 +299,10 @@ export async function isDefaultMarkdownHandler(): Promise<boolean> {
 }
 
 export async function setDefaultMarkdownHandler(): Promise<void> {
-  state.defaultMarkdownHandler = true;
+  state.defaultMarkdownHandlerRequests += 1;
+  if (!state.windowsPlatform) {
+    state.defaultMarkdownHandler = true;
+  }
 }
 
 export function onOpenFile(callback: (path: string) => void): () => void {

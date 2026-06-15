@@ -41,7 +41,7 @@ user-visible outcome and the verification that covers it.
 | Reader appearance and focus mode (P11.4–P11.5) | Appearance updates without reparse and focus mode remains keyboard reachable | UAT-05 | Executable |
 | Accessibility release gate (P11.9–P11.10) | Keyboard tabs/modals, labels, announcements, and reduced motion pass with no serious/critical axe findings | UAT-07 | Executable |
 | Custom context menus | Native menu suppressed; consistent per-surface custom menu for reader, tabs, outline, and toolbar | UAT-08 | Executable |
-| OS file association (P12.1) | OS-handed files open as tabs (live and cold start); Settings offers user-consented "Set as default" only where supported | UAT-09 + on-device macOS acceptance | Executable |
+| OS file association (P12.1/P12.3) | OS-handed files open as tabs (live and cold start); Settings offers user-consented default handling with Windows chooser semantics | UAT-09 + on-device macOS and Windows acceptance | Executable |
 | Scroll stability after outline navigation (P5/P9.11) | The document comes to rest after a minimap jump; no self-sustaining scroll oscillation | UAT-11 | Executable |
 
 Cross-platform acceptance remains tracked by P7.7/P11.11 and begins after the

@@ -1,9 +1,9 @@
 # macOS Markdown File Association — Design
 
 **Date:** 2026-06-09
-**Status:** macOS implemented and verified; Windows/Linux planned below
-**Scope:** macOS implemented in this iteration. Windows and Linux are specified
-in "Future iterations" and slot into the same IPC surface and Settings UI.
+**Status:** macOS and Windows implemented and verified; Linux planned below
+**Scope:** macOS and Windows are implemented. Linux is specified in "Future
+iterations" and slots into the same IPC surface and Settings UI.
 
 ## Goal
 
@@ -164,7 +164,7 @@ per-platform stubs.
   missing. AppImage/Flatpak packaging would need `Exec` adjustments — out of
   scope until a packaging story exists.
 
-### Windows (`fileassoc_windows.go`)
+### Windows (`fileassoc_windows.go`) — implemented 2026-06-15
 
 - **Capable opener:** on startup (idempotent), write HKCU (no admin):
   - `HKCU\Software\Classes\Maakdown.md` ProgId with `shell\open\command =
@@ -177,13 +177,17 @@ per-platform stubs.
 - **Is default:** compare the resolved default via
   `AssocQueryString(ASSOCSTR_EXECUTABLE, ".md")` to our executable path.
 - **Set default (user-initiated):** Windows 10+ forbids silently setting
-  defaults; the button instead launches the system chooser —
-  `SHOpenWithDialog(OAIF_REGISTER_EXT)` (or deep-link to
-  `ms-settings:defaultapps`) — and the Settings row re-queries on focus return.
+  defaults; the button instead launches the per-user Maakdown page through
+  `ms-settings:defaultapps?registeredAppUser=Maakdown`, and the Settings row
+  re-queries on focus return.
   The UI copy for Windows should say "Choose default app..." to reflect that the
   OS prompt makes the final decision.
 - **Open path:** Explorer passes the path as an argv argument — already handled
   by args + SingleInstanceLock.
+- **Verified:** real-session HKCU inspection confirmed the ProgId,
+  `RegisteredApplications`, all five capabilities/OpenWith entries, and no
+  change to the existing `.md` UserChoice. Launching the built executable with
+  `fixtures/mermaid-cases.md` opened that document in the app window.
 
 ### Acceptance for each follow-up
 

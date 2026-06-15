@@ -135,6 +135,11 @@ export function isMacPlatform(): boolean {
   return /Mac|iPhone|iPad/i.test(navigator.userAgent ?? '');
 }
 
+export function isWindowsPlatform(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  return /Windows/i.test(navigator.userAgent ?? '');
+}
+
 export async function windowMinimise(): Promise<void> {
   await WindowMinimise();
 }

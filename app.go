@@ -175,8 +175,8 @@ func (a *App) ConsumePendingOpenFiles() []string {
 	return pending
 }
 
-// MarkdownHandlerSupported reports whether this platform supports querying and
-// setting the default Markdown opener.
+// MarkdownHandlerSupported reports whether this platform supports querying the
+// default Markdown opener and handling an explicit user request to change it.
 func (a *App) MarkdownHandlerSupported() bool {
 	return markdownHandlerSupported
 }
@@ -187,8 +187,8 @@ func (a *App) IsDefaultMarkdownHandler() bool {
 	return isDefaultMarkdownHandler()
 }
 
-// SetDefaultMarkdownHandler makes Maakdown the OS default Markdown opener. The
-// OS call is silent, so this must only run from an explicit user action.
+// SetDefaultMarkdownHandler handles an explicit request to change the Markdown
+// opener. macOS applies it directly; Windows opens the system Default Apps UI.
 func (a *App) SetDefaultMarkdownHandler() error {
 	return setDefaultMarkdownHandler()
 }

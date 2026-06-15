@@ -2,7 +2,12 @@
   import { onMount } from 'svelte';
   import type { AppConfig } from '../stores/configStore';
   import { SegmentedControl } from '../design-system';
-  import { isDefaultMarkdownHandler, markdownHandlerSupported, setDefaultMarkdownHandler } from '@ipc';
+  import {
+    isDefaultMarkdownHandler,
+    isWindowsPlatform,
+    markdownHandlerSupported,
+    setDefaultMarkdownHandler
+  } from '@ipc';
 
   interface Props {
     config: AppConfig;
@@ -18,14 +23,30 @@
   let handlerSupported = $state(false);
   let isDefault = $state(false);
   let handlerError = $state('');
+  const windowsAssociation = isWindowsPlatform();
 
   onMount(() => {
-    void markdownHandlerSupported()
-      .then(async (supported) => {
-        handlerSupported = supported;
-        if (supported) isDefault = await isDefaultMarkdownHandler();
-      })
-      .catch(() => (handlerSupported = false));
+    let mounted = true;
+    const refreshDefault = async () => {
+      if (!handlerSupported) return;
+      const next = await isDefaultMarkdownHandler();
+      if (mounted) isDefault = next;
+    };
+    void markdownHandlerSupported().then(async (supported) => {
+      if (!mounted) return;
+      handlerSupported = supported;
+      if (supported) await refreshDefault();
+    }).catch(() => {
+      if (mounted) handlerSupported = false;
+    });
+    const onWindowFocus = () => {
+      if (windowsAssociation) void refreshDefault();
+    };
+    window.addEventListener('focus', onWindowFocus);
+    return () => {
+      mounted = false;
+      window.removeEventListener('focus', onWindowFocus);
+    };
   });
 
   async function makeDefault() {
@@ -33,6 +54,7 @@
     try {
       // The OS call is silent; this click is the user's explicit consent.
       await setDefaultMarkdownHandler();
+      if (windowsAssociation) return;
       isDefault = await isDefaultMarkdownHandler();
       if (!isDefault) handlerError = 'The system did not accept the change.';
     } catch (error) {
@@ -79,7 +101,7 @@
         <span class="settings-association-status">Maakdown opens Markdown files by default.</span>
       {:else}
         <button type="button" class="settings-association-button" onclick={() => void makeDefault()}>
-          Set as default for Markdown
+          {windowsAssociation ? 'Choose default app...' : 'Set as default for Markdown'}
         </button>
       {/if}
       {#if handlerError}<span class="settings-association-error" role="alert">{handlerError}</span>{/if}

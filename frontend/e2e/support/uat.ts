@@ -40,6 +40,7 @@ export interface SeedOptions {
   pendingOpenFiles?: string[];
   markdownHandlerSupported?: boolean;
   defaultMarkdownHandler?: boolean;
+  windowsPlatform?: boolean;
 }
 
 /**
@@ -62,7 +63,8 @@ export async function seedApp(page: Page, options: SeedOptions = {}): Promise<vo
     vaultIndex: options.vaultIndex ?? { version: 'uat-vault-0', notes: {} },
     pendingOpenFiles: options.pendingOpenFiles ?? [],
     markdownHandlerSupported: options.markdownHandlerSupported ?? false,
-    defaultMarkdownHandler: options.defaultMarkdownHandler ?? false
+    defaultMarkdownHandler: options.defaultMarkdownHandler ?? false,
+    windowsPlatform: options.windowsPlatform ?? false
   };
   await page.addInitScript((seed) => {
     (window as unknown as { __uat: { state: unknown } }).__uat = { state: seed };

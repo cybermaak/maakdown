@@ -8,9 +8,10 @@ The app is a viewer, not an editor. It renders CommonMark/GFM, code, KaTeX math,
 
 ## Current Phase
 
-**Phase:** P11.11 and P12 are active; P0-P10 are otherwise complete
-**Active focus:** native Linux editorial acceptance and the remaining Windows
-integration work.
+**Phase:** P11.11 is active; P0-P10 and P12 are complete
+**Active focus:** remaining native editorial acceptance. Windows Mermaid
+rendering is accepted in physical and RDP-created WebView2 sessions, and
+macOS, Linux, and Windows Markdown association are complete.
 
 ## Major Files And Directories
 
@@ -530,3 +531,13 @@ provisioning profiles, notarization credentials, or signed release artifacts.
   keyboard protocol. Therefore Linux search/focus keyboard paths, native
   drag/drop, and system print/PDF remain manual or future-harness checks under
   P11.11 rather than completed automated coverage.
+- 2026-06-15: Completed Windows Markdown association (P12.3). Startup now
+  idempotently registers a per-user `Maakdown.md` ProgId, five Open With
+  extensions, and `Software\Maakdown\Capabilities`/`RegisteredApplications`
+  without changing the current default. The Settings row uses Windows-specific
+  "Choose default app..." copy, opens the per-user Default Apps page, and
+  rechecks when focus returns. Real-session verification confirmed canonical
+  `REG_NONE` OpenWith values, the quoted executable command, unchanged `.md`
+  UserChoice, and argv opening `mermaid-cases.md` in the built app. Go tests,
+  frontend checks/build, focused UAT-09 (5 scenarios), and Windows Wails build
+  passed.
