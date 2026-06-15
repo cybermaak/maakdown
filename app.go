@@ -49,6 +49,7 @@ func NewApp() *App {
 
 func (a *App) Startup(ctx context.Context) {
 	a.ctx = ctx
+	registerMarkdownHandler()
 	a.Files.SetContext(ctx)
 	a.Links.SetContext(ctx)
 	a.Watcher.SetContext(ctx)
@@ -175,7 +176,7 @@ func (a *App) ConsumePendingOpenFiles() []string {
 }
 
 // MarkdownHandlerSupported reports whether this platform supports querying and
-// setting the default Markdown opener (currently macOS only).
+// setting the default Markdown opener.
 func (a *App) MarkdownHandlerSupported() bool {
 	return markdownHandlerSupported
 }

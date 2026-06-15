@@ -66,6 +66,8 @@ import (
 
 const markdownHandlerSupported = true
 
+func registerMarkdownHandler() {}
+
 // isDefaultMarkdownHandler reports whether this bundle is the system default
 // opener for the UTI the OS currently maps to the "md" extension.
 func isDefaultMarkdownHandler() bool {
