@@ -2,7 +2,7 @@
 
 **Purpose:** project task breakdown and progress tracker.  
 **Status values:** Todo, In Progress, Blocked, Done, Deferred.  
-**Last updated:** 2026-06-13.
+**Last updated:** 2026-06-14.
 
 ## Summary
 
@@ -188,5 +188,5 @@
 | ID | Status | Task | Owner | Depends On | Exit Criteria | Verification |
 |---|---|---|---|---|---|---|
 | P12.1 | Done | macOS Markdown file association | Full stack | P7 | bundle declares a Viewer/Alternate claim for net.daringfireball.markdown (no default takeover); OS-handed files open as tabs in the single running instance (cold start buffered); Reader Settings offers user-initiated "Set as default" via LaunchServices | LS dump shows rank Alternate/role Viewer; open -a cold + running-instance tab checks via session state; user default verified untouched; UAT-09 (4 scenarios); go build/wails build |
-| P12.2 | Todo | Linux Markdown file association | Full stack | P12.1 | user-level .desktop entry with MimeType=text/markdown registers an Open With candidate; xdg-mime query/default drives the Settings row | spec section "Future iterations: Linux"; verify on a real Linux session |
+| P12.2 | In Progress | Linux Markdown file association | Full stack | P12.1 | user-level `.desktop` entry with `MimeType=text/markdown` registers an Open With candidate; `xdg-mime` query/default drives the Settings row | implementation and Linux-tagged tests passed in CI run 27527661318; packaged WebKitGTK build/capture passed run 27527648278; real-session Open With/default acceptance remains |
 | P12.3 | Todo | Windows Markdown file association | Full stack | P12.1 | HKCU ProgId + RegisteredApplications add Maakdown to Open With/Default Apps; Settings row launches the system chooser (no silent default on Win10+) | spec section "Future iterations: Windows"; verify on a real Windows session |

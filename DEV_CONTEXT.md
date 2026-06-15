@@ -9,8 +9,8 @@ The app is a viewer, not an editor. It renders CommonMark/GFM, code, KaTeX math,
 ## Current Phase
 
 **Phase:** P4.6, P11.11, and P12 are active; P0-P10 are otherwise complete
-**Active focus:** Windows/WebView2 Mermaid physical acceptance, native
-Windows/Linux editorial verification, and Windows/Linux Markdown association.
+**Active focus:** native Linux editorial acceptance, Linux Markdown-association
+acceptance, and the remaining Windows integration work.
 
 ## Major Files And Directories
 
@@ -358,6 +358,9 @@ scripts/release-check.sh
 - macOS signing and notarization are operational. Windows release signing
   remains blocked on the user's external certificate; Linux remains unsigned
   by design.
+- P12.2 Linux association is implemented and covered by Ubuntu tests, but its
+  file-manager Open With/default behavior still needs one logged-in Linux
+  desktop acceptance pass.
 
 ## Verification Notes
 
@@ -500,3 +503,11 @@ provisioning profiles, notarization credentials, or signed release artifacts.
   were discarded. `fixtures/mermaid-cases.md` was accepted in both RDP-created
   and physical Windows sessions; frontend checks, tests, build, and Go tests
   passed. macOS and Linux retain the existing HTML-label path.
+- 2026-06-14: Implemented Linux Markdown association. Maakdown now installs an
+  idempotent user-level `com.maak.maakdown.desktop` entry at startup without
+  changing the default, refreshes the desktop database when available, queries
+  the current handler through `xdg-mime`, and changes it only after the explicit
+  Settings action. CI run 27527661318 passed Linux-tagged Go tests, frontend
+  verification, and Ubuntu UAT; native run 27527648278 built and captured the
+  packaged WebKitGTK app. Real file-manager/default, drag/drop, and system-print
+  behavior remain short manual Linux-session checks.

@@ -59,6 +59,19 @@ and the workflow publishes the GitHub Release. Validate workflow changes on the
 - Confirm WebKitGTK runtime dependencies are documented by the package.
 - Open all named performance fixtures.
 - Verify external links and loopback-served images.
+- Launch Maakdown once and confirm
+  `~/.local/share/applications/com.maak.maakdown.desktop` exists, or use
+  `$XDG_DATA_HOME/applications/` when `XDG_DATA_HOME` is configured.
+- Confirm the desktop entry contains the installed executable path and
+  `MimeType=text/markdown;`, then verify Maakdown appears in the file manager's
+  **Open With** list without changing the current default.
+- In Maakdown Settings, choose **Set as default for Markdown**, then verify:
+  `xdg-mime query default text/markdown` prints
+  `com.maak.maakdown.desktop`.
+- Double-click a Markdown file with Maakdown closed, then another while it is
+  running; confirm both open as tabs in the single application window.
+- Exercise native drag/drop and system print/PDF once in a logged-in Linux
+  desktop session; hosted Xvfb captures do not verify those interactions.
 
 ## Postflight
 
