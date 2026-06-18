@@ -9,8 +9,8 @@ The app is a viewer, not an editor. It renders CommonMark/GFM, code, KaTeX math,
 ## Current Phase
 
 **Phase:** P4.6, P11.11, and P12 are active; P0-P10 are otherwise complete
-**Active focus:** native Linux editorial acceptance, Linux Markdown-association
-acceptance, and the remaining Windows integration work.
+**Active focus:** native Linux editorial acceptance and the remaining Windows
+integration work.
 
 ## Major Files And Directories
 
@@ -358,9 +358,6 @@ scripts/release-check.sh
 - macOS signing and notarization are operational. Windows release signing
   remains blocked on the user's external certificate; Linux remains unsigned
   by design.
-- P12.2 Linux association is implemented and covered by Ubuntu tests, but its
-  file-manager Open With/default behavior still needs one logged-in Linux
-  desktop acceptance pass.
 
 ## Verification Notes
 
@@ -509,5 +506,16 @@ provisioning profiles, notarization credentials, or signed release artifacts.
   the current handler through `xdg-mime`, and changes it only after the explicit
   Settings action. CI run 27527661318 passed Linux-tagged Go tests, frontend
   verification, and Ubuntu UAT; native run 27527648278 built and captured the
-  packaged WebKitGTK app. Real file-manager/default, drag/drop, and system-print
-  behavior remain short manual Linux-session checks.
+  packaged WebKitGTK app. Real file-manager/default acceptance followed on
+  2026-06-17; drag/drop and system print remain part of P11.11 native editorial
+  acceptance.
+- 2026-06-17: Completed the logged-in Linux Markdown-association acceptance
+  pass on Debian/GNOME Wayland with WebKitGTK 4.1. The initial desktop entry
+  included a quoted `TryExec`, which passed `desktop-file-validate` but caused
+  GIO to reject `com.maak.maakdown.desktop` as a handler. Removed `TryExec` and
+  added regression coverage. Verified the rebuilt app registers
+  `~/.local/share/applications/com.maak.maakdown.desktop`, appears in GIO as a
+  registered/recommended `text/markdown` handler, can be set as the default by
+  GIO/`xdg-mime`, and opens Markdown files through `gio open` and `xdg-open` as
+  tabs in the single running window. GNOME blocked non-interactive screenshots;
+  native drag/drop and system print remain under P11.11 editorial acceptance.

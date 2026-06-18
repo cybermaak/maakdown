@@ -49,6 +49,9 @@ func TestInstallLinuxDesktopEntry(t *testing.T) {
 			t.Fatalf("desktop entry missing %q:\n%s", expected, text)
 		}
 	}
+	if strings.Contains(text, "TryExec=") {
+		t.Fatalf("desktop entry should not include TryExec because GIO treats quoted paths as literal:\n%s", text)
+	}
 	expectedCall := []string{"/usr/bin/update-desktop-database", filepath.Join(dataHome, "applications")}
 	if !reflect.DeepEqual(calls, [][]string{expectedCall}) {
 		t.Fatalf("unexpected commands: %#v", calls)

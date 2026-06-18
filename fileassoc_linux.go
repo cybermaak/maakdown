@@ -93,13 +93,12 @@ Version=1.0
 Name=Maakdown
 Comment=Read Markdown documents
 Exec="%s" %%f
-TryExec="%s"
 Icon=maakdown
 Terminal=false
 Categories=Office;Utility;
 MimeType=%s;
 StartupNotify=true
-`, quotedExecutable, quotedExecutable, markdownMimeType)
+`, quotedExecutable, markdownMimeType)
 }
 
 func writeFileAtomically(path string, contents []byte, mode os.FileMode) error {
