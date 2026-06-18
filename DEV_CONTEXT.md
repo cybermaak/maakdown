@@ -519,3 +519,16 @@ provisioning profiles, notarization credentials, or signed release artifacts.
   GIO/`xdg-mime`, and opens Markdown files through `gio open` and `xdg-open` as
   tabs in the single running window. GNOME blocked non-interactive screenshots;
   native drag/drop and system print remain under P11.11 editorial acceptance.
+- 2026-06-17: Ran an ad hoc P11.11 Linux native editorial verification on the
+  same logged-in Debian/GNOME Wayland session. Using isolated `XDG_CONFIG_HOME`
+  and `XDG_DATA_HOME` profiles, verified the WebKitGTK 4.1 build starts with
+  no document and persists an empty session, opens native Markdown fixtures as
+  tabs through cold launch and second-instance launches, loads
+  `native-rendering-smoke.md`, `mermaid-cases.md`, `large-10k-lines.md`, and
+  the fixture `README.md` with local assets, and preserves light/dark persisted
+  theme profiles. `grim` failed because GNOME does not expose the wlroots
+  screenshot protocol, GNOME Shell's screenshot D-Bus API returned
+  AccessDenied, and `wtype` failed because Mutter does not expose the virtual
+  keyboard protocol. Therefore Linux search/focus keyboard paths, native
+  drag/drop, and system print/PDF remain manual or future-harness checks under
+  P11.11 rather than completed automated coverage.
