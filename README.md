@@ -97,7 +97,7 @@ Maakdown is an open-source project built with performance and simplicity in mind
 
 ### Getting Started
 
-Prerequisites: **Go 1.22+**, **Node.js 20.19+**, and the **Wails CLI v2.11.x**.
+Prerequisites: **Go 1.22+**, **Node.js 20.19+**, and the **Wails CLI v2.12.x**.
 
 ```bash
 # Clone the repository

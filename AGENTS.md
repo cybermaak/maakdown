@@ -209,7 +209,7 @@ The icon switch is wired in `WorkspaceToolbar.svelte` via
 ## Current Repo Expectations
 
 - `docs/markdown-viewer-design-spec.md` and `docs/markdown-viewer-implementation-plan.md` are the current source of product and architecture truth.
-- Wails v2.11.x is pinned for v1; do not migrate to Wails v3 unless the user explicitly reopens that decision.
+- Wails v2.12.x is pinned for v1; do not migrate to Wails v3 unless the user explicitly reopens that decision.
 - Svelte 5.x and Vite 8.x are the frontend baseline.
 - Local Markdown images use the tokenized loopback asset server, not Wails v2 dynamic `AssetsHandler`.
 - Generated Wails bindings under `frontend/wailsjs/` must be treated as generated. Application code should import through `frontend/src/ipc/`.

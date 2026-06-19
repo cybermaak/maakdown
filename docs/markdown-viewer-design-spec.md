@@ -96,7 +96,7 @@ It is not an editor. There is no live preview loop, collaboration, cloud sync, m
 
 ## 6. Platform Decision
 
-**Choice: Wails v2.11.x stable line + Go backend + Svelte 5.x + Vite 8.x + TypeScript frontend. Do not use Wails v3 for v1.**
+**Choice: Wails v2.12.x stable line + Go backend + Svelte 5.x + Vite 8.x + TypeScript frontend. Do not use Wails v3 for v1.**
 
 Rationale:
 
@@ -416,7 +416,7 @@ enhancement work.
 
 ## 18. External Decision Evidence
 
-- Wails v2.11 documentation describes `AssetServer`/dynamic asset handling and notes that Wails v2 dynamic asset handling does not work with Vite 5+.
+- Wails v2.12 documentation describes `AssetServer`/dynamic asset handling and notes that Wails v2 dynamic asset handling does not work with Vite 5+.
 - Wails GitHub releases identify Wails v3 as alpha/pre-release.
 - Shiki documents both the default Oniguruma WebAssembly engine and the JavaScript RegExp engine; v1 chooses the JavaScript engine for optional Shiki evaluation to avoid the WASM/CSP path.
 - The reviewed Maakdown mock and design-system handoff are preserved under `docs/design-system/` as the P8 visual source material.

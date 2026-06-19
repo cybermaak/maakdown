@@ -2,7 +2,7 @@
 
 ## Project Summary
 
-Maakdown is a cross-platform desktop Markdown viewer for technical documents and personal notes. The approved v1 stack is Wails v2.11.x, Go, Svelte 5.x, Vite 8.x, and TypeScript.
+Maakdown is a cross-platform desktop Markdown viewer for technical documents and personal notes. The approved v1 stack is Wails v2.12.x, Go, Svelte 5.x, Vite 8.x, and TypeScript.
 
 The app is a viewer, not an editor. It renders CommonMark/GFM, code, KaTeX math, Mermaid diagrams, frontmatter, callouts, local images, anchors/footnotes, and later notes-style wikilinks.
 
@@ -64,7 +64,7 @@ macOS, Linux, and Windows Markdown association are complete.
 
 ## Decisions
 
-- Pin Wails v2.11.x for v1; do not use Wails v3.
+- Pin Wails v2.12.x for v1; do not use Wails v3.
 - Pin Svelte 5.x and Vite 8.x.
 - Use highlight.js as the default highlighter.
 - Keep Shiki optional and use its JavaScript RegExp engine only.
@@ -531,6 +531,10 @@ provisioning profiles, notarization credentials, or signed release artifacts.
   keyboard protocol. Therefore Linux search/focus keyboard paths, native
   drag/drop, and system print/PDF remain manual or future-harness checks under
   P11.11 rather than completed automated coverage.
+- 2026-06-18: Updated the pinned Wails v2 baseline from v2.11.x to v2.12.x.
+  `go.mod` now uses `github.com/wailsapp/wails/v2 v2.12.0`, and generated
+  runtime bindings include the v2.12 notification API surface. Wails v3 remains
+  out of scope for v1.
 - 2026-06-15: Completed Windows Markdown association (P12.3). Startup now
   idempotently registers a per-user `Maakdown.md` ProgId, five Open With
   extensions, and `Software\Maakdown\Capabilities`/`RegisteredApplications`

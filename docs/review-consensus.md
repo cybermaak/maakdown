@@ -26,7 +26,7 @@ The revised artifacts are ready to proceed into implementation planning/scaffold
 - Local images no longer transfer byte/base64 payloads over Wails IPC. The plan uses a loopback-only, tokenized Go asset server with trusted-root enforcement.
 - Trusted-root precedence is now configured vault/folder, then Git worktree root, then document parent directory.
 - File watching now covers parent-directory safe-save/rename behavior with debounce and position restore.
-- Platform choice is concrete: Wails v2.11.x, Svelte 5.x, Vite 8.x, no Wails v3 in v1.
+- Platform choice is concrete: Wails v2.12.x, Svelte 5.x, Vite 8.x, no Wails v3 in v1.
 - Shiki's Oniguruma/WASM path is excluded from v1; optional Shiki evaluation uses the JavaScript RegExp engine only.
 - Performance targets are tied to named fixtures and split by platform.
 
@@ -34,7 +34,7 @@ The revised artifacts are ready to proceed into implementation planning/scaffold
 
 No dedicated platform spike is required before P0. The project should proceed with the pinned v1 stack and constraints:
 
-- Wails v2.11.x, not Wails v3 alpha.
+- Wails v2.12.x, not Wails v3 alpha.
 - Svelte 5.x and Vite 8.x for the frontend.
 - Do not use Wails v2 dynamic `AssetsHandler` for Markdown document assets.
 - Use the tokenized loopback asset server for local images.

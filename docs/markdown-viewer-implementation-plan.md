@@ -9,7 +9,7 @@
 
 | Concern | Choice |
 |---|---|
-| Desktop shell | Wails v2.11.x stable line |
+| Desktop shell | Wails v2.12.x stable line |
 | Backend | Go |
 | Frontend | Svelte 5.x + TypeScript + Vite 8.x |
 | Markdown pipeline | unified/remark/rehype |
@@ -24,7 +24,7 @@
 | UI icons | pinned `@lucide/svelte`; no runtime CDN |
 | UI fonts | self-hosted licensed Inter and JetBrains Mono with verified weight files |
 
-This plan deliberately removes the prior "evaluate Wails v3 later" ambiguity. P0 starts on Wails v2.11.x, Svelte 5.x, and Vite 8.x, then records exact versions in `go.mod`, `wails.json`, and `frontend/package.json`.
+This plan deliberately removes the prior "evaluate Wails v3 later" ambiguity. P0 starts on Wails v2.12.x, Svelte 5.x, and Vite 8.x, then records exact versions in `go.mod`, `wails.json`, and `frontend/package.json`.
 
 ## 2. Repository Layout
 
@@ -567,7 +567,7 @@ Generated `wailsjs/` imports are forbidden outside `ipc/`.
 
 | Phase | Goal | Deliverables | Exit Criteria |
 |---|---|---|---|
-| P0 | Scaffold | Wails v2.11.x app, Svelte 5.x/Vite 8.x frontend, IPC wrappers, config, CI skeleton | Empty app builds locally; exact versions pinned |
+| P0 | Scaffold | Wails v2.12.x app, Svelte 5.x/Vite 8.x frontend, IPC wrappers, config, CI skeleton | Empty app builds locally; exact versions pinned |
 | P1 | Safe base renderer | file open, parse worker, sanitize schema, frontmatter, base blocks, non-virtualized view, external links | GFM fixture renders safely; frontmatter hidden/panel works |
 | P2 | Navigation model | heading/anchor/footnote indexes, TOC, internal anchors, scroll-spy | TOC, `#anchor`, and footnote backlinks pass tests without virtualization |
 | P3 | Assets and watcher | trusted root detection, `AssetService`, lazy images, watcher debounce/safe-save | relative images render within root; traversal blocked; safe-save reload works |
