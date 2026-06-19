@@ -2,7 +2,7 @@
 
 **Purpose:** project task breakdown and progress tracker.  
 **Status values:** Todo, In Progress, Blocked, Done, Deferred.  
-**Last updated:** 2026-06-14.
+**Last updated:** 2026-06-18.
 
 ## Summary
 
@@ -12,7 +12,7 @@
 | P1 | Done | Safe base renderer | GFM fixture renders safely; frontmatter panel/hide works |
 | P2 | Done | Navigation model | TOC, anchors, and footnote backlinks work before virtualization |
 | P3 | Done | Assets and watcher | trusted-root images work; traversal blocked; safe-save reload works |
-| P4 | In Progress | Rich enhancements | code, math, Mermaid, and theme propagation work; Windows/WebView2 Mermaid acceptance remains |
+| P4 | Done | Rich enhancements | code, math, Mermaid, and theme propagation work across supported native webviews |
 | P5 | Done | Virtualized large docs | 10k-line fixture has bounded DOM and working anchors |
 | P6 | Done | Notes support | wikilinks navigate within configured vault |
 | P7 | Done | Release hardening | v0.1.0 artifacts publish for all three OSes; macOS is signed/notarized and Windows/Linux remain unsigned |
@@ -74,7 +74,7 @@
 | P4.3 | Done | Instrument highlighter timings | P4.1 | timing report emitted for fixtures | `npm run benchmark` |
 | P4.4 | Done | Implement Mermaid manager | P1 | visible diagrams render lazily and show errors safely | Playwright benchmark and visual pass |
 | P4.5 | Done | Implement theme propagation | P4.1/P4.4 | document, highlighter, Mermaid update without reparse | Svelte check and Playwright visual pass |
-| P4.6 | In Progress | Stabilize Mermaid rendering on Windows/WebView2 | Frontend | P4.4/P11.11 | fixture diagrams preserve their diagram-specific label modes, edge content is not clipped, wide flowcharts remain readable without creating a page-level scrollbar, and cache entries never cross documents | native WebView2 baseline/candidate captures; 29 frontend tests; `npm run check`; `npm run build`; physical-machine acceptance pending |
+| P4.6 | Done | Stabilize Mermaid rendering on Windows/WebView2 | Frontend | P4.4/P11.11 | fixture diagrams preserve their diagram-specific label modes, edge content is not clipped, wide flowcharts remain readable without creating a page-level scrollbar, and cache entries never cross documents | `fixtures/mermaid-cases.md` accepted in RDP-created and physical Windows sessions; frontend checks, tests, build, and Go tests passed; macOS/Linux retained existing HTML-label path |
 
 ## P5 - Virtualized Large Docs
 

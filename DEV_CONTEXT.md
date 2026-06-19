@@ -8,7 +8,7 @@ The app is a viewer, not an editor. It renders CommonMark/GFM, code, KaTeX math,
 
 ## Current Phase
 
-**Phase:** P4.6, P11.11, and P12 are active; P0-P10 are otherwise complete
+**Phase:** P11.11 and P12 are active; P0-P10 are otherwise complete
 **Active focus:** native Linux editorial acceptance and the remaining Windows
 integration work.
 
@@ -350,8 +350,6 @@ scripts/release-check.sh
 
 ## Current Verification Blockers
 
-- P4.6 needs final physical Windows/WebView2 acceptance for Mermaid class,
-  entity-relationship, and very wide flowchart cases.
 - P11.11 needs native WKWebView/WebView2/WebKitGTK editorial acceptance.
   Cross-OS CI currently runs the frontend in Chromium, so it does not validate
   native webview rendering, window chrome, drag/drop, or system print behavior.
