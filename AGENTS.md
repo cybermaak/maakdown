@@ -197,14 +197,28 @@ sips -z 64 64 docs/design-system/maakdown.icon/Assets/maakdown_dark.png  --out f
 The icon switch is wired in `WorkspaceToolbar.svelte` via
 `config.theme === 'dark' ? appIconDark : appIconLight`.
 
+### 4. Windows Markdown File Icon
+
+Windows file associations do not synthesize an app-icon overlay for ProgId
+document icons. Maakdown therefore ships a distinct derived document icon:
+
+- `docs/design-system/markdown-file-icon.png` — source artwork for the
+  Markdown document icon
+- `build/windows/markdown.ico` — committed ICO embedded by the Windows build
+
+At startup, the Windows association code writes the embedded ICO to
+`%APPDATA%\Maakdown\markdown.ico` and registers `Maakdown.md\DefaultIcon` to
+that per-user file. The main application icon remains `build/windows/icon.ico`.
+
 ### Full Update Checklist
 
 1. Update the masters in `docs/design-system/maakdown.icon/Assets/` (and `icon.json` if layers change).
 2. Regenerate title bar icons: `sips -z 64 64 ...` (see above).
 3. Copy the light master to `build/appicon.png` (see above).
-4. Run `wails build -platform darwin/arm64`.
-5. Run `scripts/postbuild-darwin.sh`.
-6. Optionally `killall Dock; killall Finder` to clear macOS icon cache.
+4. If the visual language changes, regenerate `docs/design-system/markdown-file-icon.png` and `build/windows/markdown.ico`.
+5. Run `wails build -platform darwin/arm64`.
+6. Run `scripts/postbuild-darwin.sh`.
+7. Optionally `killall Dock; killall Finder` to clear macOS icon cache.
 
 ## Current Repo Expectations
 

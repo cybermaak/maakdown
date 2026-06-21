@@ -3,6 +3,8 @@
 package main
 
 import (
+	"bytes"
+	_ "embed"
 	"fmt"
 	"net/url"
 	"os"
@@ -37,6 +39,9 @@ var (
 	regSetValueExW    = advapi32DLL.NewProc("RegSetValueExW")
 )
 
+//go:embed build/windows/markdown.ico
+var markdownFileIcon []byte
+
 // registerMarkdownHandler adds Maakdown as a per-user Open With and Default
 // Apps candidate. It deliberately does not change the user's current default.
 func registerMarkdownHandler() {
@@ -54,6 +59,12 @@ func installWindowsMarkdownHandler() error {
 	if err != nil {
 		return fmt.Errorf("resolve absolute Maakdown executable: %w", err)
 	}
+	iconValue := executable + ",0"
+	if iconPath, err := ensureWindowsMarkdownIcon(); err == nil {
+		iconValue = windowsIconResource(iconPath)
+	} else {
+		fmt.Fprintf(os.Stderr, "Maakdown could not install its Markdown file icon: %v\n", err)
+	}
 
 	if err := setRegistryDefault(
 		registry.CURRENT_USER,
@@ -65,7 +76,7 @@ func installWindowsMarkdownHandler() error {
 	if err := setRegistryDefault(
 		registry.CURRENT_USER,
 		`Software\Classes\`+markdownProgID+`\DefaultIcon`,
-		executable+",0",
+		iconValue,
 	); err != nil {
 		return err
 	}
@@ -147,6 +158,42 @@ func installWindowsMarkdownHandler() error {
 	return nil
 }
 
+func ensureWindowsMarkdownIcon() (string, error) {
+	configDir, err := os.UserConfigDir()
+	if err != nil {
+		return "", fmt.Errorf("resolve user config directory: %w", err)
+	}
+	dir := filepath.Join(configDir, "Maakdown")
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return "", fmt.Errorf("create icon directory: %w", err)
+	}
+	iconPath := filepath.Join(dir, "markdown.ico")
+	if existing, err := os.ReadFile(iconPath); err == nil && bytes.Equal(existing, markdownFileIcon) {
+		return iconPath, nil
+	}
+	temp, err := os.CreateTemp(dir, ".markdown-icon-*.tmp")
+	if err != nil {
+		return "", fmt.Errorf("create temporary icon file: %w", err)
+	}
+	tempPath := temp.Name()
+	defer os.Remove(tempPath)
+	if _, err := temp.Write(markdownFileIcon); err != nil {
+		_ = temp.Close()
+		return "", fmt.Errorf("write temporary icon file: %w", err)
+	}
+	if err := temp.Sync(); err != nil {
+		_ = temp.Close()
+		return "", fmt.Errorf("sync temporary icon file: %w", err)
+	}
+	if err := temp.Close(); err != nil {
+		return "", fmt.Errorf("close temporary icon file: %w", err)
+	}
+	if err := os.Rename(tempPath, iconPath); err != nil {
+		return "", fmt.Errorf("install Markdown icon: %w", err)
+	}
+	return iconPath, nil
+}
+
 func isDefaultMarkdownHandler() bool {
 	handler, err := associatedExecutable(".md")
 	if err != nil {
@@ -217,6 +264,10 @@ func setRegistryNoneValue(key registry.Key, name string) error {
 
 func markdownOpenCommand(executable string) string {
 	return fmt.Sprintf(`"%s" "%%1"`, executable)
+}
+
+func windowsIconResource(path string) string {
+	return fmt.Sprintf(`"%s",0`, path)
 }
 
 func associatedExecutable(extension string) (string, error) {

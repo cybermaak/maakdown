@@ -150,6 +150,11 @@ drag/drop, and macOS, Linux, and Windows Markdown association are complete.
   (Windows/Linux) and the light title-bar mark from the light master, and the
   dark title-bar mark from the dark master. The toolbar brand switches via
   `config.theme === 'dark' ? appIconDark : appIconLight`.
+- The Windows Markdown file association uses a derived document icon, not the
+  main app icon. Source artwork is `docs/design-system/markdown-file-icon.png`;
+  the committed ICO is `build/windows/markdown.ico`, embedded into the Windows
+  build and written at startup to `%APPDATA%\Maakdown\markdown.ico` for the
+  ProgId `DefaultIcon`.
 
 ## Planned Tasks
 
@@ -574,3 +579,10 @@ provisioning profiles, notarization credentials, or signed release artifacts.
   UserChoice, and argv opening `mermaid-cases.md` in the built app. Go tests,
   frontend checks/build, focused UAT-09 (5 scenarios), and Windows Wails build
   passed.
+- 2026-06-20: Added a distinct Windows Markdown file icon. Windows does not
+  synthesize an app-overlay document icon for ProgIds, so Maakdown now embeds a
+  derived document ICO and writes it to `%APPDATA%\Maakdown\markdown.ico` before
+  registering `Maakdown.md\DefaultIcon`. Verified by fresh-launching the rebuilt
+  Windows app and querying HKCU: `DefaultIcon` was
+  `"%APPDATA%\Maakdown\markdown.ico",0` and the icon file existed. `go test
+  ./...`, `npm run check`, and `wails build -platform windows/amd64` passed.
