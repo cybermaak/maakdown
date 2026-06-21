@@ -4,6 +4,7 @@ import (
 	"embed"
 	"fmt"
 	"os"
+	goruntime "runtime"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/menu"
@@ -67,10 +68,11 @@ func main() {
 		Menu:      appMenu,
 		DragAndDrop: &options.DragAndDrop{
 			EnableFileDrop: true,
-			// Disable the webview's own drag-and-drop so a dropped file is not
-			// opened/navigated to inside the webview (notably WebKitGTK on Linux).
-			// The native layer still delivers the dropped paths via OnFileDrop.
-			DisableWebViewDrop: true,
+			// Keep the webview drop disabled on WebKit-backed platforms so a
+			// dropped Markdown file cannot navigate the webview to a text view.
+			// WebView2 resolves filesystem paths from the JS drop event, so
+			// Windows must leave external webview drops enabled.
+			DisableWebViewDrop: goruntime.GOOS != "windows",
 		},
 		AssetServer: &assetserver.Options{
 			Assets: assets,

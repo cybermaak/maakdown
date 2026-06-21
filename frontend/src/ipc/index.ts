@@ -17,7 +17,7 @@ import {
   WindowToggleMaximise
 } from '../../wailsjs/go/main/App';
 import { GetVaultIndex } from '../../wailsjs/go/vault/Service';
-import { EventsOn } from '../../wailsjs/runtime/runtime';
+import { EventsOn, OnFileDrop, OnFileDropOff } from '../../wailsjs/runtime/runtime';
 import { config } from '../../wailsjs/go/models';
 import type { assetservice, fileservice, vault } from '../../wailsjs/go/models';
 import type { AppConfig } from '../stores/configStore';
@@ -181,7 +181,24 @@ export function onFileChanged(callback: (path: string) => void): () => void {
 }
 
 export function onFilesDropped(callback: (paths: string[]) => void): () => void {
-  return EventsOn('files-dropped', (paths: string[]) => callback(paths));
+  let lastDrop = { signature: '', at: 0 };
+  const deliver = (paths: string[]) => {
+    const signature = paths.join('\0');
+    const now = performance.now();
+    if (signature && signature === lastDrop.signature && now - lastDrop.at < 1000) return;
+    lastDrop = { signature, at: now };
+    callback(paths);
+  };
+  const offNativeEvent = EventsOn('files-dropped', (paths: string[]) => deliver(paths));
+  // Wails' Windows/WebView2 path resolver is installed by the JS OnFileDrop
+  // registration. Keep the app-level files-dropped subscription too because
+  // native backends can also emit through Go; the duplicate guard keeps one
+  // user drop from racing two opens.
+  OnFileDrop((_x: number, _y: number, paths: string[]) => deliver(paths), false);
+  return () => {
+    offNativeEvent();
+    OnFileDropOff();
+  };
 }
 
 export function onAppCommand(callback: (command: string) => void): () => void {

@@ -2,7 +2,7 @@
 
 **Purpose:** project task breakdown and progress tracker.  
 **Status values:** Todo, In Progress, Blocked, Done, Deferred.  
-**Last updated:** 2026-06-18.
+**Last updated:** 2026-06-20.
 
 ## Summary
 
@@ -177,7 +177,7 @@
 | P11.8 | Done | Finalize provisional brand mark usage | Design/Frontend | P8.1/P11.1 | square `M` mark is consistently applied and remains replaceable without layout changes | brand review and icon-size screenshots |
 | P11.9 | Done | Complete keyboard and semantic accessibility | Frontend | P10/P11.1-P11.7 | tabs, toolbars, search, palette, dialogs, drawers, and reader are keyboard/screen-reader operable | zero-warning Svelte check, axe serious/critical gate, and UAT keyboard paths |
 | P11.10 | Done | Add reduced-motion, high-contrast, and async announcements | Frontend | P8/P11.9 | system preferences are respected and loading/reload/search/copy/error state is announced | media-query coverage and UAT-07 |
-| P11.11 | Blocked | Run cross-platform native editorial acceptance pass | Release | P11.1-P11.10/P7.7/P4.6 | empty, tabs, search, focus, narrow, light, dark, diagram, drag/drop, window chrome, and print workflows pass in WKWebView, WebView2, and WebKitGTK | browser-level CI is green on all three OSes; 2026-06-17 Debian/GNOME Wayland ad hoc pass verified WebKitGTK startup, empty state persistence, multi-tab native opens, Mermaid/10k/local-asset fixtures, and light/dark profiles, but Linux search/focus/drag/drop/print still need manual or harness coverage; 2026-06-20 Windows production-exe UI automation verified empty state, native tab opens, search, focus, narrow layout, light/dark, Mermaid, window chrome, and print preview/cancel, but Explorer-to-app drag/drop did not deliver a new tab and remains pending |
+| P11.11 | Blocked | Run cross-platform native editorial acceptance pass | Release | P11.1-P11.10/P7.7/P4.6 | empty, tabs, search, focus, narrow, light, dark, diagram, drag/drop, window chrome, and print workflows pass in WKWebView, WebView2, and WebKitGTK | browser-level CI is green on all three OSes; 2026-06-17 Debian/GNOME Wayland ad hoc pass verified WebKitGTK startup, empty state persistence, multi-tab native opens, Mermaid/10k/local-asset fixtures, and light/dark profiles, but Linux search/focus/drag/drop/print still need manual or harness coverage; 2026-06-20 Windows production-exe UI automation verified empty state, native tab opens, search, focus, narrow layout, light/dark, Mermaid, window chrome, print preview/cancel, and Explorer-to-app drag/drop opening `fixtures/README.md` as an active tab in WebView2 |
 | P11.12 | Done | Adopt design-handoff Panels option A (masthead + minimap) | Design/Frontend | P11.1 | metadata moves to a scrolling masthead and the outline to a hover-reveal edge minimap (fixed decorative collapsed glyph); single reading column; supersedes the persistent two-rail layout and its resizers/drawers from P11.2-P11.3 | `npm run check`, UAT 19/19, render screenshots |
 | P11.13 | Done | Trim toolbar controls | Frontend | P11.12 | outline/metadata toggle buttons and the redundant New tab button removed; show/hide wiring kept via command ids; Open always opens a new tab | `npm run check`, UAT-04/08 |
 | P11.14 | Done | Resolve open-path responsiveness regression | Frontend/Backend | P11.12 | opening a second document after a large file no longer stalls (confirmed on-device); vault index cached/invalidated and minimap outline lazily rendered cut open-path work | frontend long-task probe (0 tasks, ~0.6s open); vault walk measured ~11ms; user-confirmed |

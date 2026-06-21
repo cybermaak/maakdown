@@ -11,7 +11,7 @@ The app is a viewer, not an editor. It renders CommonMark/GFM, code, KaTeX math,
 **Phase:** P11.11 is active; P0-P10 and P12 are complete
 **Active focus:** remaining native editorial acceptance. Windows Mermaid
 rendering is accepted in physical and RDP-created WebView2 sessions, Windows
-native UI automation has verified the main editorial workflows except
+native UI automation has verified the main editorial workflows including
 drag/drop, and macOS, Linux, and Windows Markdown association are complete.
 
 ## Major Files And Directories
@@ -117,6 +117,12 @@ drag/drop, and macOS, Linux, and Windows Markdown association are complete.
   history to the destination tab when following cross-file links.
 - Use the explicit `@ipc` adapter alias so UAT swaps only the native boundary
   without relying on fragile relative-import matching.
+- Keep WebView2 external drops enabled on Windows because Wails resolves
+  filesystem paths from the JavaScript drop event there. Keep WebKit-backed
+  webview drops disabled so dropped Markdown files cannot navigate the webview
+  to a plain text view. The frontend subscribes to Wails' JS `OnFileDrop`
+  handler and the app-level `files-dropped` event with a duplicate guard so a
+  single native drop opens once.
 - Keep cross-platform release smoke manually dispatched. Verify workflow
   changes on the disposable remote `ci/sandbox` ref before promoting them to
   `main`, and separate workflow defects from product test failures.
@@ -544,10 +550,20 @@ provisioning profiles, notarization credentials, or signed release artifacts.
   `mermaid-cases.md`, and `large-10k-lines.md`, search with highlighted
   offscreen-capable matches, focus-mode toggle, narrow-window rendering,
   light/dark theme toggles, custom Windows title-bar controls, Mermaid
-  rendering in WebView2, and WebView2 print preview/cancel. Attempted real
-  Explorer-to-app file drag/drop with multiple mouse paths from the selected
-  `README.md` row, but no new tab opened; keep Windows drag/drop pending under
-  P11.11 rather than claiming full Windows native editorial acceptance.
+  rendering in WebView2, and WebView2 print preview/cancel. A follow-up pass
+  after the drag/drop fix verified Explorer-to-app drag/drop by opening
+  `fixtures/README.md` as the active tab in an isolated production-exe profile.
+- 2026-06-20: Fixed Windows native drag/drop after the production WebView2 app
+  showed the overlay but did not open dropped files. Root cause: Windows Wails
+  resolves dropped filesystem paths from the frontend `OnFileDrop` JavaScript
+  handler, while Maakdown had disabled external WebView drops globally and only
+  listened for the app-level Go `files-dropped` event. Windows now leaves
+  external WebView drops enabled; the frontend registers Wails' JS drop handler
+  and deduplicates it against the Go event. Verified with a rebuilt
+  `build/bin/Maakdown.exe` using an isolated profile: dragging
+  `fixtures/README.md` from Explorer opened `README.md - Maakdown`, persisted
+  it as the active tab, and rendered the README content. Screenshot evidence:
+  `%TEMP%\maakdown-dnd-fixed.png`.
 - 2026-06-15: Completed Windows Markdown association (P12.3). Startup now
   idempotently registers a per-user `Maakdown.md` ProgId, five Open With
   extensions, and `Software\Maakdown\Capabilities`/`RegisteredApplications`
