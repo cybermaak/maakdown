@@ -10,8 +10,9 @@ The app is a viewer, not an editor. It renders CommonMark/GFM, code, KaTeX math,
 
 **Phase:** P11.11 is active; P0-P10 and P12 are complete
 **Active focus:** remaining native editorial acceptance. Windows Mermaid
-rendering is accepted in physical and RDP-created WebView2 sessions, and
-macOS, Linux, and Windows Markdown association are complete.
+rendering is accepted in physical and RDP-created WebView2 sessions, Windows
+native UI automation has verified the main editorial workflows except
+drag/drop, and macOS, Linux, and Windows Markdown association are complete.
 
 ## Major Files And Directories
 
@@ -535,6 +536,18 @@ provisioning profiles, notarization credentials, or signed release artifacts.
   `go.mod` now uses `github.com/wailsapp/wails/v2 v2.12.0`, and generated
   runtime bindings include the v2.12 notification API surface. Wails v3 remains
   out of scope for v1.
+- 2026-06-20: Ran a direct Windows native UI automation acceptance pass against
+  the production `build/bin/Maakdown.exe` built from `e684b02`. The pass used
+  an isolated `APPDATA`/`LOCALAPPDATA` profile and screenshots under
+  `%TEMP%\maakdown-native-acceptance-*\evidence`. Verified clean empty state,
+  native second-instance tab opens for `medium-technical-doc.md`,
+  `mermaid-cases.md`, and `large-10k-lines.md`, search with highlighted
+  offscreen-capable matches, focus-mode toggle, narrow-window rendering,
+  light/dark theme toggles, custom Windows title-bar controls, Mermaid
+  rendering in WebView2, and WebView2 print preview/cancel. Attempted real
+  Explorer-to-app file drag/drop with multiple mouse paths from the selected
+  `README.md` row, but no new tab opened; keep Windows drag/drop pending under
+  P11.11 rather than claiming full Windows native editorial acceptance.
 - 2026-06-15: Completed Windows Markdown association (P12.3). Startup now
   idempotently registers a per-user `Maakdown.md` ProgId, five Open With
   extensions, and `Software\Maakdown\Capabilities`/`RegisteredApplications`
