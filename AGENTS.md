@@ -200,7 +200,8 @@ The icon switch is wired in `WorkspaceToolbar.svelte` via
 ### 4. Windows Markdown File Icon
 
 Windows file associations do not synthesize an app-icon overlay for ProgId
-document icons. Maakdown therefore ships a distinct derived document icon:
+document icons. Maakdown therefore ships a standalone derived document icon
+without an app badge:
 
 - `docs/design-system/markdown-file-icon.png` — source artwork for the
   Markdown document icon

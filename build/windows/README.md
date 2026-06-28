@@ -12,8 +12,8 @@ Expected secret inputs for a future release workflow:
 
 The app manifest keeps the app at normal user privileges (`asInvoker`) and opts into DPI awareness for desktop rendering.
 
-`markdown.ico` is the derived Markdown document icon used for Windows file
-associations. The application embeds this ICO and writes it to
+`markdown.ico` is the standalone derived Markdown document icon used for Windows
+file associations. The application embeds this ICO and writes it to
 `%APPDATA%\Maakdown\markdown.ico` before registering the `Maakdown.md`
 ProgId `DefaultIcon`, so installers do not need to copy a loose icon file next
 to the executable. The source PNG is `docs/design-system/markdown-file-icon.png`.

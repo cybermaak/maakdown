@@ -12,7 +12,9 @@ The app is a viewer, not an editor. It renders CommonMark/GFM, code, KaTeX math,
 **Active focus:** remaining native editorial acceptance. Windows Mermaid
 rendering is accepted in physical and RDP-created WebView2 sessions, Windows
 native UI automation has verified the main editorial workflows including
-drag/drop, and macOS, Linux, and Windows Markdown association are complete.
+drag/drop, and macOS, Linux, and Windows Markdown association are complete. The
+remaining tracked editorial acceptance gaps are Linux WebKitGTK
+search/focus/drag/drop/print coverage.
 
 ## Major Files And Directories
 
@@ -150,11 +152,11 @@ drag/drop, and macOS, Linux, and Windows Markdown association are complete.
   (Windows/Linux) and the light title-bar mark from the light master, and the
   dark title-bar mark from the dark master. The toolbar brand switches via
   `config.theme === 'dark' ? appIconDark : appIconLight`.
-- The Windows Markdown file association uses a derived document icon, not the
-  main app icon. Source artwork is `docs/design-system/markdown-file-icon.png`;
-  the committed ICO is `build/windows/markdown.ico`, embedded into the Windows
-  build and written at startup to `%APPDATA%\Maakdown\markdown.ico` for the
-  ProgId `DefaultIcon`.
+- The Windows Markdown file association uses a standalone derived document icon,
+  not the main app icon and not an app-icon overlay. Source artwork is
+  `docs/design-system/markdown-file-icon.png`; the committed ICO is
+  `build/windows/markdown.ico`, embedded into the Windows build and written at
+  startup to `%APPDATA%\Maakdown\markdown.ico` for the ProgId `DefaultIcon`.
 
 ## Planned Tasks
 
@@ -363,7 +365,8 @@ scripts/release-check.sh
 
 ## Current Verification Blockers
 
-- P11.11 needs native WKWebView/WebView2/WebKitGTK editorial acceptance.
+- P11.11 still needs the remaining Linux WebKitGTK editorial paths:
+  search/focus keyboard coverage, native drag/drop, and system print/PDF.
   Cross-OS CI currently runs the frontend in Chromium, so it does not validate
   native webview rendering, window chrome, drag/drop, or system print behavior.
 - macOS signing and notarization are operational. Windows release signing
@@ -581,8 +584,14 @@ provisioning profiles, notarization credentials, or signed release artifacts.
   passed.
 - 2026-06-20: Added a distinct Windows Markdown file icon. Windows does not
   synthesize an app-overlay document icon for ProgIds, so Maakdown now embeds a
-  derived document ICO and writes it to `%APPDATA%\Maakdown\markdown.ico` before
-  registering `Maakdown.md\DefaultIcon`. Verified by fresh-launching the rebuilt
-  Windows app and querying HKCU: `DefaultIcon` was
+  standalone document ICO and writes it to `%APPDATA%\Maakdown\markdown.ico`
+  before registering `Maakdown.md\DefaultIcon`. Verified by fresh-launching the
+  rebuilt Windows app and querying HKCU: `DefaultIcon` was
   `"%APPDATA%\Maakdown\markdown.ico",0` and the icon file existed. `go test
   ./...`, `npm run check`, and `wails build -platform windows/amd64` passed.
+- 2026-06-27: Updated the Windows Markdown file icon artwork to keep only the
+  standalone document icon, with no app badge overlay. Refreshed the current
+  user's `%APPDATA%\Maakdown\markdown.ico`, re-applied
+  `HKCU\Software\Classes\Maakdown.md\DefaultIcon`, and requested a shell
+  association/icon refresh. Focused Windows icon tests passed:
+  `go test -run "TestWindowsIconResource|TestEnsureWindowsMarkdownIcon" .`.
