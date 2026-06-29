@@ -9,7 +9,7 @@ name: Release
 # are produced locally on the maintainer's Mac via scripts/release-mac.sh (it
 # uploads to the same tag's Release with --clobber). See docs/RELEASING.md.
 # Windows signing (scripts/sign-windows.ps1) is staged for when a certificate is
-# available; until then Windows builds are unsigned.
+# available; until then Windows builds are unsigned and may show SmartScreen.
 
 on:
   push:
@@ -68,7 +68,7 @@ jobs:
         run: npm run build
 
       - name: Install Wails
-        run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.11.0
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.12.0
 
       - name: Build unsigned native application
         shell: bash
@@ -117,7 +117,7 @@ jobs:
           GH_REPO: ${{ github.repository }}
           TAG: ${{ github.ref_name }}
         run: |
-          notes="The macOS .dmg/.zip are signed with a Developer ID and notarized, uploaded separately by the maintainer (see docs/RELEASING.md). Linux builds are unsigned. ⚠️ The Windows build is a work in progress — the current build is unstable and a fix is underway; it is unsigned (SmartScreen may warn)."
+          notes="The macOS .dmg/.zip are signed with a Developer ID and notarized, uploaded separately by the maintainer (see docs/RELEASING.md). Windows and Linux builds are unsigned. Windows may show a SmartScreen warning until signed artifacts are available."
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" dist/* --clobber
           else

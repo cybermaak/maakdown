@@ -14,6 +14,7 @@ artifact_root="build/bin"
 mkdir -p dist
 
 version="${VERSION:-$(git describe --tags --always 2>/dev/null || echo dev)}"
+artifact_version="$(printf '%s' "$version" | tr '/:[:space:]' '---')"
 
 normalize_arch() {
   case "$(uname -m)" in
@@ -28,20 +29,20 @@ case "${RUNNER_OS:-$(uname -s)}" in
   macOS|Darwin)
     app="$(find "$artifact_root" -maxdepth 1 -type d -name '*.app' -print -quit)"
     [ -n "$app" ] || { echo "No .app bundle in $artifact_root" >&2; exit 1; }
-    out="dist/Maakdown-${version}-macos-${arch}.zip"
+    out="dist/Maakdown-${artifact_version}-macos-${arch}.zip"
     # ditto preserves the bundle structure and resource forks.
     ditto -c -k --sequesterRsrc --keepParent "$app" "$out"
     ;;
   Windows*|MINGW*|MSYS*)
     exe="$(find "$artifact_root" -maxdepth 1 -type f -name '*.exe' -print -quit)"
     [ -n "$exe" ] || { echo "No .exe in $artifact_root" >&2; exit 1; }
-    out="dist/Maakdown-${version}-windows-${arch}.zip"
+    out="dist/Maakdown-${artifact_version}-windows-${arch}.zip"
     powershell.exe -NoProfile -Command "Compress-Archive -Path '$exe' -DestinationPath '$out' -Force"
     ;;
   Linux)
     bin="$(find "$artifact_root" -maxdepth 1 -type f -perm -u+x -print -quit)"
     [ -n "$bin" ] || { echo "No executable in $artifact_root" >&2; exit 1; }
-    out="dist/Maakdown-${version}-linux-${arch}.tar.gz"
+    out="dist/Maakdown-${artifact_version}-linux-${arch}.tar.gz"
     tar -czf "$out" -C "$artifact_root" "$(basename "$bin")"
     ;;
   *)
