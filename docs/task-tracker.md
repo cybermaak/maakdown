@@ -2,7 +2,7 @@
 
 **Purpose:** project task breakdown and progress tracker.  
 **Status values:** Todo, In Progress, Blocked, Done, Deferred.  
-**Last updated:** 2026-06-27.
+**Last updated:** 2026-07-01.
 
 ## Summary
 
@@ -21,6 +21,7 @@
 | P10 | Done | Reading productivity | search, history, reader tools, and complete-document printing work |
 | P11 | In Progress | Editorial experience | browser-level cross-OS UAT and Windows WebView2 native acceptance are green; remaining native editorial gaps are Linux WebKitGTK search/focus/drag/drop/print coverage |
 | P12 | Done | OS integration | macOS, Linux, and Windows Markdown association are complete |
+| P13-P17 | Todo | Next release: Precision Reading & Performance | see `docs/next-release-plan.md` and `docs/next-release-task-tracker.md`; macOS validates each task before moving on, Windows/Linux block release |
 
 ## P0 - Scaffold
 

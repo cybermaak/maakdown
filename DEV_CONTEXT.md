@@ -8,13 +8,17 @@ The app is a viewer, not an editor. It renders CommonMark/GFM, code, KaTeX math,
 
 ## Current Phase
 
-**Phase:** P11.11 is active; P0-P10 and P12 are complete
-**Active focus:** remaining native editorial acceptance. Windows Mermaid
-rendering is accepted in physical and RDP-created WebView2 sessions, Windows
-native UI automation has verified the main editorial workflows including
-drag/drop, and macOS, Linux, and Windows Markdown association are complete. The
-remaining tracked editorial acceptance gaps are Linux WebKitGTK
-search/focus/drag/drop/print coverage.
+**Phase:** P11.11 is active; P13-P17 next-release planning is defined; P0-P10
+and P12 are complete
+**Active focus:** remaining native editorial acceptance plus planning for the
+next feature release. Windows Mermaid rendering is accepted in physical and
+RDP-created WebView2 sessions, Windows native UI automation has verified the
+main editorial workflows including drag/drop, and macOS, Linux, and Windows
+Markdown association are complete. The remaining tracked editorial acceptance
+gaps are Linux WebKitGTK search/focus/drag/drop/print coverage. The next
+release is planned as "Precision Reading & Performance": optional line numbers,
+performance/memory audit, minimap/search polish, code reading tools, document
+stats, recent-file polish, print polish, theme cleanup, and recovery hardening.
 
 ## Major Files And Directories
 
@@ -22,6 +26,10 @@ search/focus/drag/drop/print coverage.
 - `docs/markdown-viewer-implementation-plan.md`: approved implementation plan.
 - `docs/review-consensus.md`: Claude/Gemini/Codex review consensus.
 - `docs/task-tracker.md`: project/progress tracker.
+- `docs/next-release-plan.md`: next feature release plan and implementation
+  guidance.
+- `docs/next-release-task-tracker.md`: detailed P13-P17 task tracker with
+  per-task macOS/Windows/Linux validation gates.
 - `docs/design-system/`: reviewed mock, design-system references, adoption
   rules, screenshots, token exports, component contracts, and review notes.
 - `AGENTS.md`: repo-level agent operating rules.
@@ -157,10 +165,13 @@ search/focus/drag/drop/print coverage.
   `docs/design-system/markdown-file-icon.png`; the committed ICO is
   `build/windows/markdown.ico`, embedded into the Windows build and written at
   startup to `%APPDATA%\Maakdown\markdown.ico` for the ProgId `DefaultIcon`.
+- For the next release, every task must pass macOS validation before work moves
+  to the next task. Windows and Linux validation may trail implementation, but
+  both are release-blocking.
 
 ## Planned Tasks
 
-See `docs/task-tracker.md`.
+See `docs/task-tracker.md` and `docs/next-release-task-tracker.md`.
 
 ## Completed Tasks
 
