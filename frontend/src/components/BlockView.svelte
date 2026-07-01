@@ -17,15 +17,21 @@
     onInspectDiagram?: (title: string, html: string) => void;
     forceEnhance?: boolean;
     onEnhanced?: (blockId: string) => void;
+    showDocumentLineNumbers?: boolean;
+    documentLineDigits?: number;
   }
 
-  let { block, onMeasure, searchQuery = '', caseSensitive = false, currentSearchBlockId = null, onCopy, onInspectDiagram, forceEnhance = false, onEnhanced }: Props = $props();
+  let { block, onMeasure, searchQuery = '', caseSensitive = false, currentSearchBlockId = null, onCopy, onInspectDiagram, forceEnhance = false, onEnhanced, showDocumentLineNumbers = false, documentLineDigits = 1 }: Props = $props();
   let element = $state<HTMLElement | undefined>();
   let html = $state('');
   let observer: IntersectionObserver | undefined;
   let resizeObserver: ResizeObserver | undefined;
   let enhancementRun = 0;
   let enhancedKey = '';
+  let codeWrapOverride = $state<boolean | null>(null);
+  let codeWrapped = $derived(codeWrapOverride ?? $appConfig.codeWrap);
+  let sourceLabel = $derived(block.sourceStart ? String(block.sourceStart) : '');
+  let codeLineNumbers = $derived(block.kind === 'code' && $appConfig.codeLineNumbers);
 
   $effect(() => {
     block;
@@ -36,6 +42,7 @@
       html = block.html;
       enhancedKey = '';
     }
+    codeWrapOverride = null;
     observer?.disconnect();
     if (!element || block.enhancement === 'none') {
       observeSize();
@@ -64,8 +71,11 @@
     searchQuery;
     caseSensitive;
     currentSearchBlockId;
+    codeLineNumbers;
+    codeWrapped;
     queueMicrotask(() => {
       markSearchResults();
+      applyCodeDisplay();
       if (element && block.kind === 'mermaid') {
         void stabilizeMountedMermaid(element);
       }
@@ -132,6 +142,24 @@
     }
   }
 
+  function applyCodeDisplay() {
+    if (!element || block.kind !== 'code') return;
+    const pre = element.querySelector('pre');
+    if (!pre) return;
+    const lineCount = Math.max(1, (block.text ?? '').split(/\r\n|\r|\n/).length);
+    const digits = String(lineCount).length;
+    pre.classList.toggle('code-line-numbers', codeLineNumbers);
+    pre.classList.toggle('code-wrap', codeWrapped);
+    pre.classList.toggle('code-nowrap', !codeWrapped);
+    if (codeLineNumbers) {
+      pre.dataset.lines = Array.from({ length: lineCount }, (_, index) => String(index + 1)).join('\n');
+      pre.style.setProperty('--code-line-digits', String(digits));
+    } else {
+      pre.removeAttribute('data-lines');
+      pre.style.removeProperty('--code-line-digits');
+    }
+  }
+
   onDestroy(() => {
     observer?.disconnect();
     resizeObserver?.disconnect();
@@ -142,13 +170,23 @@
   bind:this={element}
   id={block.id}
   class={`doc-block doc-block-${block.kind}`}
+  class:with-source-line={showDocumentLineNumbers && Boolean(sourceLabel)}
   data-block-id={block.id}
   data-enhancement={block.enhancement}
+  data-source-start={block.sourceStart ?? undefined}
+  data-source-end={block.sourceEnd ?? undefined}
+  style={showDocumentLineNumbers ? `--source-line-digits: ${documentLineDigits}` : undefined}
 >
+  {#if showDocumentLineNumbers && sourceLabel}
+    <span class="source-line" aria-hidden="true" title={`Source line ${sourceLabel}`}>{sourceLabel}</span>
+  {/if}
   {#if block.kind === 'code'}
     <CodeBlockChrome
       language={block.language}
       oncopy={() => onCopy?.('Code copied', block.text ?? '')}
+      wrappable
+      wrapped={codeWrapped}
+      onwrap={() => (codeWrapOverride = !codeWrapped)}
     >
       {@html html}
     </CodeBlockChrome>

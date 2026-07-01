@@ -34,6 +34,7 @@ page.on('response', (response) => {
   }
 });
 const results = [];
+const parserResults = [];
 
 async function navigateToHeading(label) {
   const surface = page.locator('.document-scroll');
@@ -129,6 +130,14 @@ try {
       }
     }
     const openToTextMs = performance.now() - started;
+    const parserComparison = await page.evaluate(async (fixtureName) => {
+      const api = window.__maakdownBenchmark;
+      if (!api) throw new Error('Benchmark API unavailable');
+      const withPositions = await api.parseFixture(fixtureName, true);
+      const withoutPositions = await api.parseFixture(fixtureName, false);
+      return { withPositions, withoutPositions };
+    }, fixture);
+    parserResults.push({ fixture, ...parserComparison });
     const [renderedDiagrams, diagramErrors] = await scrollUntilMounted(
       '.mermaid-rendered svg, .mermaid-error',
       ['.mermaid-rendered svg', '.mermaid-error']
@@ -174,12 +183,24 @@ try {
       return {
         documentHeight: element.scrollHeight,
         mountedBlocks: element.querySelectorAll('[data-block-id]').length,
+        codeBlocks: element.querySelectorAll('[data-enhancement="code"]').length,
+        mermaidBlocks: element.querySelectorAll('[data-enhancement="mermaid"]').length,
         maxScrollAssignmentMs: Math.max(...frameSamples),
         averageScrollAssignmentMs: frameSamples.reduce((sum, value) => sum + value, 0) / frameSamples.length
       };
     });
+    const memory = await page.evaluate(() => {
+      const perf = performance;
+      const memory = perf.memory;
+      return memory ? {
+        usedJSHeapSize: memory.usedJSHeapSize,
+        totalJSHeapSize: memory.totalJSHeapSize,
+        jsHeapSizeLimit: memory.jsHeapSizeLimit
+      } : null;
+    });
+    const modelStats = await page.evaluate(() => window.__maakdownBenchmark?.activeModelStats?.() ?? null);
     const mountedReaders = await page.getByRole('document', { name: 'Markdown document' }).count();
-    results.push({ fixture, openToTextMs, mountedReaders, ...metrics, ...enhancements, finalGateOffsetPx });
+    results.push({ fixture, openToTextMs, mountedReaders, ...metrics, ...enhancements, finalGateOffsetPx, memory, modelStats });
   }
 } finally {
   await browser.close();
@@ -191,6 +212,7 @@ const report = {
   generatedAt: new Date().toISOString(),
   platform: process.platform,
   arch: process.arch,
+  parserResults,
   results
 };
 await writeFile(resolve(outputDir, 'reader-benchmark.json'), `${JSON.stringify(report, null, 2)}\n`);

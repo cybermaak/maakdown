@@ -8,6 +8,7 @@
     index: number;
     total: number;
     caseSensitive: boolean;
+    status?: string;
     onQuery: (value: string) => void;
     onCase: () => void;
     onPrevious: () => void;
@@ -15,7 +16,7 @@
     onClose: () => void;
   }
 
-  let { query, index, total, caseSensitive, onQuery, onCase, onPrevious, onNext, onClose }: Props = $props();
+  let { query, index, total, caseSensitive, status = '', onQuery, onCase, onPrevious, onNext, onClose }: Props = $props();
   let input = $state<HTMLInputElement | undefined>();
   onMount(() => input?.focus());
 </script>
@@ -28,7 +29,7 @@
     value={query}
     oninput={(event) => onQuery(event.currentTarget.value)}
   />
-  <span aria-live="polite">{total ? index + 1 : 0} / {total}</span>
+  <span aria-live="polite">{status || `${total ? index + 1 : 0} / ${total}`}</span>
   <IconButton icon={CaseSensitive} label="Match case" active={caseSensitive} onclick={onCase} />
   <IconButton icon={ChevronUp} label="Previous match" onclick={onPrevious} disabled={!total} />
   <IconButton icon={ChevronDown} label="Next match" onclick={onNext} disabled={!total} />

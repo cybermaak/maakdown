@@ -24,11 +24,13 @@ export interface ParseRequest {
   path: string;
   vaultIndexVersion?: string;
   vaultIndex?: VaultIndexSnapshot;
+  collectSourcePositions?: boolean;
 }
 
 interface FrontmatterResult {
   body: string;
   data: Record<string, unknown>;
+  bodyStartLine: number;
 }
 
 interface ProcessorData {
@@ -37,6 +39,9 @@ interface ProcessorData {
   footnotes: DocumentModel['footnotes'];
   languages: Set<string>;
   unresolvedWikilinks: Set<string>;
+  sourcePositions: Array<{ start?: number; end?: number }>;
+  sourceLineOffset: number;
+  collectSourcePositions: boolean;
 }
 
 export async function parseDocument(request: ParseRequest): Promise<DocumentModel> {
@@ -46,7 +51,10 @@ export async function parseDocument(request: ParseRequest): Promise<DocumentMode
     anchors: {},
     footnotes: {},
     languages: new Set(),
-    unresolvedWikilinks: new Set()
+    unresolvedWikilinks: new Set(),
+    sourcePositions: [],
+    sourceLineOffset: frontmatter.bodyStartLine - 1,
+    collectSourcePositions: request.collectSourcePositions !== false
   };
 
   const processor = buildProcessor(data, request.vaultIndex);
@@ -61,7 +69,9 @@ export async function parseDocument(request: ParseRequest): Promise<DocumentMode
     footnotes: data.footnotes,
     frontmatter: frontmatter.data,
     languages: Array.from(data.languages).sort(),
-    unresolvedWikilinks: Array.from(data.unresolvedWikilinks).sort()
+    unresolvedWikilinks: Array.from(data.unresolvedWikilinks).sort(),
+    sourceLineCount: countLines(request.source),
+    sourcePositionsEnabled: data.collectSourcePositions
   };
 }
 
@@ -69,13 +79,14 @@ export function extractFrontmatter(source: string): FrontmatterResult {
   const normalized = source.replace(/^\uFEFF/, '');
   const match = normalized.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
   if (!match) {
-    return { body: source, data: {} };
+    return { body: source, data: {}, bodyStartLine: 1 };
   }
 
   const parsed = yaml.load(match[1]);
   return {
     body: normalized.slice(match[0].length),
-    data: parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? (parsed as Record<string, unknown>) : {}
+    data: parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? (parsed as Record<string, unknown>) : {},
+    bodyStartLine: match[0].split(/\r\n|\r|\n/).length
   };
 }
 
@@ -145,6 +156,14 @@ function remarkWikilinks(data: ProcessorData, vaultIndex?: VaultIndexSnapshot): 
 
 function collectMarkdownMetadata(data: ProcessorData): Plugin<[], Nodes> {
   return () => (tree: Nodes) => {
+    if (data.collectSourcePositions && 'children' in tree && Array.isArray(tree.children)) {
+      data.sourcePositions = tree.children
+        .map((child) => ({
+          start: addLineOffset(child.position?.start.line, data.sourceLineOffset),
+          end: addLineOffset(child.position?.end.line, data.sourceLineOffset)
+        }));
+    }
+
     visit(tree, 'code', (node: { lang?: string; value?: string }) => {
       if (node.lang) {
         data.languages.add(node.lang.toLowerCase());
@@ -194,6 +213,7 @@ function collectHtmlMetadata(data: ProcessorData): Plugin<[], Root> {
 function buildBlocks(root: Root, data: ProcessorData): Block[] {
   const blocks: Block[] = [];
   let headingIndex = 0;
+  let sourceIndex = 0;
 
   for (const child of root.children) {
     if (isWhitespaceText(child)) {
@@ -202,16 +222,20 @@ function buildBlocks(root: Root, data: ProcessorData): Block[] {
 
     if (!isElement(child)) {
       const id = `block-${blocks.length + 1}`;
+      const source = data.sourcePositions[sourceIndex++];
       blocks.push({
         id,
         kind: 'other',
         html: toHtml(child),
         enhancement: 'none',
-        text: textContent(child)
+        text: textContent(child),
+        sourceStart: source?.start,
+        sourceEnd: source?.end
       });
       continue;
     }
 
+    const source = data.sourcePositions[sourceIndex++];
     const headingLevel = headingDepth(child);
     const id = `block-${blocks.length + 1}`;
     const kind = blockKind(child);
@@ -235,11 +259,22 @@ function buildBlocks(root: Root, data: ProcessorData): Block[] {
       enhancement,
       text,
       language,
-      level: headingLevel ?? undefined
+      level: headingLevel ?? undefined,
+      sourceStart: source?.start,
+      sourceEnd: source?.end
     });
   }
 
   return blocks;
+}
+
+function countLines(source: string): number {
+  if (!source) return 0;
+  return source.split(/\r\n|\r|\n/).length;
+}
+
+function addLineOffset(line: number | undefined, offset: number): number | undefined {
+  return typeof line === 'number' ? line + offset : undefined;
 }
 
 function rehypeCallouts(): (tree: Root) => void {

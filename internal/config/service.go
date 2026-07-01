@@ -7,21 +7,24 @@ import (
 	"sync"
 )
 
-const stateVersion = 1
+const stateVersion = 2
 
 type AppConfig struct {
-	Theme              string `json:"theme"`
-	HighlighterEngine  string `json:"highlighterEngine"`
-	FrontmatterDisplay string `json:"frontmatterDisplay"`
-	ReaderTheme        string `json:"readerTheme"`
-	ReaderFont         string `json:"readerFont"`
-	ReaderFontSize     int    `json:"readerFontSize"`
-	ReaderLineHeight   string `json:"readerLineHeight"`
-	ReaderMeasure      string `json:"readerMeasure"`
-	FocusMode          bool   `json:"focusMode"`
-	OutlineVisible     bool   `json:"outlineVisible"`
-	OutlineWidth       int    `json:"outlineWidth"`
-	MetadataWidth      int    `json:"metadataWidth"`
+	Theme               string `json:"theme"`
+	HighlighterEngine   string `json:"highlighterEngine"`
+	FrontmatterDisplay  string `json:"frontmatterDisplay"`
+	ReaderTheme         string `json:"readerTheme"`
+	ReaderFont          string `json:"readerFont"`
+	ReaderFontSize      int    `json:"readerFontSize"`
+	ReaderLineHeight    string `json:"readerLineHeight"`
+	ReaderMeasure       string `json:"readerMeasure"`
+	FocusMode           bool   `json:"focusMode"`
+	OutlineVisible      bool   `json:"outlineVisible"`
+	OutlineWidth        int    `json:"outlineWidth"`
+	MetadataWidth       int    `json:"metadataWidth"`
+	DocumentLineNumbers bool   `json:"documentLineNumbers"`
+	CodeLineNumbers     bool   `json:"codeLineNumbers"`
+	CodeWrap            bool   `json:"codeWrap"`
 }
 
 type ReaderPosition struct {
@@ -87,6 +90,7 @@ func defaultState() stateFile {
 			OutlineVisible:     true,
 			OutlineWidth:       280,
 			MetadataWidth:      260,
+			CodeWrap:           true,
 		},
 		Session: PersistedSession{Tabs: []SessionTab{}, Recents: []RecentDocument{}},
 	}
@@ -126,11 +130,12 @@ func (s *Service) load() error {
 		return err
 	}
 	var loaded stateFile
-	if err := json.Unmarshal(data, &loaded); err != nil || loaded.Version != stateVersion {
+	if err := json.Unmarshal(data, &loaded); err != nil || loaded.Version < 1 || loaded.Version > stateVersion {
 		return err
 	}
 	s.current = loaded
-	s.current.Config = normalizeConfig(s.current.Config)
+	s.current.Config = normalizeConfigForVersion(s.current.Config, loaded.Version)
+	s.current.Version = stateVersion
 	if s.current.Session.Tabs == nil {
 		s.current.Session.Tabs = []SessionTab{}
 	}
@@ -141,6 +146,10 @@ func (s *Service) load() error {
 }
 
 func normalizeConfig(value AppConfig) AppConfig {
+	return normalizeConfigForVersion(value, stateVersion)
+}
+
+func normalizeConfigForVersion(value AppConfig, version int) AppConfig {
 	defaults := defaultState().Config
 	legacyOutlineSetting := value.OutlineWidth == 0
 	if value.Theme != "light" && value.Theme != "dark" && value.Theme != "system" {
@@ -175,6 +184,9 @@ func normalizeConfig(value AppConfig) AppConfig {
 	}
 	if legacyOutlineSetting {
 		value.OutlineVisible = true
+	}
+	if version < 2 {
+		value.CodeWrap = defaults.CodeWrap
 	}
 	return value
 }

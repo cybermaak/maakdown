@@ -55,6 +55,11 @@
   import { applyReaderTheme, resolveTheme } from './core/theme/readerTheme';
   import { searchDocument } from './core/search/search';
   import {
+    buildSearchMinimapMarks,
+    buildStructuralMinimapMarks,
+    type MinimapViewport
+  } from './core/minimap/minimap';
+  import {
     moveHistory as moveNavigationHistory,
     pushHistory,
     replaceCurrent,
@@ -84,6 +89,7 @@
   let searchQuery = $state('');
   let searchIndex = $state(0);
   let searchCaseSensitive = $state(false);
+  let searchStatus = $state('');
   let settingsOpen = $state(false);
   let aboutOpen = $state(false);
   let paletteOpen = $state(false);
@@ -98,6 +104,31 @@
   let announcement = $state('');
   let activeTab = $derived(workspace.tabs.find((tab) => tab.id === workspace.activeTabId) ?? null);
   let searchMatches = $derived(activeTab?.model ? searchDocument(activeTab.model, searchQuery, { caseSensitive: searchCaseSensitive }) : []);
+  let minimapViewport = $state<MinimapViewport>({ start: 0, end: 0.05 });
+  let minimapMarks = $derived.by(() => {
+    if (!activeTab?.model) return [];
+    return [
+      ...buildStructuralMinimapMarks(activeTab.model),
+      ...(searchOpen && searchQuery ? buildSearchMinimapMarks(activeTab.model, searchMatches) : [])
+    ];
+  });
+
+  $effect(() => {
+    searchQuery;
+    searchMatches.length;
+    if (!searchQuery) {
+      searchStatus = '';
+      searchIndex = 0;
+    } else if (!searchMatches.length) {
+      searchStatus = 'No results';
+      searchIndex = 0;
+    } else if (searchIndex >= searchMatches.length) {
+      searchIndex = 0;
+      searchStatus = '';
+    } else if (searchStatus === 'No results') {
+      searchStatus = '';
+    }
+  });
 
   function sessionSnapshot() {
     return serializeSession({
@@ -216,6 +247,7 @@
     commit({ ...workspace, activeTabId: id });
     const tab = workspace.tabs.find((item) => item.id === id);
     activeHeadingId = livePositions.get(id)?.activeHeadingId ?? tab?.position.activeHeadingId ?? null;
+    minimapViewport = { start: 0, end: 0.05 };
   }
 
   function handleClose(id: string) {
@@ -370,8 +402,22 @@
 
   function moveSearch(offset: number) {
     if (!searchMatches.length) return;
+    const previous = searchIndex;
     searchIndex = (searchIndex + offset + searchMatches.length) % searchMatches.length;
+    searchStatus = searchIndex < previous && offset > 0
+      ? 'Wrapped to first result'
+      : searchIndex > previous && offset < 0
+        ? 'Wrapped to last result'
+        : '';
     void documentView?.scrollToBlock(searchMatches[searchIndex].blockId);
+  }
+
+  function updateViewport(startBlockIndex: number, endBlockIndex: number) {
+    const total = Math.max(1, (activeTab?.model?.blocks.length ?? 1) - 1);
+    minimapViewport = {
+      start: Math.max(0, Math.min(1, startBlockIndex / total)),
+      end: Math.max(0.02, Math.min(1, endBlockIndex / total))
+    };
   }
 
   async function printDocument() {
@@ -419,6 +465,7 @@
     if (command === 'reload' && activeTab) void reloadDocument(activeTab.path);
     if (command === 'find') showSearch();
     if (command === 'focus') toggleFocus();
+    if (command === 'line-numbers') updateConfig({ ...$appConfig, documentLineNumbers: !$appConfig.documentLineNumbers });
     // Outline/metadata toggles are no longer surfaced as toolbar buttons, but the
     // wiring stays reachable for future advanced settings.
     if (command === 'toggle-outline') toggleOutline();
@@ -561,6 +608,35 @@
     updateNarrow();
     narrowQuery.addEventListener('change', updateNarrow);
     window.addEventListener('keydown', handleKeydown);
+    if (import.meta.env.MODE === 'benchmark') {
+      (window as unknown as {
+        __maakdownBenchmark?: {
+          parseFixture: (name: string, collectSourcePositions?: boolean) => Promise<unknown>;
+          activeModelStats: () => unknown;
+        };
+      }).__maakdownBenchmark = {
+        parseFixture: async (name, collectSourcePositions = true) => {
+          const response = await fetch(`/__maakdown_fixture/${encodeURI(name)}`);
+          if (!response.ok) throw new Error(`Fixture load failed: ${response.status}`);
+          const source = await response.text();
+          const started = performance.now();
+          const model = await parseInWorker({ source, path: `fixtures/${name}`, collectSourcePositions });
+          return {
+            durationMs: performance.now() - started,
+            blockCount: model.blocks.length,
+            sourceLineCount: model.sourceLineCount,
+            sourcePositionedBlocks: model.blocks.filter((block) => block.sourceStart).length,
+            transferBytes: new TextEncoder().encode(JSON.stringify(model)).byteLength
+          };
+        },
+        activeModelStats: () => ({
+          blocks: activeTab?.model?.blocks.length ?? 0,
+          headings: activeTab?.model?.headings.length ?? 0,
+          languages: activeTab?.model?.languages.length ?? 0,
+          sourceLineCount: activeTab?.model?.sourceLineCount ?? 0
+        })
+      };
+    }
     const openPaletteEvent = () => openPalette();
     window.addEventListener('maakdown:palette', openPaletteEvent);
     // File drag-and-drop: preventDefault is required so the webview does not
@@ -713,11 +789,12 @@
           index={searchIndex}
           total={searchMatches.length}
           caseSensitive={searchCaseSensitive}
-          onQuery={(value) => { searchQuery = value; searchIndex = 0; }}
-          onCase={() => { searchCaseSensitive = !searchCaseSensitive; searchIndex = 0; }}
+          onQuery={(value) => { searchQuery = value; searchIndex = 0; searchStatus = ''; }}
+          status={searchStatus}
+          onCase={() => { searchCaseSensitive = !searchCaseSensitive; searchIndex = 0; searchStatus = ''; }}
           onPrevious={() => moveSearch(-1)}
           onNext={() => moveSearch(1)}
-          onClose={() => { searchOpen = false; searchQuery = ''; }}
+          onClose={() => { searchOpen = false; searchQuery = ''; searchStatus = ''; }}
         />
       {/if}
       {#if settingsOpen}
@@ -745,7 +822,14 @@
       {:else if activeTab?.model}
         <div class="reader-grid">
           {#if $appConfig.outlineVisible}
-            <Minimap headings={activeTab.model.headings} {activeHeadingId} onNavigate={navigate} />
+            <Minimap
+              headings={activeTab.model.headings}
+              {activeHeadingId}
+              marks={minimapMarks}
+              viewport={minimapViewport}
+              activeSearchBlockId={searchMatches[searchIndex]?.blockId ?? null}
+              onNavigate={navigate}
+            />
           {/if}
           <DocumentView
             bind:this={documentView}
@@ -753,11 +837,13 @@
             documentPath={activeTab.path}
             initialScrollTop={livePositions.get(activeTab.id)?.scrollTop ?? activeTab.position.scrollTop}
             onPositionChange={updatePosition}
+            onViewportChange={updateViewport}
             onOpenDocument={openLinkedPath}
             searchQuery={searchOpen ? searchQuery : ''}
             searchBlockId={searchMatches[searchIndex]?.blockId ?? null}
             searchCaseSensitive={searchCaseSensitive}
             showMasthead={$appConfig.frontmatterDisplay === 'panel'}
+            showDocumentLineNumbers={$appConfig.documentLineNumbers}
           />
         </div>
       {:else if activeTab?.loading || workspace.restoring}

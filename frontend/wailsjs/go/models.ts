@@ -36,6 +36,9 @@ export namespace config {
 	    outlineVisible: boolean;
 	    outlineWidth: number;
 	    metadataWidth: number;
+	    documentLineNumbers: boolean;
+	    codeLineNumbers: boolean;
+	    codeWrap: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new AppConfig(source);
@@ -55,6 +58,9 @@ export namespace config {
 	        this.outlineVisible = source["outlineVisible"];
 	        this.outlineWidth = source["outlineWidth"];
 	        this.metadataWidth = source["metadataWidth"];
+	        this.documentLineNumbers = source["documentLineNumbers"];
+	        this.codeLineNumbers = source["codeLineNumbers"];
+	        this.codeWrap = source["codeWrap"];
 	    }
 	}
 	export class RecentDocument {
@@ -219,4 +225,3 @@ export namespace vault {
 	}
 
 }
-

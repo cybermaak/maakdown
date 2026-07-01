@@ -94,6 +94,20 @@
     value={config.highlighterEngine}
     onchange={(value: AppConfig['highlighterEngine']) => update({ highlighterEngine: value })}
   />
+  <div class="settings-toggle-group" aria-label="Reader source orientation">
+    <label class="settings-check">
+      <input type="checkbox" checked={config.documentLineNumbers} onchange={(event) => update({ documentLineNumbers: event.currentTarget.checked })} />
+      <span>Document line numbers</span>
+    </label>
+    <label class="settings-check">
+      <input type="checkbox" checked={config.codeLineNumbers} onchange={(event) => update({ codeLineNumbers: event.currentTarget.checked })} />
+      <span>Code line numbers</span>
+    </label>
+    <label class="settings-check">
+      <input type="checkbox" checked={config.codeWrap} onchange={(event) => update({ codeWrap: event.currentTarget.checked })} />
+      <span>Wrap code by default</span>
+    </label>
+  </div>
   {#if handlerSupported}
     <div class="settings-association">
       <span class="settings-association-label">File association</span>

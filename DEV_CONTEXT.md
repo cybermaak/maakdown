@@ -8,17 +8,15 @@ The app is a viewer, not an editor. It renders CommonMark/GFM, code, KaTeX math,
 
 ## Current Phase
 
-**Phase:** P11.11 is active; P13-P17 next-release planning is defined; P0-P10
-and P12 are complete
+**Phase:** P11.11 is active; P13-P15 are complete on macOS for the next
+release; P16-P17 remain; P0-P10 and P12 are complete
 **Active focus:** remaining native editorial acceptance plus planning for the
-next feature release. Windows Mermaid rendering is accepted in physical and
-RDP-created WebView2 sessions, Windows native UI automation has verified the
-main editorial workflows including drag/drop, and macOS, Linux, and Windows
-Markdown association are complete. The remaining tracked editorial acceptance
-gaps are Linux WebKitGTK search/focus/drag/drop/print coverage. The next
-release is planned as "Precision Reading & Performance": optional line numbers,
-performance/memory audit, minimap/search polish, code reading tools, document
-stats, recent-file polish, print polish, theme cleanup, and recovery hardening.
+next feature release. P13-P15 delivered the "Precision Reading & Performance"
+foundation: macOS benchmark baselines, source-position metadata, document/code
+line numbers, code wrap controls, model-driven minimap marks, viewport/search
+marks, and find feedback polish. Windows/Linux validation for P13-P15 remains
+release-blocking. The remaining tracked P11.11 editorial acceptance gaps are
+Linux WebKitGTK search/focus/drag/drop/print coverage.
 
 ## Major Files And Directories
 
@@ -30,6 +28,8 @@ stats, recent-file polish, print polish, theme cleanup, and recovery hardening.
   guidance.
 - `docs/next-release-task-tracker.md`: detailed P13-P17 task tracker with
   per-task macOS/Windows/Linux validation gates.
+- `docs/performance-audit-next-release.md`: P13 macOS performance baseline,
+  parser source-position overhead, memory probes, and next-release thresholds.
 - `docs/design-system/`: reviewed mock, design-system references, adoption
   rules, screenshots, token exports, component contracts, and review notes.
 - `AGENTS.md`: repo-level agent operating rules.
@@ -46,6 +46,8 @@ stats, recent-file polish, print polish, theme cleanup, and recovery hardening.
 - `frontend/src/core/workers/`: parser worker and browser-facing worker client.
 - `frontend/src/core/workspace/`: tab lifecycle, canonical identity, recents,
   durable session projection, and workspace tests.
+- `frontend/src/core/minimap/`: model-driven minimap mark projection for
+  headings, search hits, code, diagrams, and tables.
 - `frontend/src/design-system/`: production Svelte primitives and deterministic gallery.
 - `frontend/src/components/`: reader surface, masthead, hover minimap, workspace
   chrome, dialogs, settings, and native-window controls.
@@ -168,6 +170,17 @@ stats, recent-file polish, print polish, theme cleanup, and recovery hardening.
 - For the next release, every task must pass macOS validation before work moves
   to the next task. Windows and Linux validation may trail implementation, but
   both are release-blocking.
+- Source line numbers use unified parser source positions captured as scalar
+  block line metadata. The app intentionally avoids expensive source-map
+  reconstruction.
+- Code block line numbers use a generated CSS gutter from the raw code line
+  count so highlight.js and Shiki markup remain intact and copied code excludes
+  visual line numbers.
+- Minimap marks are projected from the parsed document model and search model,
+  not from DOM scanning.
+- Local packaged macOS build validation is currently blocked because the `wails`
+  CLI is not installed in this shell. Frontend checks, Go tests, browser UAT,
+  and benchmark validation passed on macOS.
 
 ## Planned Tasks
 
@@ -175,6 +188,16 @@ See `docs/task-tracker.md` and `docs/next-release-task-tracker.md`.
 
 ## Completed Tasks
 
+- 2026-07-01: Completed P13-P15 next-release implementation on macOS. Added
+  P13 benchmark/memory/source-position instrumentation and
+  `docs/performance-audit-next-release.md`; added P14 source line metadata,
+  document line-number gutter, code line-number gutter, code wrap defaults and
+  per-block toggle; added P15 model-driven minimap marks, viewport indicator,
+  search-hit marks, and no-results/wrap search feedback. Validation passed:
+  `go test ./...`, `npm run check`, `npm test`, `npm run build`,
+  `npm run benchmark`, `npm run benchmark:workspace`, focused UAT, and full
+  `npm run uat`. Packaged macOS Wails build is blocked locally by missing
+  `wails` CLI.
 - 2026-06-05: Created approved v0.3 spec and implementation plan in `docs/`.
 - 2026-06-05: Re-reviewed revised docs with Claude and Gemini; final consensus was approve.
 - 2026-06-05: Created P0 scaffold, repo guidance, project tracker, signing-safe folders, frontend shell, and Go service stubs.

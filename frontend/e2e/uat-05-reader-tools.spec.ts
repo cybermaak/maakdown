@@ -46,7 +46,18 @@ test.describe('UAT-05 reader productivity tools', () => {
     await page.getByRole('button', { name: 'Settings', exact: true }).click();
     await page.getByLabel(/Text size/).fill('18');
     await expect(page.locator('html')).toHaveCSS('--reader-font-size', '18px');
+    await page.getByLabel('Document line numbers').check();
+    await page.getByLabel('Code line numbers').check();
+    await page.getByLabel('Wrap code by default').uncheck();
     await page.getByRole('button', { name: 'Done' }).click();
+    await expect(page.locator('.source-line').first()).toBeVisible();
+    await code.scrollIntoViewIfNeeded();
+    await expect(code.locator('pre.code-line-numbers')).toBeVisible();
+    await expect(code.locator('pre.code-nowrap')).toBeVisible();
+    await code.getByRole('button', { name: 'Enable code wrap' }).click();
+    await expect(code.locator('pre.code-wrap')).toBeVisible();
+    await code.getByRole('button', { name: 'Copy code' }).click();
+    expect(await readMockState(page, (state) => state.clipboardText as string)).not.toMatch(/^\s*1\s+export/m);
 
     await page.keyboard.press(`${mod}+Shift+f`);
     await expect(page.getByRole('main')).toHaveClass(/focus-mode/);

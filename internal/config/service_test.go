@@ -1,6 +1,7 @@
 package config
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"testing"
@@ -33,5 +34,38 @@ func TestCorruptStateUsesDefaults(t *testing.T) {
 	service := NewAt(path)
 	if got := service.GetConfig().Theme; got != "system" {
 		t.Fatalf("expected default theme, got %q", got)
+	}
+}
+
+func TestMigratesCodeWrapDefaultFromV1State(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "state.json")
+	legacy := stateFile{
+		Version: 1,
+		Config: AppConfig{
+			Theme:              "system",
+			HighlighterEngine:  "highlightjs",
+			FrontmatterDisplay: "panel",
+			ReaderTheme:        "editorial",
+			ReaderFont:         "sans",
+			ReaderFontSize:     15,
+			ReaderLineHeight:   "comfortable",
+			ReaderMeasure:      "standard",
+			OutlineVisible:     true,
+			OutlineWidth:       280,
+			MetadataWidth:      260,
+		},
+		Session: PersistedSession{Tabs: []SessionTab{}, Recents: []RecentDocument{}},
+	}
+	data, err := json.Marshal(legacy)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, data, 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	service := NewAt(path)
+	if !service.GetConfig().CodeWrap {
+		t.Fatalf("expected migrated code wrap default to be enabled")
 	}
 }

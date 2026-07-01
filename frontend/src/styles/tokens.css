@@ -108,6 +108,11 @@
   --reader-code-text: #252824;
   --reader-quote: #666b63;
   --reader-selection: #dce9df;
+  --reader-gutter: #8a8b82;
+  --reader-gutter-rule: #e3e2dc;
+  --reader-minimap-heading: #285d4b;
+  --reader-minimap-search: #b8860b;
+  --reader-minimap-structure: #8a8b82;
   --syntax-comment: #6f786e;
   --syntax-keyword: #a32828;
   --syntax-string: #39733b;
@@ -172,6 +177,11 @@
   --reader-code-text: #edf0ea;
   --reader-quote: #aeb6ad;
   --reader-selection: #344c40;
+  --reader-gutter: #899087;
+  --reader-gutter-rule: #343a34;
+  --reader-minimap-heading: #8fc7ad;
+  --reader-minimap-search: #e0b341;
+  --reader-minimap-structure: #899087;
   --syntax-comment: #899087;
   --syntax-keyword: #ff9c8c;
   --syntax-string: #aad58f;

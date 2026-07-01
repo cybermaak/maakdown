@@ -17,13 +17,15 @@
     onOpenDocument?: (path: string) => void;
     initialScrollTop?: number;
     onPositionChange?: (scrollTop: number, activeHeadingId: string | null) => void;
+    onViewportChange?: (startBlockIndex: number, endBlockIndex: number) => void;
     searchQuery?: string;
     searchBlockId?: string | null;
     searchCaseSensitive?: boolean;
     showMasthead?: boolean;
+    showDocumentLineNumbers?: boolean;
   }
 
-  let { model, documentPath, onOpenDocument, initialScrollTop = 0, onPositionChange, searchQuery = '', searchBlockId = null, searchCaseSensitive = false, showMasthead = false }: Props = $props();
+  let { model, documentPath, onOpenDocument, initialScrollTop = 0, onPositionChange, onViewportChange, searchQuery = '', searchBlockId = null, searchCaseSensitive = false, showMasthead = false, showDocumentLineNumbers = false }: Props = $props();
   let surface = $state<HTMLElement | undefined>();
   let mastheadEl = $state<HTMLElement | undefined>();
   let virtualizer = new BlockVirtualizer(0);
@@ -35,6 +37,7 @@
   let diagram = $state<{ title: string; html: string } | null>(null);
   let printMode = $state(false);
   let enhancedForPrint = new Set<string>();
+  let documentLineDigits = $derived(Math.max(1, String(model.sourceLineCount ?? model.blocks.length).length));
   // Cache resolved asset URLs per raw path so blocks that unmount and remount
   // during virtualized scrolling re-attach their image without re-resolving.
   let assetUrlCache = new Map<string, string>();
@@ -287,6 +290,7 @@
       return;
     }
     range = virtualizer.range(surface.scrollTop, surface.clientHeight);
+    onViewportChange?.(range.start, Math.max(range.start, range.end - 1));
   }
 
   function handleMeasure(blockId: string, height: number) {
@@ -337,6 +341,8 @@
       onInspectDiagram={(title, html) => (diagram = { title, html })}
       forceEnhance={printMode}
       onEnhanced={(blockId) => enhancedForPrint.add(blockId)}
+      showDocumentLineNumbers={showDocumentLineNumbers}
+      {documentLineDigits}
     />
   {/each}
   <div class="virtual-spacer" style={`height: ${range.bottom}px`} aria-hidden="true"></div>

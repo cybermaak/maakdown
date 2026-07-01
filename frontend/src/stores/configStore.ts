@@ -13,6 +13,9 @@ export interface AppConfig {
   outlineVisible: boolean;
   outlineWidth: number;
   metadataWidth: number;
+  documentLineNumbers: boolean;
+  codeLineNumbers: boolean;
+  codeWrap: boolean;
 }
 
 export const appConfig = writable<AppConfig>({
@@ -27,5 +30,8 @@ export const appConfig = writable<AppConfig>({
   focusMode: false,
   outlineVisible: true,
   outlineWidth: 280,
-  metadataWidth: 260
+  metadataWidth: 260,
+  documentLineNumbers: false,
+  codeLineNumbers: false,
+  codeWrap: true
 });

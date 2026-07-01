@@ -49,7 +49,10 @@ export async function getConfig(): Promise<AppConfig> {
     focusMode: Boolean(result.focusMode),
     outlineVisible: result.outlineVisible !== false,
     outlineWidth: result.outlineWidth >= 200 && result.outlineWidth <= 480 ? result.outlineWidth : 280,
-    metadataWidth: result.metadataWidth >= 220 && result.metadataWidth <= 480 ? result.metadataWidth : 260
+    metadataWidth: result.metadataWidth >= 220 && result.metadataWidth <= 480 ? result.metadataWidth : 260,
+    documentLineNumbers: Boolean(result.documentLineNumbers),
+    codeLineNumbers: Boolean(result.codeLineNumbers),
+    codeWrap: result.codeWrap !== false
   };
 }
 
@@ -67,7 +70,10 @@ export async function setConfig(next: AppConfig): Promise<AppConfig> {
     focusMode: Boolean(result.focusMode),
     outlineVisible: result.outlineVisible !== false,
     outlineWidth: result.outlineWidth >= 200 && result.outlineWidth <= 480 ? result.outlineWidth : 280,
-    metadataWidth: result.metadataWidth >= 220 && result.metadataWidth <= 480 ? result.metadataWidth : 260
+    metadataWidth: result.metadataWidth >= 220 && result.metadataWidth <= 480 ? result.metadataWidth : 260,
+    documentLineNumbers: Boolean(result.documentLineNumbers),
+    codeLineNumbers: Boolean(result.codeLineNumbers),
+    codeWrap: result.codeWrap !== false
   };
 }
 

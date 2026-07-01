@@ -59,6 +59,41 @@ describe('parseDocument', () => {
     expect(model.anchors['later-heading']?.blockId).toBe('block-2');
   });
 
+  it('records source line metadata against the original document', async () => {
+    const model = await parseDocument({
+      path: '/tmp/note.md',
+      source: [
+        '---',
+        'title: Source Lines',
+        '---',
+        '# Heading',
+        '',
+        'Paragraph text.',
+        '',
+        '```ts',
+        'const value = 1;',
+        '```'
+      ].join('\n')
+    });
+
+    expect(model.sourceLineCount).toBe(10);
+    expect(model.sourcePositionsEnabled).toBe(true);
+    expect(model.blocks[0]).toMatchObject({ kind: 'heading', sourceStart: 4, sourceEnd: 4 });
+    expect(model.blocks[1]).toMatchObject({ kind: 'paragraph', sourceStart: 6, sourceEnd: 6 });
+    expect(model.blocks[2]).toMatchObject({ kind: 'code', sourceStart: 8, sourceEnd: 10 });
+  });
+
+  it('can disable source-position collection for benchmarks', async () => {
+    const model = await parseDocument({
+      path: '/tmp/note.md',
+      source: '# Heading',
+      collectSourcePositions: false
+    });
+
+    expect(model.sourcePositionsEnabled).toBe(false);
+    expect(model.blocks[0]?.sourceStart).toBeUndefined();
+  });
+
   it('resolves indexed wikilinks and marks missing notes', async () => {
     const model = await parseDocument({
       source: 'Open [[Known Note]] and [[Missing Note]].',

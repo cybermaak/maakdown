@@ -44,6 +44,8 @@ export interface DocumentModel {
   frontmatter: Record<string, unknown>;
   languages: string[];
   unresolvedWikilinks: string[];
+  sourceLineCount?: number;
+  sourcePositionsEnabled?: boolean;
 }
 
 export interface VaultIndexSnapshot {

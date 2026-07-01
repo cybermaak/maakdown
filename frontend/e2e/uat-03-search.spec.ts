@@ -15,10 +15,12 @@ test('UAT-03 finds and navigates offscreen matches in a large document', async (
   const input = page.getByRole('textbox', { name: 'Find in document' });
   await input.fill('typescript implementation sample');
   await expect(page.getByRole('search')).toContainText(/1 \/\s*\d+/);
+  await expect(page.locator('.minimap-tick.mark-search').first()).toBeAttached();
   await page.getByRole('button', { name: 'Next match' }).click();
   await expect(page.locator('mark.search-mark.current')).toBeVisible();
 
   await page.getByRole('button', { name: 'Match case' }).click();
   await input.fill('TYPESCRIPT IMPLEMENTATION SAMPLE');
-  await expect(page.getByRole('search')).toContainText('0 / 0');
+  await expect(page.getByRole('search')).toContainText('No results');
+  await expect(page.locator('.minimap-tick.mark-search')).toHaveCount(0);
 });

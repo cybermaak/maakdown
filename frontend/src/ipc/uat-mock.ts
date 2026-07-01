@@ -72,7 +72,10 @@ const defaultConfig: AppConfig = {
   focusMode: false,
   outlineVisible: true,
   outlineWidth: 280,
-  metadataWidth: 260
+  metadataWidth: 260,
+  documentLineNumbers: false,
+  codeLineNumbers: false,
+  codeWrap: true
 };
 
 const listeners: Record<EventName, Array<(payload: unknown) => void>> = {
