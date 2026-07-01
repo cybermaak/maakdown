@@ -25,6 +25,8 @@ export interface RecentDocument {
   path: string;
   displayName: string;
   lastOpenedAt: string;
+  pinned?: boolean;
+  missingAt?: string;
 }
 
 export interface WorkspaceState {
@@ -130,10 +132,40 @@ export function relocateTab(state: WorkspaceState, id: string, path: string): Wo
 
 export function addRecent(recents: RecentDocument[], path: string, now = new Date()): RecentDocument[] {
   const identity = canonicalIdentity(path);
-  return [
-    { path, displayName: titleFromPath(path), lastOpenedAt: now.toISOString() },
+  const existing = recents.find((recent) => canonicalIdentity(recent.path) === identity);
+  return sortRecents([
+    { path, displayName: titleFromPath(path), lastOpenedAt: now.toISOString(), pinned: existing?.pinned },
     ...recents.filter((recent) => canonicalIdentity(recent.path) !== identity)
-  ].slice(0, 12);
+  ]).slice(0, 12);
+}
+
+export function pinRecent(recents: RecentDocument[], path: string, pinned: boolean): RecentDocument[] {
+  return sortRecents(recents.map((recent) => (
+    canonicalIdentity(recent.path) === canonicalIdentity(path) ? { ...recent, pinned } : recent
+  )));
+}
+
+export function markRecentMissing(recents: RecentDocument[], path: string, now = new Date()): RecentDocument[] {
+  return recents.map((recent) => (
+    canonicalIdentity(recent.path) === canonicalIdentity(path)
+      ? { ...recent, missingAt: now.toISOString() }
+      : recent
+  ));
+}
+
+export function clearMissingRecents(recents: RecentDocument[]): RecentDocument[] {
+  return recents.filter((recent) => !recent.missingAt);
+}
+
+export function clearUnpinnedRecents(recents: RecentDocument[]): RecentDocument[] {
+  return recents.filter((recent) => recent.pinned);
+}
+
+function sortRecents(recents: RecentDocument[]): RecentDocument[] {
+  return [...recents].sort((a, b) => {
+    if (Boolean(a.pinned) !== Boolean(b.pinned)) return a.pinned ? -1 : 1;
+    return b.lastOpenedAt.localeCompare(a.lastOpenedAt);
+  });
 }
 
 export function serializeSession(state: WorkspaceState): PersistedSession {

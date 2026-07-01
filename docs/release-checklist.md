@@ -28,9 +28,13 @@ and the workflow publishes the GitHub Release. Validate workflow changes on the
 ## Preflight
 
 - Confirm `docs/task-tracker.md` has no release blockers.
+- Confirm `docs/next-release-task-tracker.md` has P13-P17 done, with macOS
+  validation passed and Windows/Linux validation passed or explicitly waived.
 - Confirm `DEV_CONTEXT.md` records current decisions and verification commands.
 - Run `scripts/release-check.sh`.
 - Review `output/performance/reader-benchmark.json`.
+- Review `docs/performance-audit-next-release.md` for before/after benchmark
+  notes and accepted thresholds.
 - Confirm the large fixture keeps mounted document blocks bounded.
 - Run Wails production builds on each target operating system.
 - Record platform smoke-test results and unresolved blockers.

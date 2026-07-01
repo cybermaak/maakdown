@@ -4,7 +4,7 @@ export interface AppConfig {
   theme: 'system' | 'light' | 'dark';
   highlighterEngine: 'highlightjs' | 'shiki-js-regex';
   frontmatterDisplay: 'panel' | 'hidden';
-  readerTheme: 'editorial';
+  readerTheme: 'editorial' | 'high-contrast';
   readerFont: 'sans' | 'serif';
   readerFontSize: number;
   readerLineHeight: 'compact' | 'comfortable' | 'relaxed';
@@ -16,6 +16,7 @@ export interface AppConfig {
   documentLineNumbers: boolean;
   codeLineNumbers: boolean;
   codeWrap: boolean;
+  printMetadata: boolean;
 }
 
 export const appConfig = writable<AppConfig>({
@@ -33,5 +34,6 @@ export const appConfig = writable<AppConfig>({
   metadataWidth: 260,
   documentLineNumbers: false,
   codeLineNumbers: false,
-  codeWrap: true
+  codeWrap: true,
+  printMetadata: true
 });

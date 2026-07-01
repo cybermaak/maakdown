@@ -1,7 +1,7 @@
 # Next Release Performance Audit
 
 **Release:** Precision Reading & Performance  
-**Status:** Baseline recorded  
+**Status:** Baseline and closeout recorded
 **Last updated:** 2026-07-01
 
 ## Measurement Commands
@@ -114,3 +114,29 @@ reasonable machine variance:
 - P13.5 audit publication: Passed by this document plus `git diff --check`.
 
 Windows and Linux benchmark validation remains pending for the release gate.
+
+## P17 Closeout
+
+Closeout run:
+
+- reader benchmark generated at `2026-07-01T15:06:44Z`
+- workspace benchmark generated at `2026-07-01T15:06:28Z`
+
+| Fixture | Open To Text | Parser With Positions | Mounted Blocks | Result |
+|---|---:|---:|---:|---|
+| `small-readme.md` | 215 ms | 30.8 ms | 33 | Pass |
+| `medium-technical-doc.md` | 217 ms | 47.9 ms | 41 | Pass |
+| `large-10k-lines.md` | 808 ms | 610.6 ms | 11 | Pass |
+
+Workspace closeout:
+
+- mounted readers: 1
+- mounted blocks: 22
+- tab activation samples: 25 ms, 35 ms, 45 ms
+- max activation: 45 ms
+- memory probe: 23.1 MB used JS heap, 33.1 MB total JS heap
+
+All closeout values remain inside the accepted release thresholds. No measured
+optimization task is required before release. Keep the existing lazy Mermaid and
+Shiki enhancement strategy; the major remaining performance risk is bundle
+weight from optional rich-rendering engines, not steady-state reader work.

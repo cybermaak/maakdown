@@ -10,6 +10,7 @@
   import { appConfig } from '../stores/configStore';
   import DiagramDialog from './DiagramDialog.svelte';
   import Masthead from './Masthead.svelte';
+  import type { DocumentStats } from '../core/stats/documentStats';
 
   interface Props {
     model: DocumentModel;
@@ -23,9 +24,10 @@
     searchCaseSensitive?: boolean;
     showMasthead?: boolean;
     showDocumentLineNumbers?: boolean;
+    stats?: DocumentStats | null;
   }
 
-  let { model, documentPath, onOpenDocument, initialScrollTop = 0, onPositionChange, onViewportChange, searchQuery = '', searchBlockId = null, searchCaseSensitive = false, showMasthead = false, showDocumentLineNumbers = false }: Props = $props();
+  let { model, documentPath, onOpenDocument, initialScrollTop = 0, onPositionChange, onViewportChange, searchQuery = '', searchBlockId = null, searchCaseSensitive = false, showMasthead = false, showDocumentLineNumbers = false, stats = null }: Props = $props();
   let surface = $state<HTMLElement | undefined>();
   let mastheadEl = $state<HTMLElement | undefined>();
   let virtualizer = new BlockVirtualizer(0);
@@ -326,7 +328,7 @@
 >
   {#if showMasthead}
     <div class="masthead-host" bind:this={mastheadEl}>
-      <Masthead frontmatter={model.frontmatter} path={documentPath} />
+      <Masthead frontmatter={model.frontmatter} path={documentPath} {stats} />
     </div>
   {/if}
   <div class="virtual-spacer" style={`height: ${range.top}px`} aria-hidden="true"></div>

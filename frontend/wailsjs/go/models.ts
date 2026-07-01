@@ -39,6 +39,7 @@ export namespace config {
 	    documentLineNumbers: boolean;
 	    codeLineNumbers: boolean;
 	    codeWrap: boolean;
+	    printMetadata: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new AppConfig(source);
@@ -61,12 +62,15 @@ export namespace config {
 	        this.documentLineNumbers = source["documentLineNumbers"];
 	        this.codeLineNumbers = source["codeLineNumbers"];
 	        this.codeWrap = source["codeWrap"];
+	        this.printMetadata = source["printMetadata"];
 	    }
 	}
 	export class RecentDocument {
 	    path: string;
 	    displayName: string;
 	    lastOpenedAt: string;
+	    pinned?: boolean;
+	    missingAt?: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new RecentDocument(source);
@@ -77,6 +81,8 @@ export namespace config {
 	        this.path = source["path"];
 	        this.displayName = source["displayName"];
 	        this.lastOpenedAt = source["lastOpenedAt"];
+	        this.pinned = source["pinned"];
+	        this.missingAt = source["missingAt"];
 	    }
 	}
 	export class ReaderPosition {

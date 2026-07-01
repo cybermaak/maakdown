@@ -87,7 +87,7 @@ test.describe('UAT-04 Desktop workspace lifecycle', () => {
         ],
         activePath: DOSSIER,
         recents: [
-          { path: ARCH, displayName: 'architecture.md', lastOpenedAt: '2026-06-06T10:00:00.000Z' },
+          { path: ARCH, displayName: 'architecture.md', lastOpenedAt: '2026-06-06T10:00:00.000Z', pinned: true },
           { path: DOSSIER, displayName: 'dossier.md', lastOpenedAt: '2026-06-06T09:00:00.000Z' }
         ]
       }
@@ -117,6 +117,11 @@ test.describe('UAT-04 Desktop workspace lifecycle', () => {
     await page.keyboard.press(`${mod}+w`);
     const emptyState = page.getByText('architecture.md');
     await expect(emptyState.first()).toBeVisible();
+    await page.getByRole('button', { name: 'Unpin architecture.md' }).click();
+    await page.getByRole('button', { name: 'Pin architecture.md' }).click();
+    await page.getByRole('button', { name: 'Unpinned' }).click();
+    await expect(page.getByText('dossier.md')).toHaveCount(0);
+    await expect(page.locator('.recent-open', { hasText: 'architecture.md' })).toBeVisible();
 
     // Session was persisted through the mocked durable boundary
     const savedCount = await readMockState<number>(page, (state) => (state.savedSessions as unknown[]).length);
@@ -136,6 +141,7 @@ test.describe('UAT-04 Desktop workspace lifecycle', () => {
     await gotoApp(page);
 
     await expect(page.getByRole('heading', { name: 'Document not found' })).toBeVisible();
+    await expect(page.getByText('The file moved or is no longer available')).toBeVisible();
     await page.getByRole('button', { name: 'Locate file' }).click();
 
     await expect(page.getByRole('tab')).toHaveCount(1);

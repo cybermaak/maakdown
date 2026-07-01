@@ -46,7 +46,8 @@ timeout.
 
 1. Open a representative technical document through the mocked native picker.
 2. Verify headings, prose, GFM table and tasks, callout, local image, math,
-   highlighted code, Mermaid, metadata, and unresolved wikilink presentation.
+   highlighted code, Mermaid, metadata, document statistics, and unresolved
+   wikilink presentation.
 3. Verify heading links inherit heading ink and are not underlined.
 4. Verify unsafe or unresolved content remains visibly inert.
 
@@ -87,10 +88,11 @@ full-document search truthfulness, and active rendering bounds.
 5. Simulate dropping another Markdown file.
 6. Simulate an external file change and verify reload preserves reading
    position.
-7. Simulate restart and verify tab order, active tab, recents, settings, and
-   per-document position restore.
+7. Simulate restart and verify tab order, active tab, recents, pinned recents,
+   settings, and per-document position restore.
 8. Restore a missing path, locate its replacement, and verify the existing tab
    recovers in place with one watcher on the replacement path.
+9. Clear unpinned or missing recents without affecting pinned recents.
 
 **Covers:** tabs, canonical-path deduplication, active-tab isolation, reopen,
 drop, watcher status, reload, sessions, recents, reading position, and
@@ -120,6 +122,7 @@ focus mode, persistence, and responsive behavior.
 4. Complete the mocked print flow.
 5. Verify cleanup restores bounded virtualization and the original reading
    position.
+6. Verify the metadata masthead can be included or excluded from print output.
 
 **Covers:** complete-document preparation, system print boundary, enhanced
 print content, guaranteed cleanup, and position restoration.

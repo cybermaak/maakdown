@@ -34,7 +34,7 @@
     ...visibleCommands.map((item) => ({ label: item.label, hint: item.hint, run: () => onCommand(item.id) })),
     ...visibleTabs.map((tab) => ({ label: `Tab: ${tab.title}`, run: () => onOpenPath(tab.path) })),
     ...visibleHeadings.map((heading) => ({ label: `Heading: ${heading.text}`, run: () => onHeading(heading.id) })),
-    ...(!query ? recents.slice(0, 5).map((recent) => ({ label: `Recent: ${recent.displayName}`, run: () => onOpenPath(recent.path) })) : [])
+    ...(!query ? recents.slice(0, 5).map((recent) => ({ label: `${recent.pinned ? 'Pinned' : 'Recent'}: ${recent.displayName}`, run: () => onOpenPath(recent.path) })) : [])
   ]);
 
   $effect(() => {

@@ -43,6 +43,15 @@ user-visible outcome and the verification that covers it.
 | Custom context menus | Native menu suppressed; consistent per-surface custom menu for reader, tabs, outline, and toolbar | UAT-08 | Executable |
 | OS file association (P12.1/P12.3) | OS-handed files open as tabs (live and cold start); Settings offers user-consented default handling with Windows chooser semantics | UAT-09 + on-device macOS and Windows acceptance | Executable |
 | Scroll stability after outline navigation (P5/P9.11) | The document comes to rest after a minimap jump; no self-sustaining scroll oscillation | UAT-11 | Executable |
+| Performance baseline (P13) | Reader/workspace performance thresholds are measured before release | `scripts/benchmark-reader.mjs`, `scripts/benchmark-workspace.mjs`, `docs/performance-audit-next-release.md` | Executable |
+| Document line numbers (P14) | Optional source line gutter renders from parser metadata and copy excludes visual numbers | UAT-05 + parser unit tests | Executable |
+| Code line numbers and wrap controls (P14) | Code gutters and wrap defaults/toggles work with syntax highlighting and clean copy | UAT-05 + benchmark enhancement checks | Executable |
+| Minimap marks and find feedback (P15) | Viewport, search, heading, code, diagram, and table marks are model-driven; no-results state is visible | UAT-03, UAT-11, minimap unit tests | Executable |
+| Document statistics (P16) | Word/read-time/structure counts surface quietly in the metadata masthead | UAT-01 + stats unit tests | Executable |
+| Pinned and cleaned recents (P16) | Pinned recents remain first; unpinned/missing recents can be cleared | UAT-04 + workspace unit tests | Executable |
+| Print metadata option (P16) | Print can include or exclude the metadata masthead while still expanding the full document | UAT-06 | Executable |
+| Reader recovery states (P16) | Missing, permission, parse, asset, enhancement, and oversized states are typed and recoverable where appropriate | UAT-04 + reader error unit tests | Executable |
+| Reader token contract and high contrast (P17) | Reader tokens document line gutters/minimap/code/print and high-contrast preset remains semantic | `docs/design-system/reader-token-contract.md`, theme unit tests, UAT-07 | Executable |
 
 Cross-platform acceptance remains tracked by P7.7/P11.11 and begins after the
 GitHub repository exists and the hosted workflow has produced its first matrix.

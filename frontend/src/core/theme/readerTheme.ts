@@ -1,4 +1,4 @@
-export type ReaderThemeName = 'editorial';
+export type ReaderThemeName = 'editorial' | 'high-contrast';
 export type ResolvedTheme = 'light' | 'dark';
 
 export interface MermaidPalette {

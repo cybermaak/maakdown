@@ -1,5 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { activateOrAddTab, addRecent, closeTab, createWorkspace, relocateTab, serializeSession } from './workspace';
+import {
+  activateOrAddTab,
+  addRecent,
+  clearMissingRecents,
+  clearUnpinnedRecents,
+  closeTab,
+  createWorkspace,
+  markRecentMissing,
+  pinRecent,
+  relocateTab,
+  serializeSession
+} from './workspace';
 
 describe('workspace', () => {
   it('deduplicates canonical paths', () => {
@@ -50,6 +61,25 @@ describe('workspace', () => {
     expect(recents).toHaveLength(12);
     expect(recents[0].path).toBe('/note-5.md');
     expect(recents.filter((recent) => recent.path === '/note-5.md')).toHaveLength(1);
+  });
+
+  it('keeps pinned recents first and preserves pin state when reopened', () => {
+    let recents = addRecent([], '/a.md', new Date('2026-06-01T00:00:00Z'));
+    recents = addRecent(recents, '/b.md', new Date('2026-06-02T00:00:00Z'));
+    recents = pinRecent(recents, '/a.md', true);
+    recents = addRecent(recents, '/a.md', new Date('2026-06-03T00:00:00Z'));
+
+    expect(recents[0]).toMatchObject({ path: '/a.md', pinned: true });
+  });
+
+  it('marks and clears missing or unpinned recents', () => {
+    let recents = addRecent([], '/a.md', new Date('2026-06-01T00:00:00Z'));
+    recents = addRecent(recents, '/b.md', new Date('2026-06-02T00:00:00Z'));
+    recents = pinRecent(recents, '/a.md', true);
+    recents = markRecentMissing(recents, '/b.md', new Date('2026-06-03T00:00:00Z'));
+
+    expect(clearMissingRecents(recents).map((recent) => recent.path)).toEqual(['/a.md']);
+    expect(clearUnpinnedRecents(recents).map((recent) => recent.path)).toEqual(['/a.md']);
   });
 
   it('serializes only durable workspace data', () => {

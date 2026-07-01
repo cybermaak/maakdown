@@ -2,13 +2,16 @@
   import { FileText } from '@lucide/svelte';
   import { Badge, Tag } from '../design-system';
   import { formatMetadata, metadataTone } from '../core/format/format';
+  import type { DocumentStats } from '../core/stats/documentStats';
+  import { formatStatValue } from '../core/stats/documentStats';
 
   interface Props {
     frontmatter: Record<string, unknown>;
     path: string;
+    stats?: DocumentStats | null;
   }
 
-  let { frontmatter, path }: Props = $props();
+  let { frontmatter, path, stats = null }: Props = $props();
 
   const SKIP = new Set(['title', 'tags', 'status']);
   let status = $derived(frontmatter.status);
@@ -31,7 +34,7 @@
     </span>
     {#if status}<Badge tone={metadataTone('status', status)} dot>{formatMetadata(status)}</Badge>{/if}
   </div>
-  {#if tags.length || entries.length}
+  {#if tags.length || entries.length || stats}
     <div class="masthead-bottom">
       {#if tags.length}
         <div class="masthead-tags">{#each tags as tag}<Tag value={String(tag)} />{/each}</div>
@@ -41,6 +44,15 @@
           {#each entries as [key, value]}
             <div class="masthead-meta-item"><dt>{key}</dt> <dd>{formatMetadata(value)}</dd></div>
           {/each}
+        </dl>
+      {/if}
+      {#if stats}
+        <dl class="masthead-meta stats" aria-label="Document statistics">
+          <div class="masthead-meta-item"><dt>read</dt> <dd>{stats.readingMinutes} min</dd></div>
+          <div class="masthead-meta-item"><dt>words</dt> <dd>{stats.words.toLocaleString()}</dd></div>
+          <div class="masthead-meta-item"><dt>sections</dt> <dd>{stats.headings}</dd></div>
+          <div class="masthead-meta-item"><dt>code</dt> <dd>{formatStatValue(stats.codeBlocks, 'block')}</dd></div>
+          <div class="masthead-meta-item"><dt>lines</dt> <dd>{stats.sourceLines.toLocaleString()}</dd></div>
         </dl>
       {/if}
     </div>

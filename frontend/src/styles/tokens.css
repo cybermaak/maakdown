@@ -192,3 +192,22 @@
   --syntax-variable: #f0c987;
   --brand-mark-shadow: drop-shadow(0 1px 3px rgba(255, 255, 255, 0.25));
 }
+
+:root[data-reader-theme="high-contrast"] {
+  --reader-bg: var(--surface-bg);
+  --reader-ink: var(--text);
+  --reader-muted: color-mix(in srgb, var(--text) 76%, var(--surface-bg));
+  --reader-heading: var(--text);
+  --reader-link: var(--focus);
+  --reader-rule: color-mix(in srgb, var(--text) 38%, var(--surface-bg));
+  --reader-inline-code-bg: color-mix(in srgb, var(--text) 9%, var(--surface-bg));
+  --reader-code-bg: color-mix(in srgb, var(--text) 7%, var(--surface-bg));
+  --reader-code-text: var(--text);
+  --reader-quote: color-mix(in srgb, var(--text) 82%, var(--surface-bg));
+  --reader-selection: color-mix(in srgb, var(--focus) 24%, var(--surface-bg));
+  --reader-gutter: color-mix(in srgb, var(--text) 70%, var(--surface-bg));
+  --reader-gutter-rule: color-mix(in srgb, var(--text) 42%, var(--surface-bg));
+  --reader-minimap-heading: var(--focus);
+  --reader-minimap-search: var(--warning);
+  --reader-minimap-structure: color-mix(in srgb, var(--text) 68%, var(--surface-bg));
+}

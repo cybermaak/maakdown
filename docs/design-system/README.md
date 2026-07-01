@@ -94,5 +94,7 @@ an accessible name, disabled handling, and light/dark coverage.
 - `reference/screenshots/palette-light.png`: reviewed light command palette.
 - `reference/screenshots/palette-dark.png`: reviewed dark command palette.
 - `mock-review.md`: incorporated decisions, adaptation rules, and open risks.
+- `reader-token-contract.md`: production token contract for rendered Markdown,
+  line gutters, minimap marks, print styling, and high-contrast preset behavior.
 - `reviews/Maakdown-Design-Product-Review.pdf`: supplemental product and UX
   review covering chrome, formatting, search, print, accessibility, and sequencing.

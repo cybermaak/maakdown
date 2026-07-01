@@ -86,6 +86,12 @@
     onchange={(value: AppConfig['readerMeasure']) => update({ readerMeasure: value })}
   />
   <SegmentedControl
+    label="Reader theme"
+    options={[{ value: 'editorial', label: 'Editorial' }, { value: 'high-contrast', label: 'Contrast' }]}
+    value={config.readerTheme}
+    onchange={(value: AppConfig['readerTheme']) => update({ readerTheme: value })}
+  />
+  <SegmentedControl
     label="Code highlighting"
     options={[
       { value: 'highlightjs', label: 'Highlight.js' },
@@ -106,6 +112,10 @@
     <label class="settings-check">
       <input type="checkbox" checked={config.codeWrap} onchange={(event) => update({ codeWrap: event.currentTarget.checked })} />
       <span>Wrap code by default</span>
+    </label>
+    <label class="settings-check">
+      <input type="checkbox" checked={config.printMetadata} onchange={(event) => update({ printMetadata: event.currentTarget.checked })} />
+      <span>Include metadata when printing</span>
     </label>
   </div>
   {#if handlerSupported}

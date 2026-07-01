@@ -28,7 +28,7 @@ export interface SeedSessionTab {
 export interface SeedSession {
   tabs: SeedSessionTab[];
   activePath?: string;
-  recents?: Array<{ path: string; displayName: string; lastOpenedAt: string }>;
+  recents?: Array<{ path: string; displayName: string; lastOpenedAt: string; pinned?: boolean; missingAt?: string }>;
 }
 
 export interface SeedOptions {

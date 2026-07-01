@@ -8,15 +8,17 @@ The app is a viewer, not an editor. It renders CommonMark/GFM, code, KaTeX math,
 
 ## Current Phase
 
-**Phase:** P11.11 is active; P13-P15 are complete on macOS for the next
-release; P16-P17 remain; P0-P10 and P12 are complete
-**Active focus:** remaining native editorial acceptance plus planning for the
-next feature release. P13-P15 delivered the "Precision Reading & Performance"
-foundation: macOS benchmark baselines, source-position metadata, document/code
-line numbers, code wrap controls, model-driven minimap marks, viewport/search
-marks, and find feedback polish. Windows/Linux validation for P13-P15 remains
-release-blocking. The remaining tracked P11.11 editorial acceptance gaps are
-Linux WebKitGTK search/focus/drag/drop/print coverage.
+**Phase:** P11.11 is active; P13-P17 implementation and macOS acceptance are
+complete for the next release; P0-P10 and P12 are complete
+**Active focus:** remaining native editorial acceptance plus cross-platform
+release validation. P13-P17 delivered the "Precision Reading & Performance"
+release scope: macOS benchmark baselines, source-position metadata,
+document/code line numbers, code wrap controls, model-driven minimap marks,
+viewport/search marks, reader statistics, pinned/missing recents, print
+metadata controls, high-contrast reader tokens, UAT traceability, and macOS
+release acceptance. Windows/Linux validation remains release-blocking. The
+remaining tracked P11.11 editorial acceptance gaps are Linux WebKitGTK
+search/focus/drag/drop/print coverage.
 
 ## Major Files And Directories
 
@@ -178,9 +180,22 @@ Linux WebKitGTK search/focus/drag/drop/print coverage.
   visual line numbers.
 - Minimap marks are projected from the parsed document model and search model,
   not from DOM scanning.
-- Local packaged macOS build validation is currently blocked because the `wails`
-  CLI is not installed in this shell. Frontend checks, Go tests, browser UAT,
-  and benchmark validation passed on macOS.
+- Document statistics are projected from the parsed model rather than the DOM:
+  prose word count excludes code/Mermaid blocks, while headings, code blocks,
+  diagrams, images, tables, tasks, source lines, and reading minutes come from a
+  shared formatter.
+- Recent documents now preserve pinned state and missing-file metadata across
+  versioned config/session persistence. Pinned recents sort first, and cleanup
+  actions are intentionally limited to missing or unpinned entries.
+- Print metadata is a persisted reader setting. It affects the print snapshot
+  masthead only; the normal reader surface remains unchanged.
+- `readerTheme` is a persisted reader appearance axis separate from app chrome.
+  The initial presets are `editorial` and `high-contrast`; both are implemented
+  through semantic reader tokens so future user-selectable themes can be added
+  without rewriting component CSS.
+- Local packaged macOS build validation is no longer blocked. `scripts/release-check.sh`
+  found Wails v2.12.0 through GOPATH and passed the macOS `darwin/arm64` build,
+  frontend tests/check/build, Go tests, benchmarks, and full UAT on 2026-07-01.
 
 ## Planned Tasks
 
@@ -196,8 +211,18 @@ See `docs/task-tracker.md` and `docs/next-release-task-tracker.md`.
   search-hit marks, and no-results/wrap search feedback. Validation passed:
   `go test ./...`, `npm run check`, `npm test`, `npm run build`,
   `npm run benchmark`, `npm run benchmark:workspace`, focused UAT, and full
-  `npm run uat`. Packaged macOS Wails build is blocked locally by missing
-  `wails` CLI.
+  `npm run uat`. The packaged macOS Wails build later passed through
+  `scripts/release-check.sh`.
+- 2026-07-01: Completed P16-P17 next-release implementation and macOS
+  acceptance. Added model-driven document statistics, masthead stats display,
+  persisted print metadata, pinned/missing recent documents, recent cleanup
+  actions, calmer typed recovery copy, improved print CSS, high-contrast reader
+  theme tokens, reader token contract documentation, and updated UAT
+  plan/traceability. Validation passed: `go test ./internal/config`,
+  `go test ./...`, `npm run check`, `npm test`, `npm run build`,
+  `npm run benchmark`, `npm run benchmark:workspace`, `npm run uat`, and
+  `scripts/release-check.sh`. Windows and Linux validation remain
+  release-blocking.
 - 2026-06-05: Created approved v0.3 spec and implementation plan in `docs/`.
 - 2026-06-05: Re-reviewed revised docs with Claude and Gemini; final consensus was approve.
 - 2026-06-05: Created P0 scaffold, repo guidance, project tracker, signing-safe folders, frontend shell, and Go service stubs.

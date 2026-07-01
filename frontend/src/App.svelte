@@ -20,8 +20,12 @@
     activateOrAddTab,
     addRecent,
     canonicalIdentity,
+    clearMissingRecents,
+    clearUnpinnedRecents,
     closeTab,
     createWorkspace,
+    markRecentMissing,
+    pinRecent,
     relocateTab,
     serializeSession,
     updateTab,
@@ -59,6 +63,7 @@
     buildStructuralMinimapMarks,
     type MinimapViewport
   } from './core/minimap/minimap';
+  import { projectDocumentStats } from './core/stats/documentStats';
   import {
     moveHistory as moveNavigationHistory,
     pushHistory,
@@ -112,6 +117,7 @@
       ...(searchOpen && searchQuery ? buildSearchMinimapMarks(activeTab.model, searchMatches) : [])
     ];
   });
+  let activeStats = $derived(activeTab?.model ? projectDocumentStats(activeTab.model) : null);
 
   $effect(() => {
     searchQuery;
@@ -181,6 +187,7 @@
       await parseOpened(tab.id, opened);
       commit({ ...workspace, recents: addRecent(workspace.recents, opened.path) });
     } catch (error) {
+      commit({ ...workspace, recents: markRecentMissing(workspace.recents, path) });
       commit(updateTab(workspace, tab.id, {
         loading: false,
         error: error instanceof Error ? error.message : String(error),
@@ -261,6 +268,14 @@
     if (!tab) return;
     commit({ ...workspace, closedTabs });
     void openPath(tab.path, tab.position);
+  }
+
+  function updateRecents(recents: typeof workspace.recents) {
+    commit({ ...workspace, recents });
+  }
+
+  function handlePinRecent(path: string, pinned: boolean) {
+    updateRecents(pinRecent(workspace.recents, path, pinned));
   }
 
   async function relocateMissingTab(id: string) {
@@ -841,8 +856,9 @@
             onOpenDocument={openLinkedPath}
             searchQuery={searchOpen ? searchQuery : ''}
             searchBlockId={searchMatches[searchIndex]?.blockId ?? null}
-            searchCaseSensitive={searchCaseSensitive}
-            showMasthead={$appConfig.frontmatterDisplay === 'panel'}
+          searchCaseSensitive={searchCaseSensitive}
+            showMasthead={$appConfig.frontmatterDisplay === 'panel' && (!printing || $appConfig.printMetadata)}
+            stats={activeStats}
             showDocumentLineNumbers={$appConfig.documentLineNumbers}
           />
         </div>
@@ -852,7 +868,14 @@
           <span>Opening document…</span>
         </div>
       {:else}
-        <WorkspaceEmptyState recents={workspace.recents} onOpen={handleOpen} onOpenRecent={openPath} />
+        <WorkspaceEmptyState
+          recents={workspace.recents}
+          onOpen={handleOpen}
+          onOpenRecent={openPath}
+          onPinRecent={handlePinRecent}
+          onClearMissing={() => updateRecents(clearMissingRecents(workspace.recents))}
+          onClearUnpinned={() => updateRecents(clearUnpinnedRecents(workspace.recents))}
+        />
       {/if}
       {#if dragActive}<div class="drop-overlay">Drop Markdown files to open</div>{/if}
       {#if printing}

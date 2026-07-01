@@ -41,7 +41,7 @@ export async function getConfig(): Promise<AppConfig> {
     theme: normalizeTheme(result.theme),
     highlighterEngine: result.highlighterEngine === 'shiki-js-regex' ? 'shiki-js-regex' : 'highlightjs',
     frontmatterDisplay: result.frontmatterDisplay === 'hidden' ? 'hidden' : 'panel',
-    readerTheme: 'editorial',
+    readerTheme: result.readerTheme === 'high-contrast' ? 'high-contrast' : 'editorial',
     readerFont: result.readerFont === 'serif' ? 'serif' : 'sans',
     readerFontSize: result.readerFontSize >= 13 && result.readerFontSize <= 22 ? result.readerFontSize : 15,
     readerLineHeight: result.readerLineHeight === 'compact' || result.readerLineHeight === 'relaxed' ? result.readerLineHeight : 'comfortable',
@@ -52,7 +52,8 @@ export async function getConfig(): Promise<AppConfig> {
     metadataWidth: result.metadataWidth >= 220 && result.metadataWidth <= 480 ? result.metadataWidth : 260,
     documentLineNumbers: Boolean(result.documentLineNumbers),
     codeLineNumbers: Boolean(result.codeLineNumbers),
-    codeWrap: result.codeWrap !== false
+    codeWrap: result.codeWrap !== false,
+    printMetadata: result.printMetadata !== false
   };
 }
 
@@ -62,7 +63,7 @@ export async function setConfig(next: AppConfig): Promise<AppConfig> {
     theme: normalizeTheme(result.theme),
     highlighterEngine: result.highlighterEngine === 'shiki-js-regex' ? 'shiki-js-regex' : 'highlightjs',
     frontmatterDisplay: result.frontmatterDisplay === 'hidden' ? 'hidden' : 'panel',
-    readerTheme: 'editorial',
+    readerTheme: result.readerTheme === 'high-contrast' ? 'high-contrast' : 'editorial',
     readerFont: result.readerFont === 'serif' ? 'serif' : 'sans',
     readerFontSize: result.readerFontSize >= 13 && result.readerFontSize <= 22 ? result.readerFontSize : 15,
     readerLineHeight: result.readerLineHeight === 'compact' || result.readerLineHeight === 'relaxed' ? result.readerLineHeight : 'comfortable',
@@ -73,7 +74,8 @@ export async function setConfig(next: AppConfig): Promise<AppConfig> {
     metadataWidth: result.metadataWidth >= 220 && result.metadataWidth <= 480 ? result.metadataWidth : 260,
     documentLineNumbers: Boolean(result.documentLineNumbers),
     codeLineNumbers: Boolean(result.codeLineNumbers),
-    codeWrap: result.codeWrap !== false
+    codeWrap: result.codeWrap !== false,
+    printMetadata: result.printMetadata !== false
   };
 }
 

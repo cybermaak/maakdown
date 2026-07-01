@@ -36,6 +36,8 @@ test.describe('UAT-01 Open and read a technical document', () => {
     await expect(metadata).toBeVisible();
     await expect(metadata.getByText('review')).toBeVisible();
     await expect(metadata.locator('.ds-tag', { hasText: 'uat' })).toBeVisible();
+    await expect(metadata.getByLabel('Document statistics')).toContainText('words');
+    await expect(metadata.getByLabel('Document statistics')).toContainText('sections');
   });
 
   test('renders local image, math, highlighted code, and Mermaid through progressive enhancement', async ({ page }) => {

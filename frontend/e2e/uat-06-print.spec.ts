@@ -17,11 +17,27 @@ test('UAT-06 prints a fully mounted document and restores virtualization', async
 
   await page.keyboard.press(`${mod}+p`);
   await expect.poll(() => readMockState(page, (state) => state.printCalls as number), { timeout: 15_000 }).toBe(1);
-  const snapshot = await readMockState<Array<{ blocks: number; enhanced: number }>>(page, (state) => state.printSnapshots as Array<{ blocks: number; enhanced: number }>);
+  const snapshot = await readMockState<Array<{ blocks: number; enhanced: number; mastheads: number }>>(page, (state) => state.printSnapshots as Array<{ blocks: number; enhanced: number; mastheads: number }>);
   expect(snapshot[0].blocks).toBeGreaterThan(before);
   expect(snapshot[0].enhanced).toBeGreaterThan(0);
+  expect(snapshot[0].mastheads).toBe(1);
   await expect(page.getByRole('status').filter({ hasText: /Preparing complete document/ })).toBeHidden();
   expect(await page.locator('.doc-block').count()).toBeLessThanOrEqual(100);
+});
+
+test('UAT-06 print can exclude metadata masthead', async ({ page }) => {
+  await seedApp(page, {
+    documents: [{ path: DOC_PATH, fixture: 'maakdown-reader-evaluation.md', trustedRoot: '/uat' }],
+    session: { tabs: [{ path: DOC_PATH }], activePath: DOC_PATH },
+    config: { printMetadata: false }
+  });
+  await gotoApp(page);
+  await expectReaderReady(page);
+
+  await page.keyboard.press(`${mod}+p`);
+  await expect.poll(() => readMockState(page, (state) => state.printCalls as number), { timeout: 15_000 }).toBe(1);
+  const snapshot = await readMockState<Array<{ mastheads: number }>>(page, (state) => state.printSnapshots as Array<{ mastheads: number }>);
+  expect(snapshot[0].mastheads).toBe(0);
 });
 
 test('UAT-06 cancellation avoids the system print flow', async ({ page }) => {

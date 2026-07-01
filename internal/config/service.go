@@ -7,7 +7,7 @@ import (
 	"sync"
 )
 
-const stateVersion = 2
+const stateVersion = 3
 
 type AppConfig struct {
 	Theme               string `json:"theme"`
@@ -25,6 +25,7 @@ type AppConfig struct {
 	DocumentLineNumbers bool   `json:"documentLineNumbers"`
 	CodeLineNumbers     bool   `json:"codeLineNumbers"`
 	CodeWrap            bool   `json:"codeWrap"`
+	PrintMetadata       bool   `json:"printMetadata"`
 }
 
 type ReaderPosition struct {
@@ -41,6 +42,8 @@ type RecentDocument struct {
 	Path         string `json:"path"`
 	DisplayName  string `json:"displayName"`
 	LastOpenedAt string `json:"lastOpenedAt"`
+	Pinned       bool   `json:"pinned,omitempty"`
+	MissingAt    string `json:"missingAt,omitempty"`
 }
 
 type PersistedSession struct {
@@ -91,6 +94,7 @@ func defaultState() stateFile {
 			OutlineWidth:       280,
 			MetadataWidth:      260,
 			CodeWrap:           true,
+			PrintMetadata:      true,
 		},
 		Session: PersistedSession{Tabs: []SessionTab{}, Recents: []RecentDocument{}},
 	}
@@ -161,7 +165,7 @@ func normalizeConfigForVersion(value AppConfig, version int) AppConfig {
 	if value.FrontmatterDisplay != "hidden" {
 		value.FrontmatterDisplay = defaults.FrontmatterDisplay
 	}
-	if value.ReaderTheme != "editorial" {
+	if value.ReaderTheme != "editorial" && value.ReaderTheme != "high-contrast" {
 		value.ReaderTheme = defaults.ReaderTheme
 	}
 	if value.ReaderFont != "serif" {
@@ -187,6 +191,9 @@ func normalizeConfigForVersion(value AppConfig, version int) AppConfig {
 	}
 	if version < 2 {
 		value.CodeWrap = defaults.CodeWrap
+	}
+	if version < 3 {
+		value.PrintMetadata = defaults.PrintMetadata
 	}
 	return value
 }

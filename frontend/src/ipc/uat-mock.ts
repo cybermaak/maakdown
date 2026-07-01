@@ -36,7 +36,7 @@ interface MockState {
   pickerQueue: string[];
   externalLinks: string[];
   printCalls: number;
-  printSnapshots: Array<{ blocks: number; enhanced: number }>;
+  printSnapshots: Array<{ blocks: number; enhanced: number; mastheads: number }>;
   clipboardText: string;
   windowTitle: string;
   savedConfigs: AppConfig[];
@@ -75,7 +75,8 @@ const defaultConfig: AppConfig = {
   metadataWidth: 260,
   documentLineNumbers: false,
   codeLineNumbers: false,
-  codeWrap: true
+  codeWrap: true,
+  printMetadata: true
 };
 
 const listeners: Record<EventName, Array<(payload: unknown) => void>> = {
@@ -253,7 +254,8 @@ export async function printWindow(): Promise<void> {
   state.printCalls += 1;
   state.printSnapshots.push({
     blocks: document.querySelectorAll('.doc-block').length,
-    enhanced: document.querySelectorAll('.doc-block [data-highlight-engine], .doc-block-mermaid svg').length
+    enhanced: document.querySelectorAll('.doc-block [data-highlight-engine], .doc-block-mermaid svg').length,
+    mastheads: document.querySelectorAll('.reader-masthead').length
   });
 }
 
