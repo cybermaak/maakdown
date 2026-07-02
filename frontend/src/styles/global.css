@@ -711,7 +711,16 @@ a {
 .doc-block .footnotes { color: var(--reader-muted); font-size: 0.9em; }
 .block-tools { display: flex; min-height: 30px; align-items: center; justify-content: space-between; border: 1px solid var(--reader-rule); border-bottom: 0; border-radius: 6px 6px 0 0; padding: 0 6px 0 10px; color: var(--reader-muted); background: var(--reader-code-bg); font-family: var(--font-mono); font-size: 11px; }
 .block-tool-actions { display: inline-flex; gap: 3px; align-items: center; }
-.doc-block-code .block-tools + pre, .doc-block-mermaid .block-tools + .mermaid-rendered { margin-top: 0; border-radius: 0 0 6px 6px; }
+.doc-block-code .block-tools + pre,
+.doc-block-mermaid .block-tools + .mermaid-rendered,
+.doc-block-mermaid .block-tools + .mermaid-source {
+  margin-top: 0;
+  border-radius: 0 0 6px 6px;
+}
+.doc-block-code .block-tools + pre {
+  border: 1px solid var(--reader-rule);
+  border-top: 0;
+}
 .table-tools {
   display: grid;
   gap: 8px;
@@ -1084,11 +1093,6 @@ th:focus-within .table-header-actions,
 .mermaid-rendered svg {
   max-width: 100%;
   height: auto;
-}
-
-.doc-block-mermaid .block-tools + .mermaid-source {
-  margin-top: 0;
-  border-radius: 0 0 6px 6px;
 }
 
 .mermaid-source {

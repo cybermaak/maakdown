@@ -63,6 +63,8 @@ acceptance gaps are Linux WebKitGTK search/focus/drag/drop/print coverage.
 - `frontend/src/components/`: reader surface, masthead, hover minimap, workspace
   chrome, dialogs, settings, and native-window controls.
 - `fixtures/`: deterministic Markdown evaluation documents and local fixture assets.
+- `fixtures/table-tools.md`: manual and UAT-backed table interaction fixture for
+  sorting, filtering, wrapping, and unsupported-table suppression checks.
 - `frontend/e2e/`: Playwright UI-driven UAT journeys and the mock-IPC seeding support.
 - `frontend/e2e/uat-12-table-tools.spec.ts`: table width, wrapping, filter,
   sort, suppression, and virtualizer-remount state UAT.
@@ -291,6 +293,15 @@ See `docs/task-tracker.md` and `docs/next-release-task-tracker.md`.
   added an in-place Mermaid source toggle. Validation passed:
   `npm run check`, `npm test`, `npm run build`, focused UAT-03/UAT-05/UAT-12
   (9 tests), and full `npm run uat` (33 tests).
+- 2026-07-02: Added `fixtures/table-tools.md` as the canonical manual table
+  tools fixture and wired UAT-12 to reuse it for the interactive/headerless
+  cases while still generating the over-limit table in-test. Matched fenced
+  code block body borders and bottom radius to the Mermaid source block chrome.
+  Validation passed: `npm run check`, focused UAT-12
+  (`npm run uat -- uat-12-table-tools.spec.ts`), `npm run build`,
+  `git diff --check` for the changed files, and a seeded Playwright visual
+  check confirming both code and Mermaid source bodies use 1px side/bottom
+  borders with 6px bottom radii.
 - 2026-06-05: Created approved v0.3 spec and implementation plan in `docs/`.
 - 2026-06-05: Re-reviewed revised docs with Claude and Gemini; final consensus was approve.
 - 2026-06-05: Created P0 scaffold, repo guidance, project tracker, signing-safe folders, frontend shell, and Go service stubs.

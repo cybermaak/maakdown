@@ -1,23 +1,29 @@
-import { expect, expectReaderReady, gotoApp, seedApp, test } from './support/uat';
+import type { Page } from '@playwright/test';
+import { expect, expectReaderReady, gotoApp, readFixture, seedApp, test } from './support/uat';
 
 const DOC_PATH = '/uat/table-tools.md';
+
+async function scrollToHeading(page: Page, name: string): Promise<void> {
+  const surface = page.getByRole('document', { name: 'Markdown document' });
+  const heading = page.getByRole('heading', { name });
+  for (const ratio of [0, 0.25, 0.5, 0.75, 1]) {
+    if (await heading.count()) {
+      await heading.scrollIntoViewIfNeeded();
+      await expect(heading).toBeVisible();
+      return;
+    }
+    await surface.evaluate((element, nextRatio) => {
+      element.scrollTop = (element.scrollHeight - element.clientHeight) * nextRatio;
+    }, ratio);
+    await page.waitForTimeout(100);
+  }
+  await expect(heading).toBeVisible();
+}
 
 function tableToolsDocument(): string {
   const largeRows = Array.from({ length: 260 }, (_, index) => `<tr><td>${index + 1}</td><td>Large row ${index + 1}</td></tr>`).join('\n');
   return [
-    '# Table Tools',
-    '',
-    '## Interactive table',
-    '',
-    '| Name | Score | Date | Notes |',
-    '|---|---:|---|---|',
-    '| Beta | 10 | 2026-06-02 | Stable workspace behavior |',
-    '| Alpha | 20 | 2026-06-03 | A very long operational note that should wrap inside the selected reader measure instead of forcing the table beyond the prose column width. |',
-    '| Gamma | 3 | 2026-06-01 | Needs follow up |',
-    '',
-    '## Headerless table',
-    '',
-    '<table><tbody><tr><td>North</td><td>Plain body row</td></tr><tr><td>South</td><td>No header cells</td></tr></tbody></table>',
+    readFixture('table-tools.md').trimEnd(),
     '',
     '## Large table',
     '',
@@ -84,13 +90,18 @@ test.describe('UAT-12 table reading tools', () => {
   });
 
   test('suppresses controls for headerless and over-limit tables', async ({ page }) => {
-    await page.getByRole('heading', { name: 'Headerless table' }).scrollIntoViewIfNeeded();
+    await scrollToHeading(page, 'Headerless table');
     const headerless = page.locator('.doc-block-table').filter({ hasText: 'Plain body row' });
+    await expect(headerless).toBeVisible();
     await expect(headerless.getByRole('button', { name: /Filter/ })).toHaveCount(0);
     await expect(headerless.getByRole('button', { name: /Sort/ })).toHaveCount(0);
 
-    await page.getByRole('heading', { name: 'Large table' }).scrollIntoViewIfNeeded();
+    const surface = page.getByRole('document', { name: 'Markdown document' });
+    await surface.evaluate((element) => {
+      element.scrollTop = element.scrollHeight;
+    });
     const large = page.locator('.doc-block-table').filter({ hasText: 'Large row 260' });
+    await expect(large).toBeVisible();
     await expect(large.getByRole('button', { name: /Filter/ })).toHaveCount(0);
     await expect(large.getByRole('button', { name: /Sort/ })).toHaveCount(0);
   });
