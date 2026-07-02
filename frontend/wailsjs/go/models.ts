@@ -41,6 +41,7 @@ export namespace config {
 	    printMetadata: boolean;
 	    tableConstrainToMeasure: boolean;
 	    tableColumnSizing: string;
+	    tableRowNumbers: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new AppConfig(source);
@@ -66,6 +67,7 @@ export namespace config {
 	        this.printMetadata = source["printMetadata"];
 	        this.tableConstrainToMeasure = source["tableConstrainToMeasure"];
 	        this.tableColumnSizing = source["tableColumnSizing"];
+	        this.tableRowNumbers = source["tableRowNumbers"];
 	    }
 	}
 	export class RecentDocument {

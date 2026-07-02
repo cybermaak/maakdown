@@ -21,6 +21,7 @@ export interface Block {
   level?: number;
   sourceStart?: number;
   sourceEnd?: number;
+  sourceLines?: number[];
 }
 
 export interface Heading {

@@ -43,12 +43,15 @@ test.describe('UAT-12 table reading tools', () => {
 
   test('constrains table width to the selected reader measure and wraps cell text', async ({ page }) => {
     await page.getByRole('button', { name: 'Settings', exact: true }).click();
-    await page.getByRole('group', { name: 'Measure' }).getByRole('button', { name: 'Narrow' }).click();
+    await page.getByLabel('Measure').selectOption('narrow');
     await page.getByLabel('Keep tables within text width').check();
+    await page.getByLabel('Table row numbers').check();
     await page.getByRole('button', { name: 'Done' }).click();
 
     const tableBlock = page.locator('.doc-block-table').first();
     await expect(tableBlock).toHaveClass(/table-measure/);
+    await expect(tableBlock.getByRole('columnheader', { name: '#' })).toBeVisible();
+    await expect(tableBlock.locator('tbody .table-row-number').first()).toHaveText('1');
     await expect.poll(() => tableBlock.evaluate((element) => Math.round(element.getBoundingClientRect().width))).toBeLessThanOrEqual(720);
 
     const longCell = tableBlock.getByRole('cell', { name: /very long operational note/ });

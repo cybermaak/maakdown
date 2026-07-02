@@ -19,10 +19,13 @@ test.describe('UAT-05 reader productivity tools', () => {
     await page.keyboard.press(`${mod}+k`);
     const palette = page.getByRole('dialog', { name: 'Command palette' });
     await expect(palette).toBeVisible();
+    await expect(palette.getByRole('group', { name: 'Commands' })).toBeVisible();
+    await expect(palette.getByRole('group', { name: 'Open tabs' })).toContainText(DOC_PATH);
+    await expect(palette.getByText('Command').first()).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(open).toBeFocused();
     await page.keyboard.press(`${mod}+k`);
-    await page.keyboard.press('ArrowDown');
+    await page.keyboard.type('find');
     await page.keyboard.press('Enter');
     await expect(page.getByRole('search')).toBeVisible();
   });

@@ -7,7 +7,7 @@ import (
 	"sync"
 )
 
-const stateVersion = 4
+const stateVersion = 5
 
 type AppConfig struct {
 	Theme               string `json:"theme"`
@@ -28,6 +28,7 @@ type AppConfig struct {
 	PrintMetadata       bool   `json:"printMetadata"`
 	TableConstrain      bool   `json:"tableConstrainToMeasure"`
 	TableColumnSizing   string `json:"tableColumnSizing"`
+	TableRowNumbers     bool   `json:"tableRowNumbers"`
 }
 
 type ReaderPosition struct {
@@ -99,6 +100,7 @@ func defaultState() stateFile {
 			PrintMetadata:      true,
 			TableConstrain:     false,
 			TableColumnSizing:  "balanced",
+			TableRowNumbers:    false,
 		},
 		Session: PersistedSession{Tabs: []SessionTab{}, Recents: []RecentDocument{}},
 	}
@@ -202,6 +204,9 @@ func normalizeConfigForVersion(value AppConfig, version int) AppConfig {
 	if version < 4 {
 		value.TableConstrain = defaults.TableConstrain
 		value.TableColumnSizing = defaults.TableColumnSizing
+	}
+	if version < 5 {
+		value.TableRowNumbers = defaults.TableRowNumbers
 	}
 	if value.TableColumnSizing != "equal" {
 		value.TableColumnSizing = defaults.TableColumnSizing

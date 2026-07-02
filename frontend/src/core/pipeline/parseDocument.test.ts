@@ -83,6 +83,27 @@ describe('parseDocument', () => {
     expect(model.blocks[2]).toMatchObject({ kind: 'code', sourceStart: 8, sourceEnd: 10 });
   });
 
+  it('records per-item source line labels for Markdown lists', async () => {
+    const model = await parseDocument({
+      path: '/tmp/list.md',
+      source: [
+        '## Checklist',
+        '',
+        '- First item',
+        '- Second item',
+        '  continues here',
+        '- Third item'
+      ].join('\n')
+    });
+
+    expect(model.blocks[1]).toMatchObject({
+      kind: 'other',
+      sourceStart: 3,
+      sourceEnd: 6,
+      sourceLines: [3, 4, 5, 6]
+    });
+  });
+
   it('recognizes sanitized GFM tables as table blocks', async () => {
     const model = await parseDocument({
       path: '/tmp/table.md',

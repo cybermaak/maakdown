@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { SlidersHorizontal } from '@lucide/svelte';
   import { SegmentedControl } from '../design-system';
   import type { AppConfig } from '../stores/configStore';
   import {
@@ -66,7 +65,6 @@
 
 <div class="reader-settings" role="dialog" aria-label="Settings">
   <div class="settings-heading">
-    <span class="settings-title"><SlidersHorizontal size={15} aria-hidden="true" /> <strong>Display</strong></span>
     <button onclick={onClose}>Done</button>
   </div>
 
@@ -176,6 +174,14 @@
         <small>Auto-size columns and wrap cells to the selected measure.</small>
       </span>
       <input class="settings-switch-input" aria-label="Keep tables within text width" type="checkbox" checked={config.tableConstrainToMeasure} onchange={(event) => update({ tableConstrainToMeasure: event.currentTarget.checked })} />
+      <span class="settings-switch" aria-hidden="true"></span>
+    </label>
+    <label class="settings-switch-row">
+      <span class="settings-switch-copy">
+        <span>Table row numbers</span>
+        <small>Show ephemeral row numbers while reading tables.</small>
+      </span>
+      <input class="settings-switch-input" aria-label="Table row numbers" type="checkbox" checked={config.tableRowNumbers} onchange={(event) => update({ tableRowNumbers: event.currentTarget.checked })} />
       <span class="settings-switch" aria-hidden="true"></span>
     </label>
     <div class="settings-field">

@@ -25,7 +25,9 @@ then incorporated the annotated table-filter spec and mock refinements:
 prose-width code blocks, shaded table headers, type-aware per-column filters,
 shared block chrome for code/Mermaid bodies, and highlighted Mermaid source.
 P19.8 refined the Settings popover density and moved inline Mermaid diagrams to
-the prose measure while preserving the large inspection modal.
+the prose measure while preserving the large inspection modal. P19.9 refined
+the table filter popover, list source-line gutters, table row numbers, Settings
+surface, and command palette result metadata.
 Cross-OS CI/UAT and native screenshot validation passed for P18 on `main`
 (`aa8dccf`) on 2026-07-02; P19 Windows/Linux validation plus
 release-smoke/manual release checks still gate the release. The remaining
@@ -255,7 +257,19 @@ search/focus/drag/drop/print coverage.
 - Reader Settings uses compact paired fields where appropriate: native selects
   for three-option controls, segmented controls for two-choice modes, and
   switch-style checkbox inputs for booleans. Settings is dismissed by a
-  transparent app-level click layer outside the popover.
+  transparent app-level click layer outside the popover. The popover no longer
+  shows a separate title and uses the same `--panel-bg` surface as the command
+  palette.
+- Table row numbers are a persisted v5 config setting named `tableRowNumbers`.
+  They are reader-only, default off, and render as a leading visible-order
+  column after filtering/sorting rather than source row identity.
+- List source-line gutter labels come from top-level Markdown list-item source
+  spans captured during parser metadata collection. Each source line inside a
+  list item is represented as a scalar label in `Block.sourceLines`; the reader
+  renders those labels as a gutter stack without constructing a full source map.
+- Command palette results are grouped into Commands, Open tabs, Recent files,
+  and Headings. Items carry subtitles, leading icons, optional file paths, and
+  shortcut chips so similarly named results are distinguishable.
 - Minimap marks are block-index projections: viewport pill, heading ticks,
   structural rich-block ticks for code/diagrams/tables, and search-hit ticks.
   The expanded outline should explain those marks compactly so the collapsed
@@ -346,6 +360,20 @@ See `docs/task-tracker.md` and `docs/next-release-task-tracker.md`.
   `/tmp/maakdown-mermaid-modal.png`; measured code/Mermaid inline widths were
   both 860px, the modal width was 1102px, outside-click dismissal succeeded,
   and no console errors were captured.
+- 2026-07-02: Completed P19.9 filter, line-gutter, table-row, and command
+  palette refinements. Fixed table text filter input containment; added
+  per-list-item source-line labels for Markdown list blocks; added persisted
+  reader-only table row numbers; removed the Settings "Display" title and
+  matched its background to the command palette; and enriched command palette
+  rows with sections, subtitles, icons, paths, and shortcut chips. Validation
+  passed: `go test ./internal/config`,
+  `npm test -- --run src/core/pipeline/parseDocument.test.ts src/core/tables/tableProjection.test.ts`,
+  `npm run check`, focused UAT-05/UAT-12, and seeded Playwright visual checks.
+  Visual evidence was written to `/tmp/maakdown-filter-popup-fixed.png`,
+  `/tmp/maakdown-list-line-numbers.png`,
+  `/tmp/maakdown-table-row-numbers.png`,
+  `/tmp/maakdown-settings-refined.png`, and
+  `/tmp/maakdown-command-palette-groups.png`.
 - 2026-06-05: Created approved v0.3 spec and implementation plan in `docs/`.
 - 2026-06-05: Re-reviewed revised docs with Claude and Gemini; final consensus was approve.
 - 2026-06-05: Created P0 scaffold, repo guidance, project tracker, signing-safe folders, frontend shell, and Go service stubs.

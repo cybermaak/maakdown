@@ -36,7 +36,7 @@ export async function readDocument(path: string): Promise<fileservice.DocumentBy
 }
 
 export async function getConfig(): Promise<AppConfig> {
-  const result = (await GetConfig()) as config.AppConfig;
+  const result = (await GetConfig()) as config.AppConfig & { tableRowNumbers?: boolean };
   return {
     theme: normalizeTheme(result.theme),
     highlighterEngine: result.highlighterEngine === 'shiki-js-regex' ? 'shiki-js-regex' : 'highlightjs',
@@ -55,12 +55,13 @@ export async function getConfig(): Promise<AppConfig> {
     codeWrap: result.codeWrap !== false,
     printMetadata: result.printMetadata !== false,
     tableConstrainToMeasure: result.tableConstrainToMeasure === true,
-    tableColumnSizing: result.tableColumnSizing === 'equal' ? 'equal' : 'balanced'
+    tableColumnSizing: result.tableColumnSizing === 'equal' ? 'equal' : 'balanced',
+    tableRowNumbers: result.tableRowNumbers === true
   };
 }
 
 export async function setConfig(next: AppConfig): Promise<AppConfig> {
-  const result = (await SetConfig(next)) as config.AppConfig;
+  const result = (await SetConfig(next)) as config.AppConfig & { tableRowNumbers?: boolean };
   return {
     theme: normalizeTheme(result.theme),
     highlighterEngine: result.highlighterEngine === 'shiki-js-regex' ? 'shiki-js-regex' : 'highlightjs',
@@ -79,7 +80,8 @@ export async function setConfig(next: AppConfig): Promise<AppConfig> {
     codeWrap: result.codeWrap !== false,
     printMetadata: result.printMetadata !== false,
     tableConstrainToMeasure: result.tableConstrainToMeasure === true,
-    tableColumnSizing: result.tableColumnSizing === 'equal' ? 'equal' : 'balanced'
+    tableColumnSizing: result.tableColumnSizing === 'equal' ? 'equal' : 'balanced',
+    tableRowNumbers: result.tableRowNumbers === true
   };
 }
 

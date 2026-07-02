@@ -38,7 +38,14 @@
   let mermaidSourceVisible = $state(false);
   let mermaidSourceHtml = $state('');
   let codeWrapped = $derived(codeWrapOverride ?? $appConfig.codeWrap);
-  let sourceLabel = $derived(block.sourceStart ? String(block.sourceStart) : '');
+  let sourceLabels = $derived(
+    block.sourceLines?.length
+      ? block.sourceLines.map((line) => String(line))
+      : block.sourceStart
+        ? [String(block.sourceStart)]
+        : []
+  );
+  let sourceLabel = $derived(sourceLabels[0] ?? '');
   let codeLineNumbers = $derived(block.kind === 'code' && $appConfig.codeLineNumbers);
   let renderedMermaidVisible = $derived(printMode || !mermaidSourceVisible);
 
@@ -204,7 +211,8 @@
   bind:this={element}
   id={block.id}
   class={`doc-block doc-block-${block.kind}`}
-  class:with-source-line={showDocumentLineNumbers && Boolean(sourceLabel)}
+  class:with-source-line={showDocumentLineNumbers && sourceLabels.length > 0}
+  class:with-source-line-stack={showDocumentLineNumbers && sourceLabels.length > 1}
   class:table-measure={block.kind === 'table' && $appConfig.tableConstrainToMeasure}
   data-block-id={block.id}
   data-enhancement={block.enhancement}
@@ -212,8 +220,14 @@
   data-source-end={block.sourceEnd ?? undefined}
   style={showDocumentLineNumbers ? `--source-line-digits: ${documentLineDigits}` : undefined}
 >
-  {#if showDocumentLineNumbers && sourceLabel}
+  {#if showDocumentLineNumbers && sourceLabels.length === 1}
     <span class="source-line" aria-hidden="true" title={`Source line ${sourceLabel}`}>{sourceLabel}</span>
+  {:else if showDocumentLineNumbers && sourceLabels.length > 1}
+    <span class="source-line-stack" aria-hidden="true" title={`Source lines ${sourceLabels[0]}-${sourceLabels.at(-1)}`}>
+      {#each sourceLabels as label}
+        <span>{label}</span>
+      {/each}
+    </span>
   {/if}
   {#if block.kind === 'code'}
     <CodeBlockChrome
@@ -264,6 +278,7 @@
       columnSizing={$appConfig.tableColumnSizing}
       state={tableState}
       onStateChange={onTableStateChange}
+      showRowNumbers={$appConfig.tableRowNumbers}
       {printMode}
     />
   {:else}

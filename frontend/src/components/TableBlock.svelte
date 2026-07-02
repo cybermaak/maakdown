@@ -24,11 +24,18 @@
     columnSizing?: TableColumnSizing;
     state?: TableInteractionState;
     onStateChange?: (blockId: string, state: TableInteractionState | null) => void;
+    showRowNumbers?: boolean;
     printMode?: boolean;
   }
 
-  let { block, constrained = false, columnSizing = 'balanced', state: interactionState, onStateChange, printMode = false }: Props = $props();
+  let { block, constrained = false, columnSizing = 'balanced', state: interactionState, onStateChange, showRowNumbers = false, printMode = false }: Props = $props();
   let projection = $derived(projectTable(block.html, { columnSizing }));
+  let rowNumberColumnVisible = $derived(Boolean(showRowNumbers && projection && !printMode));
+  let projectedColumnWidths = $derived(
+    projection
+      ? projection.columnWidths.map((width) => rowNumberColumnVisible ? width * 0.92 : width)
+      : []
+  );
   let tableState = $derived(interactionState ?? defaultTableInteractionState());
   let visibleRows = $derived(projection ? visibleTableRows(projection, tableState) : []);
   let controlsVisible = $derived(Boolean(projection?.interactive && !printMode));
@@ -305,13 +312,19 @@
   {#if projection && !printMode}
     <table class="reader-table">
       <colgroup>
-        {#each projection.columnWidths as width}
+        {#if rowNumberColumnVisible}
+          <col class="table-row-number-col" />
+        {/if}
+        {#each projectedColumnWidths as width}
           <col style={`width: ${width}%`} />
         {/each}
       </colgroup>
       {#if projection.hasHeader}
         <thead>
           <tr>
+            {#if rowNumberColumnVisible}
+              <th class="table-row-number-heading" scope="col">#</th>
+            {/if}
             {#each projection.headers as cell, index}
               <th class:table-header-active={sortIcon(index) !== 'none' || columnHasFilter(index)} style={alignStyle(cell)} aria-sort={sortAria(index)}>
                 {#if projection.interactive}
@@ -445,8 +458,11 @@
       {/if}
       <tbody>
         {#if visibleRows.length}
-          {#each visibleRows as row (row.originalIndex)}
+          {#each visibleRows as row, rowIndex (row.originalIndex)}
             <tr>
+              {#if rowNumberColumnVisible}
+                <th class="table-row-number" scope="row">{rowIndex + 1}</th>
+              {/if}
               {#each row.cells as cell}
                 <td style={alignStyle(cell)}>{@html cellHtml(cell)}</td>
               {/each}
@@ -454,7 +470,7 @@
           {/each}
         {:else}
           <tr>
-            <td class="table-empty" colspan={projection.columnCount}>
+            <td class="table-empty" colspan={projection.columnCount + (rowNumberColumnVisible ? 1 : 0)}>
               <span>No rows match the current filters.</span>
               <button type="button" onclick={clearAll}>Clear filters</button>
             </td>

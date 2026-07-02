@@ -446,6 +446,8 @@ Scope:
 - refine Reader Settings into compact paired controls: native dropdowns for
   three-option settings, two-choice toggles for binary modes, and switch-style
   boolean controls; the popover dismisses on outside click
+- remove the redundant Settings title so the popover starts directly with
+  controls, and use the same panel background as the command palette
 - explain table column-sizing choices directly in the settings surface
 - align wide code, Mermaid, and table blocks to the reading column's left edge
   so document source-line labels share one stable margin
@@ -462,10 +464,18 @@ Scope:
 - improve table filtering from persistent generic chrome into quiet
   header-anchored per-column controls with typed editors, active chips, row
   counts, clear actions, and empty-state recovery
+- keep table filter editors contained inside their popover at narrow column
+  widths
+- add optional reader-only table row numbers that follow the visible
+  filtered/sorted row order
+- render list source-line gutters from list-item source spans instead of a
+  single top-level list label
 - add a Mermaid source toggle that swaps a rendered diagram with its sanitized
   fenced source in place, without changing the document
 - highlight Mermaid source blocks through the configured code-highlighting
   pipeline when source view is active
+- enrich the command palette with grouped sections, item subtitles, icons,
+  file paths for tabs/recents, and shortcut chips
 
 Out of scope:
 

@@ -78,7 +78,8 @@ const defaultConfig: AppConfig = {
   codeWrap: true,
   printMetadata: true,
   tableConstrainToMeasure: false,
-  tableColumnSizing: 'balanced'
+  tableColumnSizing: 'balanced',
+  tableRowNumbers: false
 };
 
 const listeners: Record<EventName, Array<(payload: unknown) => void>> = {

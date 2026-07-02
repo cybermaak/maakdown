@@ -486,6 +486,7 @@
     if (command === 'toggle-outline') toggleOutline();
     if (command === 'toggle-metadata') toggleMetadata();
     if (command === 'print') void printDocument();
+    if (command === 'theme') cycleTheme();
     if (command === 'palette') openPalette();
     if (command === 'settings') settingsOpen = true;
     if (command === 'about') aboutOpen = true;

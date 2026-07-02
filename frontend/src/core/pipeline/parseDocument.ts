@@ -39,7 +39,7 @@ interface ProcessorData {
   footnotes: DocumentModel['footnotes'];
   languages: Set<string>;
   unresolvedWikilinks: Set<string>;
-  sourcePositions: Array<{ start?: number; end?: number }>;
+  sourcePositions: Array<{ start?: number; end?: number; lines?: number[] }>;
   sourceLineOffset: number;
   collectSourcePositions: boolean;
 }
@@ -160,7 +160,8 @@ function collectMarkdownMetadata(data: ProcessorData): Plugin<[], Nodes> {
       data.sourcePositions = tree.children
         .map((child) => ({
           start: addLineOffset(child.position?.start.line, data.sourceLineOffset),
-          end: addLineOffset(child.position?.end.line, data.sourceLineOffset)
+          end: addLineOffset(child.position?.end.line, data.sourceLineOffset),
+          lines: sourceLinesForNode(child, data.sourceLineOffset)
         }));
     }
 
@@ -230,7 +231,8 @@ function buildBlocks(root: Root, data: ProcessorData): Block[] {
         enhancement: 'none',
         text: textContent(child),
         sourceStart: source?.start,
-        sourceEnd: source?.end
+        sourceEnd: source?.end,
+        sourceLines: source?.lines
       });
       continue;
     }
@@ -261,7 +263,8 @@ function buildBlocks(root: Root, data: ProcessorData): Block[] {
       language,
       level: headingLevel ?? undefined,
       sourceStart: source?.start,
-      sourceEnd: source?.end
+      sourceEnd: source?.end,
+      sourceLines: source?.lines
     });
   }
 
@@ -275,6 +278,30 @@ function countLines(source: string): number {
 
 function addLineOffset(line: number | undefined, offset: number): number | undefined {
   return typeof line === 'number' ? line + offset : undefined;
+}
+
+interface SourcePositionedNode {
+  type?: string;
+  children?: SourcePositionedNode[];
+  position?: { start: { line: number }; end: { line: number } };
+}
+
+function sourceLinesForNode(node: unknown, offset: number): number[] | undefined {
+  const candidate = node as SourcePositionedNode;
+  if (candidate.type !== 'list' || !Array.isArray(candidate.children)) {
+    return undefined;
+  }
+  const lines: number[] = [];
+  for (const item of candidate.children) {
+    const start = addLineOffset(item.position?.start.line, offset);
+    const end = addLineOffset(item.position?.end.line, offset);
+    if (typeof start !== 'number') continue;
+    const finalLine = typeof end === 'number' && end >= start ? end : start;
+    for (let line = start; line <= finalLine; line += 1) {
+      lines.push(line);
+    }
+  }
+  return lines.length > 1 ? lines : undefined;
 }
 
 function rehypeCallouts(): (tree: Root) => void {

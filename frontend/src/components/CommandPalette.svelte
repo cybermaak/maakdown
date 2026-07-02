@@ -1,8 +1,49 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import type { Component } from 'svelte';
+  import {
+    Command,
+    Eye,
+    FileText,
+    FolderOpen,
+    Focus,
+    History,
+    Info,
+    List,
+    Moon,
+    PanelLeft,
+    PanelRight,
+    Printer,
+    RotateCw,
+    Search,
+    Settings,
+    X
+  } from '@lucide/svelte';
   import type { DocumentTab, RecentDocument } from '../core/workspace/workspace';
 
-  interface CommandItem { id: string; label: string; hint?: string; }
+  interface CommandItem {
+    id: string;
+    label: string;
+    subtitle: string;
+    hint?: string;
+    icon: Component;
+  }
+
+  interface PaletteItem {
+    label: string;
+    subtitle: string;
+    section: string;
+    hint?: string;
+    path?: string;
+    icon: Component;
+    run: () => void;
+  }
+
+  interface PaletteGroup {
+    section: string;
+    items: Array<PaletteItem & { index: number }>;
+  }
+
   interface Props {
     tabs: DocumentTab[];
     recents: RecentDocument[];
@@ -18,24 +59,22 @@
   let palette = $state<HTMLElement | undefined>();
   let activeIndex = $state(0);
   const commands: CommandItem[] = [
-    { id: 'open', label: 'Open document', hint: 'Cmd O' },
-    { id: 'find', label: 'Find in document', hint: 'Cmd F' },
-    { id: 'reload', label: 'Reload document', hint: 'Cmd R' },
-    { id: 'print', label: 'Print or save as PDF', hint: 'Cmd P' },
-    { id: 'focus', label: 'Toggle focus mode', hint: 'Cmd Shift F' },
-    { id: 'line-numbers', label: 'Toggle document line numbers' },
-    { id: 'settings', label: 'Settings' },
-    { id: 'about', label: 'About Maakdown' }
+    { id: 'open', label: 'Open document', subtitle: 'Command', hint: 'Cmd O', icon: FolderOpen },
+    { id: 'close-tab', label: 'Close tab', subtitle: 'Command', hint: 'Cmd W', icon: X },
+    { id: 'reopen-tab', label: 'Reopen closed tab', subtitle: 'Command', hint: 'Cmd Shift T', icon: History },
+    { id: 'find', label: 'Find in document', subtitle: 'Command', hint: 'Cmd F', icon: Search },
+    { id: 'reload', label: 'Reload document', subtitle: 'Command', hint: 'Cmd R', icon: RotateCw },
+    { id: 'print', label: 'Print or save as PDF', subtitle: 'Command', hint: 'Cmd P', icon: Printer },
+    { id: 'theme', label: 'Toggle theme', subtitle: 'Setting', icon: Moon },
+    { id: 'settings', label: 'Reading display...', subtitle: 'Setting', icon: Settings },
+    { id: 'focus', label: 'Toggle focus mode', subtitle: 'Setting', hint: 'F', icon: Focus },
+    { id: 'line-numbers', label: 'Toggle document line numbers', subtitle: 'Setting', icon: List },
+    { id: 'toggle-outline', label: 'Toggle outline', subtitle: 'Setting', icon: PanelLeft },
+    { id: 'toggle-metadata', label: 'Toggle metadata', subtitle: 'Setting', icon: PanelRight },
+    { id: 'about', label: 'About Maakdown', subtitle: 'Command', icon: Info }
   ];
-  let visibleCommands = $derived(commands.filter((item) => item.label.toLowerCase().includes(query.toLowerCase())));
-  let visibleTabs = $derived(tabs.filter((tab) => tab.title.toLowerCase().includes(query.toLowerCase())));
-  let visibleHeadings = $derived(headings.filter((heading) => heading.text.toLowerCase().includes(query.toLowerCase())).slice(0, 8));
-  let items = $derived([
-    ...visibleCommands.map((item) => ({ label: item.label, hint: item.hint, run: () => onCommand(item.id) })),
-    ...visibleTabs.map((tab) => ({ label: `Tab: ${tab.title}`, run: () => onOpenPath(tab.path) })),
-    ...visibleHeadings.map((heading) => ({ label: `Heading: ${heading.text}`, run: () => onHeading(heading.id) })),
-    ...(!query ? recents.slice(0, 5).map((recent) => ({ label: `${recent.pinned ? 'Pinned' : 'Recent'}: ${recent.displayName}`, run: () => onOpenPath(recent.path) })) : [])
-  ]);
+  let groups = $derived(buildGroups(query));
+  let items = $derived(groups.flatMap((group) => group.items));
 
   $effect(() => {
     query;
@@ -43,6 +82,80 @@
   });
 
   onMount(() => input?.focus());
+
+  function buildGroups(rawQuery: string): PaletteGroup[] {
+    const normalized = rawQuery.trim().toLocaleLowerCase();
+    const matches = (values: Array<string | undefined>) => !normalized || values.some((value) => value?.toLocaleLowerCase().includes(normalized));
+    const rawGroups: Array<{ section: string; items: PaletteItem[] }> = [
+      {
+        section: 'Commands',
+        items: commands
+          .filter((item) => matches([item.label, item.subtitle]))
+          .map((item) => ({
+            label: item.label,
+            subtitle: item.subtitle,
+            section: 'Commands',
+            hint: item.hint,
+            icon: item.icon,
+            run: () => onCommand(item.id)
+          }))
+      },
+      {
+        section: 'Open tabs',
+        items: tabs
+          .filter((tab) => matches([tab.title, tab.path]))
+          .map((tab) => ({
+            label: tab.title,
+            subtitle: 'Open tab',
+            section: 'Open tabs',
+            path: compactPath(tab.path),
+            icon: FileText,
+            run: () => onOpenPath(tab.path)
+          }))
+      },
+      {
+        section: 'Recent files',
+        items: recents
+          .filter((recent) => matches([recent.displayName, recent.path]))
+          .slice(0, normalized ? 8 : 5)
+          .map((recent) => ({
+            label: recent.displayName,
+            subtitle: recent.pinned ? 'Pinned recent' : 'Recent file',
+            section: 'Recent files',
+            path: compactPath(recent.path),
+            icon: recent.pinned ? Eye : History,
+            run: () => onOpenPath(recent.path)
+          }))
+      },
+      {
+        section: 'Headings',
+        items: headings
+          .filter((heading) => matches([heading.text]))
+          .slice(0, 8)
+          .map((heading) => ({
+            label: heading.text,
+            subtitle: 'Heading',
+            section: 'Headings',
+            icon: Command,
+            run: () => onHeading(heading.id)
+          }))
+      }
+    ];
+    let index = 0;
+    return rawGroups
+      .filter((group) => group.items.length > 0)
+      .map((group) => ({
+        section: group.section,
+        items: group.items.map((item) => ({ ...item, index: index++ }))
+      }));
+  }
+
+  function compactPath(path: string): string {
+    const normalized = path.replaceAll('\\', '/');
+    const parts = normalized.split('/').filter(Boolean);
+    if (parts.length <= 3) return normalized;
+    return `~/${parts.slice(-3).join('/')}`;
+  }
 
   function handleKeydown(event: KeyboardEvent) {
     if (event.key === 'Escape') {
@@ -78,15 +191,31 @@
 
 <div class="palette-scrim" role="presentation" onclick={(event) => { if (event.target === event.currentTarget) onClose(); }} onkeydown={handleKeydown}>
   <div bind:this={palette} class="command-palette" role="dialog" aria-modal="true" aria-label="Command palette">
-    <input bind:this={input} aria-label="Search commands, tabs, and headings" placeholder="Search commands, tabs, and headings" bind:value={query} />
+    <input bind:this={input} aria-label="Search commands, tabs, recents, and headings" placeholder="Search commands, tabs, recents, headings..." bind:value={query} />
     <div class="palette-results">
-      {#each items as item, index}
-        <button
-          class:active={index === activeIndex}
-          aria-current={index === activeIndex ? 'true' : undefined}
-          onmouseenter={() => (activeIndex = index)}
-          onclick={() => { item.run(); onClose(); }}
-        ><span>{item.label}</span><kbd>{'hint' in item ? item.hint ?? '' : ''}</kbd></button>
+      {#each groups as group}
+        <div class="palette-section" role="group" aria-label={group.section}>
+          <div class="palette-section-title">{group.section}</div>
+          {#each group.items as item}
+            {@const Icon = item.icon}
+            <button
+              class:active={item.index === activeIndex}
+              aria-current={item.index === activeIndex ? 'true' : undefined}
+              onmouseenter={() => (activeIndex = item.index)}
+              onclick={() => { item.run(); onClose(); }}
+            >
+              <Icon size={15} aria-hidden="true" />
+              <span class="palette-item-copy">
+                <span class="palette-item-title">{item.label}</span>
+                <small>{item.subtitle}</small>
+              </span>
+              {#if item.path}<span class="palette-path">{item.path}</span>{/if}
+              {#if item.hint}<kbd>{item.hint}</kbd>{/if}
+            </button>
+          {/each}
+        </div>
+      {:else}
+        <div class="palette-empty">No commands, tabs, recents, or headings match.</div>
       {/each}
     </div>
   </div>

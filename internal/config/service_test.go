@@ -16,6 +16,7 @@ func TestPersistsConfigAndSession(t *testing.T) {
 		FrontmatterDisplay: "panel",
 		TableConstrain:     true,
 		TableColumnSizing:  "equal",
+		TableRowNumbers:    true,
 	})
 	service.SetSession(PersistedSession{
 		Tabs:       []SessionTab{{Path: "/notes/one.md", Position: ReaderPosition{ScrollTop: 42}}},
@@ -26,13 +27,49 @@ func TestPersistsConfigAndSession(t *testing.T) {
 	reloaded := NewAt(path)
 	if got := reloaded.GetConfig().Theme; got != "dark" {
 		t.Fatalf("expected dark theme, got %q", got)
-	} else if config := reloaded.GetConfig(); !config.TableConstrain || config.TableColumnSizing != "equal" {
+	} else if config := reloaded.GetConfig(); !config.TableConstrain || config.TableColumnSizing != "equal" || !config.TableRowNumbers {
 		t.Fatalf("expected table config to persist: %#v", config)
 	}
 	if got := reloaded.GetSession(); len(got.Tabs) != 1 || got.Tabs[0].Position.ScrollTop != 42 {
 		t.Fatalf("unexpected session: %#v", got)
 	} else if !got.Recents[0].Pinned || got.Recents[0].MissingAt == "" {
 		t.Fatalf("expected recent metadata to persist: %#v", got.Recents[0])
+	}
+}
+
+func TestMigratesTableRowNumbersDefaultFromV4State(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "state.json")
+	legacy := stateFile{
+		Version: 4,
+		Config: AppConfig{
+			Theme:              "system",
+			HighlighterEngine:  "highlightjs",
+			FrontmatterDisplay: "panel",
+			ReaderTheme:        "editorial",
+			ReaderFont:         "sans",
+			ReaderFontSize:     15,
+			ReaderLineHeight:   "comfortable",
+			ReaderMeasure:      "standard",
+			OutlineVisible:     true,
+			OutlineWidth:       280,
+			MetadataWidth:      260,
+			CodeWrap:           true,
+			PrintMetadata:      true,
+			TableColumnSizing:  "balanced",
+		},
+		Session: PersistedSession{Tabs: []SessionTab{}, Recents: []RecentDocument{}},
+	}
+	data, err := json.Marshal(legacy)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, data, 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	service := NewAt(path)
+	if service.GetConfig().TableRowNumbers {
+		t.Fatalf("expected migrated table row numbers default to be disabled")
 	}
 }
 
