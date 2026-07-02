@@ -443,11 +443,16 @@ Scope:
 
 - redesign Reader Settings as a sectioned Display popover with visible labels,
   concise helper copy, and left-aligned binary controls
+- refine Reader Settings into compact paired controls: native dropdowns for
+  three-option settings, two-choice toggles for binary modes, and switch-style
+  boolean controls; the popover dismisses on outside click
 - explain table column-sizing choices directly in the settings surface
 - align wide code, Mermaid, and table blocks to the reading column's left edge
   so document source-line labels share one stable margin
 - keep fenced code blocks constrained to the active prose measure rather than
   using wide rich-block treatment
+- keep inline Mermaid diagram blocks constrained to the active prose measure,
+  while preserving the larger inspect modal for diagram review
 - use one shared block-body chrome for fenced code, Mermaid source, and rendered
   Mermaid diagram bodies so border/radius changes land in one place
 - replace per-label gutter ticks with a continuous-looking source gutter rule

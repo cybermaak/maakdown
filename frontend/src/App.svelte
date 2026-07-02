@@ -813,6 +813,7 @@
         />
       {/if}
       {#if settingsOpen}
+        <button type="button" class="settings-dismiss-layer" aria-label="Close settings" onclick={() => (settingsOpen = false)}></button>
         <ReaderSettings config={$appConfig} onChange={updateConfig} onClose={() => (settingsOpen = false)} onAbout={() => { settingsOpen = false; aboutOpen = true; }} />
       {/if}
       {#if paletteOpen}

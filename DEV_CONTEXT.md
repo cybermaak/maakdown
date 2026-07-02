@@ -24,6 +24,8 @@ column-targeted table filter ergonomics, and Mermaid source inspection. P19.7
 then incorporated the annotated table-filter spec and mock refinements:
 prose-width code blocks, shaded table headers, type-aware per-column filters,
 shared block chrome for code/Mermaid bodies, and highlighted Mermaid source.
+P19.8 refined the Settings popover density and moved inline Mermaid diagrams to
+the prose measure while preserving the large inspection modal.
 Cross-OS CI/UAT and native screenshot validation passed for P18 on `main`
 (`aa8dccf`) on 2026-07-02; P19 Windows/Linux validation plus
 release-smoke/manual release checks still gate the release. The remaining
@@ -240,15 +242,20 @@ search/focus/drag/drop/print coverage.
   columns use contains search. Pending edits are committed with Apply; Escape
   or click-away cancels the pending filter. Filters combine across columns with
   AND, while selected enum values combine with OR.
-- Wide Mermaid and table blocks align to the same source-line gutter origin as
-  prose by accounting for the line-number gutter width when document line
-  numbers are enabled. Code blocks intentionally follow the active prose
-  measure. Mermaid SVGs are left-aligned inside their diagram surface rather
-  than centered.
+- Table blocks align to the same source-line gutter origin as prose by
+  accounting for the line-number gutter width when document line numbers are
+  enabled. Code blocks and inline Mermaid diagram blocks intentionally follow
+  the active prose measure. Mermaid SVGs are left-aligned inside their diagram
+  surface rather than centered. The Mermaid inspection modal remains the wide
+  canvas for detailed review.
 - Fenced code, Mermaid source, and rendered Mermaid diagram bodies share one
   block-body border/radius rule in `frontend/src/styles/global.css`. Future
   block chrome changes should update that shared selector instead of duplicating
   per-block borders.
+- Reader Settings uses compact paired fields where appropriate: native selects
+  for three-option controls, segmented controls for two-choice modes, and
+  switch-style checkbox inputs for booleans. Settings is dismissed by a
+  transparent app-level click layer outside the popover.
 - Minimap marks are block-index projections: viewport pill, heading ticks,
   structural rich-block ticks for code/diagrams/tables, and search-hit ticks.
   The expanded outline should explain those marks compactly so the collapsed
@@ -328,6 +335,17 @@ See `docs/task-tracker.md` and `docs/next-release-task-tracker.md`.
   the Browser API did not expose, so standalone Playwright produced
   `/tmp/maakdown-refinement-blocks.png` and
   `/tmp/maakdown-refinement-table-filter.png`.
+- 2026-07-02: Completed P19.8 settings density and Mermaid measure polish.
+  Mermaid diagram blocks now follow the active prose measure while the inspect
+  modal remains large. Settings now dismisses on outside click and uses compact
+  paired controls, dropdowns for three-option settings, segmented toggles for
+  two-choice settings, and switch-style boolean controls. Validation passed:
+  `npm run check`, focused UAT-05, and a seeded Playwright visual check with
+  screenshots at `/tmp/maakdown-settings-refactor.png`,
+  `/tmp/maakdown-mermaid-text-width.png`, and
+  `/tmp/maakdown-mermaid-modal.png`; measured code/Mermaid inline widths were
+  both 860px, the modal width was 1102px, outside-click dismissal succeeded,
+  and no console errors were captured.
 - 2026-06-05: Created approved v0.3 spec and implementation plan in `docs/`.
 - 2026-06-05: Re-reviewed revised docs with Claude and Gemini; final consensus was approve.
 - 2026-06-05: Created P0 scaffold, repo guidance, project tracker, signing-safe folders, frontend shell, and Go service stubs.

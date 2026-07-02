@@ -34,11 +34,17 @@ test.describe('UAT-05 reader productivity tools', () => {
     expect(await readMockState(page, (state) => state.clipboardText as string)).toContain('openAndParse');
     await expect(page.getByText('Code copied')).toBeAttached();
 
-    const diagram = page.locator('.doc-block-mermaid');
+    const diagram = page.locator('.doc-block-mermaid').first();
     await diagram.scrollIntoViewIfNeeded();
+    const codeWidth = await code.evaluate((element) => Math.round(element.getBoundingClientRect().width));
+    const diagramWidth = await diagram.evaluate((element) => Math.round(element.getBoundingClientRect().width));
+    expect(Math.abs(codeWidth - diagramWidth)).toBeLessThanOrEqual(1);
+
     await diagram.getByRole('button', { name: 'Inspect diagram' }).click();
     const dialog = page.getByRole('dialog', { name: 'Mermaid diagram' });
     await expect(dialog).toBeVisible();
+    const dialogWidth = await dialog.evaluate((element) => Math.round(element.getBoundingClientRect().width));
+    expect(dialogWidth).toBeGreaterThan(diagramWidth);
     await page.getByRole('button', { name: 'Zoom in' }).click();
     await page.keyboard.press('Escape');
     await expect(dialog).toBeHidden();
@@ -50,16 +56,21 @@ test.describe('UAT-05 reader productivity tools', () => {
     await expect(diagram.locator('.mermaid-rendered svg')).toBeVisible({ timeout: 15_000 });
 
     await page.getByRole('button', { name: 'Settings', exact: true }).click();
-    await expect(page.getByRole('heading', { name: 'Reading display' })).toBeVisible();
-    const tableSizingHelp = page.getByText('Balanced samples content. Equal gives each column the same width.');
+    const settings = page.getByRole('dialog', { name: 'Settings' });
+    await expect(settings.getByRole('heading', { name: 'Reading display' })).toBeVisible();
+    await settings.getByLabel('Line height').selectOption('relaxed');
+    await expect(page.locator('html')).toHaveCSS('--reader-line-height', '1.85');
+    await settings.getByLabel('Measure').selectOption('wide');
+    await expect(page.locator('html')).toHaveCSS('--reading-measure', '1040px');
+    const tableSizingHelp = settings.getByText('Balanced samples content. Equal gives each column the same width.');
     await tableSizingHelp.scrollIntoViewIfNeeded();
     await expect(tableSizingHelp).toBeVisible();
-    await page.getByLabel(/Text size/).fill('18');
+    await settings.getByLabel(/Text size/).fill('18');
     await expect(page.locator('html')).toHaveCSS('--reader-font-size', '18px');
-    await page.getByLabel('Document line numbers').check();
-    await page.getByLabel('Code line numbers').check();
-    await page.getByLabel('Wrap code by default').uncheck();
-    await page.getByRole('button', { name: 'Done' }).click();
+    await settings.getByLabel('Document line numbers').check();
+    await settings.getByLabel('Code line numbers').check();
+    await settings.getByRole('group', { name: 'Code long lines' }).getByRole('button', { name: 'Scroll' }).click();
+    await settings.getByRole('button', { name: 'Done' }).click();
     await expect(page.locator('.source-line').first()).toBeVisible();
     await code.scrollIntoViewIfNeeded();
     await expect(code.locator('pre.code-line-numbers')).toBeVisible();
@@ -68,6 +79,11 @@ test.describe('UAT-05 reader productivity tools', () => {
     await expect(code.locator('pre.code-wrap')).toBeVisible();
     await code.getByRole('button', { name: 'Copy code' }).click();
     expect(await readMockState(page, (state) => state.clipboardText as string)).not.toMatch(/^\s*1\s+export/m);
+
+    await page.getByRole('button', { name: 'Settings', exact: true }).click();
+    await expect(settings).toBeVisible();
+    await page.mouse.click(12, 120);
+    await expect(settings).toBeHidden();
 
     await page.keyboard.press(`${mod}+Shift+f`);
     await expect(page.getByRole('main')).toHaveClass(/focus-mode/);
