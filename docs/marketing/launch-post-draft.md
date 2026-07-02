@@ -24,7 +24,7 @@ heavyweight notes app that wants to own my files.
 So I built **Maakdown**: a desktop app that does one thing — read Markdown
 beautifully.
 
-- Warm, book-like light/dark themes, real typography controls, and a focus mode
+- Warm, book-like light/dark themes and real typography controls
 - Code highlighting, KaTeX math, Mermaid diagrams, GFM tables/callouts/footnotes
 - Wikilinks between notes, tabs, full-document search, a command palette
 - Stays fast on 10,000-line files (virtualized rendering — text appears

@@ -38,7 +38,7 @@ user-visible outcome and the verification that covers it.
 | Copy and Mermaid tools (P10.6–P10.7) | Copy state is announced; diagrams open and close through an accessible dialog | UAT-05 | Executable |
 | Complete-document print (P10.9–P10.10) | Print sees the expanded document; cancellation skips print; cleanup restores bounds | UAT-06 | Executable |
 | Multi-tab performance (P10.14) | Several large tabs retain one bounded active reader with thresholded activation | `scripts/benchmark-workspace.mjs` | Executable |
-| Reader appearance and focus mode (P11.4–P11.5) | Appearance updates without reparse and focus mode remains keyboard reachable | UAT-05 | Executable |
+| Reader appearance (P11.4) | Appearance updates without reparse and the removed focus-mode command/button stay absent | UAT-05 | Executable |
 | Accessibility release gate (P11.9–P11.10) | Keyboard tabs/modals, labels, announcements, and reduced motion pass with no serious/critical axe findings | UAT-07 | Executable |
 | Custom context menus | Native menu suppressed; consistent per-surface custom menu for reader, tabs, outline, and toolbar | UAT-08 | Executable |
 | OS file association (P12.1/P12.3) | OS-handed files open as tabs (live and cold start); Settings offers user-consented default handling with Windows chooser semantics | UAT-09 + on-device macOS and Windows acceptance | Executable |

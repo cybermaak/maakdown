@@ -22,6 +22,7 @@ export interface Block {
   sourceStart?: number;
   sourceEnd?: number;
   sourceLines?: number[];
+  sourceLineGroups?: number[][];
 }
 
 export interface Heading {

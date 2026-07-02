@@ -96,10 +96,10 @@ try {
   await page.locator('.doc-block-mermaid svg').first().waitFor({ timeout: 20_000 });
   await page.waitForTimeout(1400);
 
-  // 3. Command palette: open, search, run focus mode.
+  // 3. Command palette: open, search, toggle document line numbers.
   await page.keyboard.press('Control+k');
   await page.waitForTimeout(700);
-  await typeSlow(page, 'focus');
+  await typeSlow(page, 'line numbers');
   await page.waitForTimeout(700);
   await page.keyboard.press('Enter');
   await page.waitForTimeout(1500);

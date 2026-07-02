@@ -19,7 +19,6 @@ const state = {
     readerFontSize: 15,
     readerLineHeight: 'comfortable',
     readerMeasure: 'standard',
-    focusMode: false,
     outlineVisible: true,
     outlineWidth: 280,
     metadataWidth: 260

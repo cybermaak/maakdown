@@ -38,14 +38,9 @@
   let mermaidSourceVisible = $state(false);
   let mermaidSourceHtml = $state('');
   let codeWrapped = $derived(codeWrapOverride ?? $appConfig.codeWrap);
-  let sourceLabels = $derived(
-    block.sourceLines?.length
-      ? block.sourceLines.map((line) => String(line))
-      : block.sourceStart
-        ? [String(block.sourceStart)]
-        : []
-  );
-  let sourceLabel = $derived(sourceLabels[0] ?? '');
+  let hasListSourceGroups = $derived(Boolean(block.sourceLineGroups?.length && /^<(ol|ul)\b/i.test(block.html.trim())));
+  let hasDocumentSourceLabel = $derived(Boolean(block.sourceStart || hasListSourceGroups));
+  let sourceLabel = $derived(block.sourceStart ? String(block.sourceStart) : '');
   let codeLineNumbers = $derived(block.kind === 'code' && $appConfig.codeLineNumbers);
   let renderedMermaidVisible = $derived(printMode || !mermaidSourceVisible);
 
@@ -93,9 +88,11 @@
     codeWrapped;
     mermaidSourceVisible;
     mermaidSourceHtml;
+    showDocumentLineNumbers;
     queueMicrotask(() => {
       markSearchResults();
       applyCodeDisplay();
+      applyListSourceLines();
       if (element && block.kind === 'mermaid' && renderedMermaidVisible) {
         void stabilizeMountedMermaid(element);
       }
@@ -193,6 +190,33 @@
     }
   }
 
+  function applyListSourceLines() {
+    if (!element) return;
+    element.querySelectorAll('.list-source-line').forEach((label) => label.remove());
+    element.querySelectorAll<HTMLElement>('li.source-lined-list-item').forEach((item) => {
+      item.classList.remove('source-lined-list-item');
+      item.style.removeProperty('--list-source-label-offset');
+    });
+    if (!showDocumentLineNumbers || !hasListSourceGroups || !block.sourceLineGroups?.length) return;
+    const listItems = Array.from(element.querySelectorAll<HTMLElement>(':scope > ol > li, :scope > ul > li'));
+    const blockLeft = element.getBoundingClientRect().left;
+    listItems.forEach((item, index) => {
+      const lines = block.sourceLineGroups?.[index] ?? [];
+      if (!lines.length) return;
+      item.classList.add('source-lined-list-item');
+      item.style.setProperty('--list-source-label-offset', `${item.getBoundingClientRect().left - blockLeft}px`);
+      lines.forEach((line, lineIndex) => {
+        const label = document.createElement('span');
+        label.className = 'list-source-line';
+        label.setAttribute('aria-hidden', 'true');
+        label.title = `Source line ${line}`;
+        label.textContent = String(line);
+        label.style.setProperty('--list-source-line-index', String(lineIndex));
+        item.append(label);
+      });
+    });
+  }
+
   function addPreClass(source: string, className: string): string {
     const preTag = source.match(/<pre\b[^>]*>/)?.[0] ?? '';
     if (preTag.includes('class="')) {
@@ -211,8 +235,7 @@
   bind:this={element}
   id={block.id}
   class={`doc-block doc-block-${block.kind}`}
-  class:with-source-line={showDocumentLineNumbers && sourceLabels.length > 0}
-  class:with-source-line-stack={showDocumentLineNumbers && sourceLabels.length > 1}
+  class:with-source-line={showDocumentLineNumbers && hasDocumentSourceLabel}
   class:table-measure={block.kind === 'table' && $appConfig.tableConstrainToMeasure}
   data-block-id={block.id}
   data-enhancement={block.enhancement}
@@ -220,14 +243,8 @@
   data-source-end={block.sourceEnd ?? undefined}
   style={showDocumentLineNumbers ? `--source-line-digits: ${documentLineDigits}` : undefined}
 >
-  {#if showDocumentLineNumbers && sourceLabels.length === 1}
+  {#if showDocumentLineNumbers && !hasListSourceGroups && sourceLabel}
     <span class="source-line" aria-hidden="true" title={`Source line ${sourceLabel}`}>{sourceLabel}</span>
-  {:else if showDocumentLineNumbers && sourceLabels.length > 1}
-    <span class="source-line-stack" aria-hidden="true" title={`Source lines ${sourceLabels[0]}-${sourceLabels.at(-1)}`}>
-      {#each sourceLabels as label}
-        <span>{label}</span>
-      {/each}
-    </span>
   {/if}
   {#if block.kind === 'code'}
     <CodeBlockChrome

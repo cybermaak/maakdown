@@ -30,7 +30,12 @@ test.describe('UAT-05 reader productivity tools', () => {
     await expect(page.getByRole('search')).toBeVisible();
   });
 
-  test('copy, diagram inspection, appearance, and focus mode work', async ({ page }) => {
+  test('copy, diagram inspection, and appearance controls work', async ({ page }) => {
+    await expect(page.getByRole('button', { name: 'Focus mode' })).toHaveCount(0);
+    await page.keyboard.press(`${mod}+k`);
+    await expect(page.getByRole('dialog', { name: 'Command palette' })).not.toContainText('Focus mode');
+    await page.keyboard.press('Escape');
+
     const code = page.locator('.doc-block-code').first();
     await code.scrollIntoViewIfNeeded();
     await code.getByRole('button', { name: 'Copy code' }).click();
@@ -95,9 +100,6 @@ test.describe('UAT-05 reader productivity tools', () => {
     await expect(settings).toBeVisible();
     await page.mouse.click(12, 120);
     await expect(settings).toBeHidden();
-
-    await page.keyboard.press(`${mod}+Shift+f`);
-    await expect(page.getByRole('main')).toHaveClass(/focus-mode/);
   });
 
   test('document source gutter stays aligned across wide block types', async ({ page }) => {
@@ -119,6 +121,16 @@ test.describe('UAT-05 reader productivity tools', () => {
       await sourceLineLeft('.doc-block-table')
     ];
     expect(Math.max(...lefts) - Math.min(...lefts)).toBeLessThanOrEqual(1);
+    await expect(page.locator('.source-line-stack')).toHaveCount(0);
+
+    const listBlock = page.locator('.doc-block').filter({ has: page.locator('li') }).first();
+    await listBlock.scrollIntoViewIfNeeded();
+    const listLabels = listBlock.locator('.list-source-line');
+    await expect.poll(() => listLabels.count()).toBeGreaterThan(1);
+    const labelTops = await listLabels.evaluateAll((labels) => labels.map((label) => Math.round(label.getBoundingClientRect().top)));
+    const uniqueTops = new Set(labelTops);
+    expect(uniqueTops.size).toBe(labelTops.length);
+    expect([...uniqueTops].sort((a, b) => a - b)).toEqual(labelTops);
 
     const gutter = await page.locator('.doc-block-code.with-source-line').first().evaluate((element) => {
       const rule = getComputedStyle(element, '::before');

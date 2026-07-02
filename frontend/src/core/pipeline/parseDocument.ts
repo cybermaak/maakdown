@@ -39,7 +39,7 @@ interface ProcessorData {
   footnotes: DocumentModel['footnotes'];
   languages: Set<string>;
   unresolvedWikilinks: Set<string>;
-  sourcePositions: Array<{ start?: number; end?: number; lines?: number[] }>;
+  sourcePositions: Array<{ start?: number; end?: number; lines?: number[]; lineGroups?: number[][] }>;
   sourceLineOffset: number;
   collectSourcePositions: boolean;
 }
@@ -161,7 +161,8 @@ function collectMarkdownMetadata(data: ProcessorData): Plugin<[], Nodes> {
         .map((child) => ({
           start: addLineOffset(child.position?.start.line, data.sourceLineOffset),
           end: addLineOffset(child.position?.end.line, data.sourceLineOffset),
-          lines: sourceLinesForNode(child, data.sourceLineOffset)
+          lines: sourceLinesForNode(child, data.sourceLineOffset),
+          lineGroups: sourceLineGroupsForNode(child, data.sourceLineOffset)
         }));
     }
 
@@ -232,7 +233,8 @@ function buildBlocks(root: Root, data: ProcessorData): Block[] {
         text: textContent(child),
         sourceStart: source?.start,
         sourceEnd: source?.end,
-        sourceLines: source?.lines
+        sourceLines: source?.lines,
+        sourceLineGroups: source?.lineGroups
       });
       continue;
     }
@@ -264,7 +266,8 @@ function buildBlocks(root: Root, data: ProcessorData): Block[] {
       level: headingLevel ?? undefined,
       sourceStart: source?.start,
       sourceEnd: source?.end,
-      sourceLines: source?.lines
+      sourceLines: source?.lines,
+      sourceLineGroups: source?.lineGroups
     });
   }
 
@@ -287,21 +290,29 @@ interface SourcePositionedNode {
 }
 
 function sourceLinesForNode(node: unknown, offset: number): number[] | undefined {
+  const groups = sourceLineGroupsForNode(node, offset);
+  const lines = groups?.flat() ?? [];
+  return lines.length > 1 ? lines : undefined;
+}
+
+function sourceLineGroupsForNode(node: unknown, offset: number): number[][] | undefined {
   const candidate = node as SourcePositionedNode;
   if (candidate.type !== 'list' || !Array.isArray(candidate.children)) {
     return undefined;
   }
-  const lines: number[] = [];
+  const groups: number[][] = [];
   for (const item of candidate.children) {
     const start = addLineOffset(item.position?.start.line, offset);
     const end = addLineOffset(item.position?.end.line, offset);
     if (typeof start !== 'number') continue;
     const finalLine = typeof end === 'number' && end >= start ? end : start;
+    const lines: number[] = [];
     for (let line = start; line <= finalLine; line += 1) {
       lines.push(line);
     }
+    groups.push(lines);
   }
-  return lines.length > 1 ? lines : undefined;
+  return groups.length ? groups : undefined;
 }
 
 function rehypeCallouts(): (tree: Root) => void {

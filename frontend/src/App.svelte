@@ -406,10 +406,6 @@
     if (!fixture) void setConfig(next);
   }
 
-  function toggleFocus() {
-    updateConfig({ ...$appConfig, focusMode: !$appConfig.focusMode });
-  }
-
   function showSearch() {
     searchOpen = true;
     settingsOpen = false;
@@ -479,7 +475,6 @@
     if (command === 'previous-tab') cycleTab(-1);
     if (command === 'reload' && activeTab) void reloadDocument(activeTab.path);
     if (command === 'find') showSearch();
-    if (command === 'focus') toggleFocus();
     if (command === 'line-numbers') updateConfig({ ...$appConfig, documentLineNumbers: !$appConfig.documentLineNumbers });
     // Outline/metadata toggles are no longer surfaced as toolbar buttons, but the
     // wiring stays reachable for future advanced settings.
@@ -590,7 +585,6 @@
     if (event.key.toLowerCase() === 'w') command = 'close-tab';
     if (event.key.toLowerCase() === 'r') command = 'reload';
     if (event.key.toLowerCase() === 'f') command = 'find';
-    if (event.shiftKey && event.key.toLowerCase() === 'f') command = 'focus';
     if (event.key === 'Tab') command = event.shiftKey ? 'previous-tab' : 'next-tab';
     if (event.shiftKey && event.key.toLowerCase() === 't') command = 'reopen-tab';
     if (event.key.toLowerCase() === 'q') command = 'quit';
@@ -776,7 +770,6 @@
   <main
     class="workspace-shell"
     class:drop-active={dragActive}
-    class:focus-mode={$appConfig.focusMode}
     class:no-outline={!$appConfig.outlineVisible}
     class:outline-open={mobileOutlineOpen}
     class:metadata-open={mobileMetadataOpen}
@@ -793,7 +786,6 @@
         onTheme={cycleTheme}
         onSearch={showSearch}
         onSettings={() => (settingsOpen = !settingsOpen)}
-        onFocus={toggleFocus}
         onReload={() => activeTab && void reloadDocument(activeTab.path)}
         onBack={() => void moveHistory(-1)}
         onForward={() => void moveHistory(1)}

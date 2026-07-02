@@ -14,7 +14,7 @@ Maakdown is a fast, local-first Markdown viewer designed for technical documents
 
 <br />
 
-<img src="docs/assets/maakdown_demo.webp" alt="Animated demo: reading a technical document, jumping via the outline minimap, running focus mode from the command palette, and switching to the dark theme with a rendered Mermaid diagram" width="900" />
+<img src="docs/assets/maakdown_demo.webp" alt="Animated demo: reading a technical document, jumping via the outline minimap, using the command palette, and switching to the dark theme with a rendered Mermaid diagram" width="900" />
 
 </div>
 
@@ -24,7 +24,7 @@ Maakdown is a fast, local-first Markdown viewer designed for technical documents
 
 We built Maakdown because reading Markdown shouldn't feel like staring at a raw code editor, nor should it require a heavyweight, slow electron app. 
 
-- **A Genuinely Nice Reading Experience**: Warm, book-like themes, careful typography, and a focus mode that clears everything but the words. Tune the font, size, line height, and width to taste.
+- **A Genuinely Nice Reading Experience**: Warm, book-like themes and careful typography. Tune the font, size, line height, and width to taste.
 - **Lightning Fast on Massive Files**: Open a 10,000-line document and it still scrolls smoothly and stays light on memory. Text appears instantly, and richer details fill in as you read.
 - **Built for Technical Minds**: Syntax-highlighted code, KaTeX math, Mermaid diagrams, tables, task lists, callouts, footnotes, and local images all just work.
 - **Local-First & Private**: Your files never leave your machine. Work offline across many notes using tabs, recent files, and a session that restores itself perfectly the next time you open the app.
@@ -43,7 +43,7 @@ We built Maakdown because reading Markdown shouldn't feel like staring at a raw 
 | **Seamless Navigation** | Hover-revealed outline with scroll-spy, internal `#anchors`, and per-tab history. |
 | **Wikilinks** | Native `[[Note Name]]` support resolved through a blazing-fast Go-built vault index. |
 | **Workspace & Output** | Tabbed documents, drag-and-drop, native print, and system print-to-PDF support. |
-| **Custom Appearance** | Light/dark themes, focus mode, and highly configurable typography settings. |
+| **Custom Appearance** | Light/dark themes and highly configurable typography settings. |
 
 ---
 

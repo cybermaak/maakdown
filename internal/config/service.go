@@ -18,7 +18,6 @@ type AppConfig struct {
 	ReaderFontSize      int    `json:"readerFontSize"`
 	ReaderLineHeight    string `json:"readerLineHeight"`
 	ReaderMeasure       string `json:"readerMeasure"`
-	FocusMode           bool   `json:"focusMode"`
 	OutlineVisible      bool   `json:"outlineVisible"`
 	OutlineWidth        int    `json:"outlineWidth"`
 	MetadataWidth       int    `json:"metadataWidth"`

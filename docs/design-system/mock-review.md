@@ -21,7 +21,7 @@ runtime loading model are prototype-only.
 - Render frontmatter status with semantic badges and tags as chips.
 - Use a unified palette for commands, tabs, recents, and headings.
 - Preserve per-tab reading positions.
-- Keep find available in focus mode alongside an explicit exit control.
+- Keep find available from the main toolbar and command palette.
 - Add code language/copy chrome and captioned, zoomable Mermaid figures.
 - Use the mock empty state for drop, open, recents, timestamps, and missing files.
 

@@ -101,17 +101,16 @@ missing-file recovery.
 ### UAT-05 Commands And Editorial Reading Controls
 
 1. Exercise keyboard shortcuts and the command palette for open, find, reload,
-   print, focus mode, and reader appearance.
+   print, and reader appearance.
 2. Verify command-palette results include commands, tabs, recents, and headings.
 3. Change font family, size, line height, and measure.
 4. Verify appearance changes do not reopen or reparse the document and persist
    after restart.
-5. Enter focus mode and verify find plus an explicit exit remain reachable.
-6. Use a narrow viewport and verify there is no page-level horizontal overflow
+5. Use a narrow viewport and verify there is no page-level horizontal overflow
    and essential controls remain reachable.
 
 **Covers:** command parity, keyboard access, command palette, typography,
-focus mode, persistence, and responsive behavior.
+persistence, and responsive behavior.
 
 ### UAT-06 Complete-Document Print Preparation
 
@@ -136,7 +135,6 @@ Run accessibility checks against:
 - search UI
 - command palette
 - reader appearance surface
-- focus mode
 - narrow viewport
 
 Verify:

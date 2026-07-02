@@ -46,7 +46,7 @@ It is not an editor. There is no live preview loop, collaboration, cloud sync, m
 | Navigation history | Must | file and anchor transitions per tab |
 | Command palette and shortcuts | Must | keyboard access to reader commands |
 | Print and system PDF output | Must | print-complete document, not virtualized slice |
-| Focus mode and typography controls | Must | global reader appearance settings |
+| Typography controls | Must | global reader appearance settings |
 | Design-system foundation | Must | tokens, themes, fonts, icons, primitives, and visual QA land before workspace features |
 | Embeds/transclusion `![[Note]]` | Out | recursive resolution and cycle handling deferred |
 | Vault-wide search and tags | Out | future notes index |
@@ -74,7 +74,7 @@ It is not an editor. There is no live preview loop, collaboration, cloud sync, m
 - **F15 Commands:** expose application commands through native menus, keyboard shortcuts, and an in-app command palette.
 - **F16 Reader tools:** support copying code and heading links, inspecting Mermaid diagrams, manual reload, and visible external-change status.
 - **F17 Print:** print the complete rendered document through the system print flow, including print-to-PDF where the operating system provides it.
-- **F18 Appearance:** support focus mode plus configurable reading font, font size, line height, and content measure.
+- **F18 Appearance:** support configurable reading font, font size, line height, and content measure.
 - **F19 Design system:** all application chrome and reader primitives use the approved semantic tokens, themes, typography, iconography, component states, and content voice.
 - **F20 Formatting:** dates, times, file sizes, counts, and durations use one locale-aware formatting layer rather than raw runtime string conversion.
 - **F21 Reader errors:** missing files, permission failures, oversized or unsupported files, parse failures, blocked assets, and watcher loss map to defined recoverable presentations.
@@ -246,7 +246,7 @@ The mock makes these product details explicit:
 - metadata renders status as a badge and tags as chips
 - command search covers commands, open tabs, recents, and headings
 - the empty workspace combines a drop target, open action, recents, and missing-file treatment
-- focus mode leaves explicit find and exit controls available
+- reader appearance controls remain keyboard reachable and reversible
 - code blocks expose language and copy controls
 - Mermaid figures expose captions and a zoom affordance
 
@@ -345,7 +345,6 @@ The visual direction is native editorial: quiet desktop chrome, excellent docume
   `Outline` group.
 - TOC and metadata panels are independently collapsible and resizable.
 - At narrow widths, metadata collapses before the TOC; remaining side panels become drawers.
-- Focus mode hides tabs, navigation, metadata, and secondary controls while retaining search and an explicit exit control.
 - Reader appearance settings offer sans-serif or serif text, stepped font sizes, compact/normal/relaxed line height, and narrow/standard/wide measure.
 - Prose uses the selected reading measure; diagrams, wide tables, and code may
   opt into a wider block measure without stretching ordinary paragraphs.

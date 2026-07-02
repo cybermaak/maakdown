@@ -100,7 +100,8 @@ describe('parseDocument', () => {
       kind: 'other',
       sourceStart: 3,
       sourceEnd: 6,
-      sourceLines: [3, 4, 5, 6]
+      sourceLines: [3, 4, 5, 6],
+      sourceLineGroups: [[3], [4, 5], [6]]
     });
   });
 

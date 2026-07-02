@@ -93,7 +93,7 @@ Behavior:
 - Multi-line blocks may show a compact range only if it remains visually quiet.
 - Line-number gutter must not shift layout unpredictably during virtualization.
 - Copying text from the reader must not include line numbers.
-- Focus mode may keep line numbers visible only if the user enabled them.
+- Reader appearance changes must not hide line numbers when the user enabled them.
 
 Technical notes:
 

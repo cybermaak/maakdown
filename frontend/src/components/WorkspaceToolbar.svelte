@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ArrowLeft, ArrowRight, Command, Eye, FolderOpen, Focus, Moon, RefreshCw, Search, Settings2, Sun } from '@lucide/svelte';
+  import { ArrowLeft, ArrowRight, Command, Eye, FolderOpen, Moon, RefreshCw, Search, Settings2, Sun } from '@lucide/svelte';
   import { IconButton, Toolbar } from '../design-system';
   import WindowControls from './WindowControls.svelte';
   import { isDesktopRuntime, isMacPlatform } from '@ipc';
@@ -19,13 +19,12 @@
     onTheme: () => void;
     onSearch: () => void;
     onSettings: () => void;
-    onFocus: () => void;
     onReload: () => void;
     onBack: () => void;
     onForward: () => void;
   }
 
-  let { reloading, canBack, canForward, config, onOpen, onTheme, onSearch, onSettings, onFocus, onReload, onBack, onForward }: Props = $props();
+  let { reloading, canBack, canForward, config, onOpen, onTheme, onSearch, onSettings, onReload, onBack, onForward }: Props = $props();
 </script>
 
 <header class="workspace-toolbar">
@@ -47,7 +46,6 @@
   <!-- View and meta controls sit at the trailing edge. -->
   <Toolbar class="toolbar-actions" label="View and tools">
     <IconButton icon={Search} label="Find in document" onclick={onSearch} />
-    <IconButton icon={Focus} label="Focus mode" active={config.focusMode} onclick={onFocus} />
     <IconButton icon={Settings2} label="Settings" onclick={onSettings} />
     <IconButton icon={Command} label="Command palette" onclick={() => window.dispatchEvent(new CustomEvent('maakdown:palette'))} />
     <IconButton icon={config.theme === 'dark' ? Sun : Moon} label={`Theme: ${config.theme}`} onclick={onTheme} />

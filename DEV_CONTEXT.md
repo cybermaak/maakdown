@@ -27,7 +27,9 @@ shared block chrome for code/Mermaid bodies, and highlighted Mermaid source.
 P19.8 refined the Settings popover density and moved inline Mermaid diagrams to
 the prose measure while preserving the large inspection modal. P19.9 refined
 the table filter popover, list source-line gutters, table row numbers, Settings
-surface, and command palette result metadata.
+surface, and command palette result metadata. P19.10 removed focus mode from
+the product scope and fixed list line-number placement so labels sit beside
+actual list rows instead of stacking in the block gutter.
 Cross-OS CI/UAT and native screenshot validation passed for P18 on `main`
 (`aa8dccf`) on 2026-07-02; P19 Windows/Linux validation plus
 release-smoke/manual release checks still gate the release. The remaining
@@ -264,9 +266,10 @@ search/focus/drag/drop/print coverage.
   They are reader-only, default off, and render as a leading visible-order
   column after filtering/sorting rather than source row identity.
 - List source-line gutter labels come from top-level Markdown list-item source
-  spans captured during parser metadata collection. Each source line inside a
-  list item is represented as a scalar label in `Block.sourceLines`; the reader
-  renders those labels as a gutter stack without constructing a full source map.
+  spans captured during parser metadata collection. `Block.sourceLineGroups`
+  keeps item-level source line groups so the reader can place labels beside the
+  actual `<li>` rows instead of stacking several labels at the top of the list
+  block.
 - Command palette results are grouped into Commands, Open tabs, Recent files,
   and Headings. Items carry subtitles, leading icons, optional file paths, and
   shortcut chips so similarly named results are distinguishable.
@@ -375,6 +378,16 @@ See `docs/task-tracker.md` and `docs/next-release-task-tracker.md`.
   `/tmp/maakdown-settings-refined.png`,
   `/tmp/maakdown-settings-panel-bg-fixed.png`, and
   `/tmp/maakdown-command-palette-groups.png`.
+- 2026-07-02: Completed P19.10 scope cleanup and line-number regression fix.
+  Removed focus mode from the toolbar, command palette, keyboard shortcut,
+  frontend/backend config shape, CSS, specs, UAT plan, and traceability docs.
+  Replaced stacked list block labels with `Block.sourceLineGroups` and
+  item-positioned `.list-source-line` labels so bullet/ordered-list rows get
+  line labels without overlapping. Validation passed: `go test ./internal/config`,
+  `go test ./...`, `npm test -- --run src/core/pipeline/parseDocument.test.ts`,
+  `npm test`, `npm run check`, focused UAT-05, `npm run build`, and seeded
+  Playwright visual proof. Visual evidence was written to
+  `/tmp/maakdown-line-number-list-fixed.png`.
 - 2026-06-05: Created approved v0.3 spec and implementation plan in `docs/`.
 - 2026-06-05: Re-reviewed revised docs with Claude and Gemini; final consensus was approve.
 - 2026-06-05: Created P0 scaffold, repo guidance, project tracker, signing-safe folders, frontend shell, and Go service stubs.
@@ -417,7 +430,7 @@ See `docs/task-tracker.md` and `docs/next-release-task-tracker.md`.
   guarded print expansion, accessibility, and multi-tab performance gates.
 - 2026-06-06: Began P10/P11 with the semantic reader theme, full-model
   virtualized search, command palette, native print/PDF expansion, persistent
-  typography/measure/focus controls, metadata formatting, responsive collapse,
+  typography/measure controls, metadata formatting, responsive collapse,
   reduced-motion/high-contrast rules, and native menu parity.
 - 2026-06-06: Implemented the UI-driven UAT suite (P7.6). Added a `vite --mode
   uat` entry mode that aliases the Wails IPC boundary to a deterministic
@@ -577,7 +590,7 @@ scripts/release-check.sh
 ## Current Verification Blockers
 
 - P11.11 still needs the remaining Linux WebKitGTK editorial paths:
-  search/focus keyboard coverage, native drag/drop, and system print/PDF.
+  search keyboard coverage, native drag/drop, and system print/PDF.
   Cross-OS CI currently runs the frontend in Chromium, so it does not validate
   native webview rendering, window chrome, drag/drop, or system print behavior.
 - macOS signing and notarization are operational. Windows release signing
@@ -670,7 +683,7 @@ provisioning profiles, notarization credentials, or signed release artifacts.
   Win/Linux; curated release notes flag Windows as WIP/unstable, also noted in
   README + landing page). Added the animated README/landing demo:
   frontend/scripts/capture-readme-demo.mjs records a Playwright-driven flow
-  (scroll → minimap jump → palette focus mode → dark theme + Mermaid) and
+  (scroll → minimap jump → command palette → dark theme + Mermaid) and
   assembles docs/assets/maakdown_demo.webp via ffmpeg frames + img2webp.
 - 2026-06-11: Fixed post-outline-navigation scroll oscillation (subtle macOS,
   erratic Windows). Three layers: (1) workspace is now $state.raw — deep-proxy
@@ -754,7 +767,7 @@ provisioning profiles, notarization credentials, or signed release artifacts.
   theme profiles. `grim` failed because GNOME does not expose the wlroots
   screenshot protocol, GNOME Shell's screenshot D-Bus API returned
   AccessDenied, and `wtype` failed because Mutter does not expose the virtual
-  keyboard protocol. Therefore Linux search/focus keyboard paths, native
+  keyboard protocol. Therefore Linux search keyboard paths, native
   drag/drop, and system print/PDF remain manual or future-harness checks under
   P11.11 rather than completed automated coverage.
 - 2026-06-18: Updated the pinned Wails v2 baseline from v2.11.x to v2.12.x.
@@ -767,7 +780,7 @@ provisioning profiles, notarization credentials, or signed release artifacts.
   `%TEMP%\maakdown-native-acceptance-*\evidence`. Verified clean empty state,
   native second-instance tab opens for `medium-technical-doc.md`,
   `mermaid-cases.md`, and `large-10k-lines.md`, search with highlighted
-  offscreen-capable matches, focus-mode toggle, narrow-window rendering,
+  offscreen-capable matches, narrow-window rendering,
   light/dark theme toggles, custom Windows title-bar controls, Mermaid
   rendering in WebView2, and WebView2 print preview/cancel. A follow-up pass
   after the drag/drop fix verified Explorer-to-app drag/drop by opening

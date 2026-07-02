@@ -31,7 +31,6 @@ export namespace config {
 	    readerFontSize: number;
 	    readerLineHeight: string;
 	    readerMeasure: string;
-	    focusMode: boolean;
 	    outlineVisible: boolean;
 	    outlineWidth: number;
 	    metadataWidth: number;
@@ -57,7 +56,6 @@ export namespace config {
 	        this.readerFontSize = source["readerFontSize"];
 	        this.readerLineHeight = source["readerLineHeight"];
 	        this.readerMeasure = source["readerMeasure"];
-	        this.focusMode = source["focusMode"];
 	        this.outlineVisible = source["outlineVisible"];
 	        this.outlineWidth = source["outlineWidth"];
 	        this.metadataWidth = source["metadataWidth"];

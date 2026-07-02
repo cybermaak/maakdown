@@ -20,7 +20,7 @@ Executable journeys (cover `Done` phases P0–P9):
 - **UAT-04** Desktop workspace lifecycle.
 
 Traceability-only (depend on `Todo` P10/P11 features — search nav, command
-palette, focus mode, reader appearance, print, accessibility gate):
+palette, reader appearance, print, accessibility gate):
 
 - **UAT-03**, **UAT-05**, **UAT-06**, **UAT-07** documented as `Planned`.
 

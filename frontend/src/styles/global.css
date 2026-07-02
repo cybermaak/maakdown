@@ -777,8 +777,7 @@ a {
   border-right: 1px solid var(--reader-gutter-rule);
   pointer-events: none;
 }
-.source-line,
-.source-line-stack {
+.source-line {
   position: absolute;
   left: 0;
   top: 0.2em;
@@ -793,12 +792,24 @@ a {
   text-align: right;
   user-select: none;
 }
-.source-line-stack {
-  display: grid;
-  gap: 0.18em;
+.source-lined-list-item {
+  position: relative;
 }
-.source-line-stack span {
-  display: block;
+.list-source-line {
+  position: absolute;
+  left: calc(-1 * (var(--source-line-gutter-width) + var(--list-source-label-offset, 0px)));
+  top: calc(0.2em + (var(--list-source-line-index, 0) * var(--reader-line-height) * 1em));
+  z-index: 1;
+  min-width: var(--source-line-number-width, calc(var(--source-line-digits, 1) * 0.72em));
+  padding-right: 10px;
+  color: var(--reader-gutter);
+  font-family: var(--font-mono);
+  font-size: 0.72em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.4;
+  text-align: right;
+  user-select: none;
+  pointer-events: none;
 }
 .doc-block.doc-block-table {
   --wide-block-gutter: 0px;
@@ -1323,19 +1334,12 @@ th:focus-within .table-header-actions,
 .search-mark { border-radius: 2px; background: #f4d35e; color: #262217; }
 .search-mark.current { outline: 2px solid var(--focus); outline-offset: 1px; }
 
-.workspace-shell.focus-mode { grid-template-columns: minmax(0, 1fr); }
-.workspace-shell.focus-mode .sidebar,
-.workspace-shell.focus-mode .tab-strip,
-.workspace-shell.focus-mode .minimap,
-.workspace-shell.focus-mode .metadata-panel { display: none; }
-.workspace-shell.focus-mode .workspace-main { grid-column: 1; }
-
 @media (max-width: 900px) {
   .workspace-shell { grid-template-columns: minmax(0, 1fr); }
   .sidebar { position: fixed; z-index: 80; inset: 0 auto 0 0; display: none; width: min(82vw, var(--sidebar-width)); box-sizing: border-box; box-shadow: var(--shadow-pop); }
-  .workspace-shell.outline-open:not(.focus-mode) .sidebar { display: block; }
+  .workspace-shell.outline-open .sidebar { display: block; }
   .metadata-wrap { position: fixed; z-index: 80; inset: calc(var(--toolbar-height) + var(--tabbar-height)) 0 0 auto; display: none; width: min(86vw, var(--metadata-width)); box-shadow: var(--shadow-pop); }
-  .workspace-shell.metadata-open:not(.focus-mode) .metadata-wrap { display: flex; }
+  .workspace-shell.metadata-open .metadata-wrap { display: flex; }
   .document-scroll { padding: 28px 24px; }
   .doc-block.doc-block-table {
     --wide-block-left: 0px;

@@ -349,7 +349,7 @@ and optional diagnostic detail.
 
 Defines one registry for native menus, keyboard shortcuts, toolbar actions, and the command palette.
 
-Each command provides id, label, optional shortcut, enabled predicate, keywords, and execute callback. Initial commands cover open, close/reopen tab, next/previous tab, reload, find, command palette, navigation back/forward, print, focus mode, panel visibility, theme, and reader appearance.
+Each command provides id, label, optional shortcut, enabled predicate, keywords, and execute callback. Initial commands cover open, close/reopen tab, next/previous tab, reload, find, command palette, navigation back/forward, print, panel visibility, theme, and reader appearance.
 
 ### `core/virtualizer`
 
@@ -428,7 +428,7 @@ Print styles hide all application chrome and format links, tables, code, callout
 - `AppShell`: shell layout.
 - `TabStrip`: ordered tabs, active state, file status, close controls, and horizontal overflow.
 - `Toolbar`: stable navigation, document-identity, and reader-control zones with
-  icon commands for open, navigation, reload, palette/find, focus, and panel visibility.
+  icon commands for open, navigation, reload, palette/find, settings, and panel visibility.
 - `CommandPalette`: searchable commands, open tabs, recent files, headings, and settings.
 - `SearchBar`: current-document query, options, result count, and previous/next controls.
 - `TocSidebar`: uses `navigation.scrollToAnchor`.
@@ -444,11 +444,11 @@ Print styles hide all application chrome and format links, tables, code, callout
 
 Svelte components are presentation and orchestration only. Parsing, sanitizing, resolving, highlighting, and diagram rendering stay in `core/`.
 
-The shell uses a native-editorial visual system. Panels are resizable and collapsible; metadata collapses before the TOC at narrow widths, after which side panels become drawers. Focus mode hides tabs and secondary chrome without destroying their state.
+The shell uses a native-editorial visual system. Panels are resizable and collapsible; metadata collapses before the TOC at narrow widths, after which side panels become drawers.
 
 The approved composition uses two top rows: the toolbar and a 38px tab strip.
 The toolbar carries outline visibility, active document identity, watch status,
-command entry, find, reading display, theme, metadata, and focus actions. The
+command entry, find, reading display, theme, and metadata actions. The
 metadata inspector uses badges for semantic status and chips for tags. The
 empty state uses the provisional `M` mark, file drop, open action, recents, and
 missing-file state.
@@ -578,7 +578,7 @@ Generated `wailsjs/` imports are forbidden outside `ipc/`.
 | P8 | Design system foundation | canonical tokens/themes, verified fonts, Lucide, Svelte primitives, component gallery | existing reader can consume the design API; light/dark primitive acceptance passes |
 | P9 | Desktop workspace | tabs, multi-path watchers, persisted sessions, recents, drag-and-drop, native commands | tabs restore and switch safely; inactive tabs do not render or enhance |
 | P10 | Reading productivity | surface corrections, formatting/errors, command palette, current-document search, navigation history, copy tools, diagram inspection, guarded print/PDF | long-document search/navigation and complete printing pass integration tests |
-| P11 | Editorial experience | approved mock composition, typography, focus mode, responsive panels, accessibility | visual, keyboard, narrow-window, light/dark, and accessibility acceptance passes |
+| P11 | Editorial experience | approved mock composition, typography, responsive panels, accessibility | visual, keyboard, narrow-window, light/dark, and accessibility acceptance passes |
 
 ## 10. Test Plan
 
@@ -614,7 +614,7 @@ Integration:
 - cancel print preparation and verify cleanup/restoration
 - format metadata under fixed locale/time-zone fixtures
 - render and recover from every reader error category
-- switch focus mode and reader appearance without reparsing
+- switch reader appearance without reparsing
 
 Performance:
 
@@ -646,13 +646,13 @@ Metrics:
 
 Accessibility and visual:
 
-- approved mock-reference comparison for toolbar, tab strip, outline, metadata, reader, empty state, palette, and focus mode
+- approved mock-reference comparison for toolbar, tab strip, outline, metadata, reader, empty state, and palette
 - ARIA tab, toolbar, search, dialog, and status semantics
 - full keyboard workflow and visible focus
 - command palette and diagram-dialog focus trap/restoration
 - screen-reader announcements for async reader state
 - reduced-motion and high-contrast behavior
-- light/dark, empty, single-tab, multi-tab, search, focus, and narrow-window screenshots
+- light/dark, empty, single-tab, multi-tab, search, and narrow-window screenshots
 
 ## 11. Release Constraints
 

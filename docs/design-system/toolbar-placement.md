@@ -38,7 +38,7 @@ Split the toolbar into two semantic groups instead of one trailing cluster:
   back, forward, reload — structural and document-lifecycle controls, near the
   brand/title and the outline rail they affect.
 - **Trailing (right), `aria-label="View and tools"`:** find, reader appearance,
-  metadata toggle, focus mode, command palette, theme — view and meta controls.
+  metadata toggle, command palette, theme — view and meta controls.
 
 The brand mark, document title, and watch status remain at the leading edge.
 This matches Apple HIG, Fluent, GNOME HIG, and the frameless-app consensus, and
