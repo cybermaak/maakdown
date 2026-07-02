@@ -49,6 +49,10 @@ search/focus/drag/drop/print coverage.
   guidance.
 - `docs/next-release-task-tracker.md`: detailed P13-P19 task tracker with
   per-task macOS/Windows/Linux validation gates.
+- `docs/stability-maintainability-proposal.md`: 2026-07-02 proposal based on
+  bug-fix commit history and current code review, recommending phased
+  hardening around reader lifecycles, block decorations, parser metadata,
+  platform capabilities, and regression gates.
 - `docs/performance-audit-next-release.md`: P13 macOS performance baseline,
   parser source-position overhead, memory probes, and next-release thresholds.
 - `docs/design-system/`: reviewed mock, design-system references, adoption
@@ -292,9 +296,20 @@ search/focus/drag/drop/print coverage.
 ## Planned Tasks
 
 See `docs/task-tracker.md` and `docs/next-release-task-tracker.md`.
+Stability and maintainability hardening is proposed in
+`docs/stability-maintainability-proposal.md`; implementation tracks remain
+proposal-only until accepted as active work.
 
 ## Completed Tasks
 
+- 2026-07-02: Reviewed recent bug-fix commits and current reader/parser/native
+  integration code for stability and maintainability patterns. Added
+  `docs/stability-maintainability-proposal.md` with phased recommendations for
+  reader lifecycle extraction, block decoration adapters, canonical source
+  metadata, platform capability adapters, and bug-class regression gates.
+  Docs-only verification used `find`, `rg`, scoped/staged
+  `git diff --check`, and `git status`; existing uncommitted
+  frontend/generated-binding changes were left untouched.
 - 2026-07-01: Completed P13-P15 next-release implementation on macOS. Added
   P13 benchmark/memory/source-position instrumentation and
   `docs/performance-audit-next-release.md`; added P14 source line metadata,
