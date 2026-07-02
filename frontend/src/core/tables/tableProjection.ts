@@ -20,6 +20,7 @@ export interface TableProjection {
 
 export interface TableInteractionState {
   filter: string;
+  filterColumn?: number | null;
   sortColumn: number | null;
   sortDirection: TableSortDirection;
 }
@@ -49,7 +50,7 @@ const DEFAULTS = {
 const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
 
 export function defaultTableInteractionState(): TableInteractionState {
-  return { filter: '', sortColumn: null, sortDirection: 'none' };
+  return { filter: '', filterColumn: null, sortColumn: null, sortDirection: 'none' };
 }
 
 export function projectTable(html: string, options: ProjectTableOptions = {}): TableProjection | null {
@@ -100,7 +101,11 @@ export function visibleTableRows(projection: TableProjection, state: TableIntera
   const filter = normalizeSearch(state.filter);
   let rows = projection.rows.map((cells, originalIndex) => ({ originalIndex, cells }));
   if (filter) {
-    rows = rows.filter((row) => normalizeSearch(row.cells.map((cell) => cell.text).join(' ')).includes(filter));
+    const filterColumn = state.filterColumn ?? null;
+    rows = rows.filter((row) => {
+      const text = filterColumn === null ? row.cells.map((cell) => cell.text).join(' ') : row.cells[filterColumn]?.text ?? '';
+      return normalizeSearch(text).includes(filter);
+    });
   }
   if (state.sortColumn !== null && state.sortDirection !== 'none') {
     const column = state.sortColumn;
@@ -124,7 +129,7 @@ export function nextSortDirection(current: TableInteractionState, column: number
 }
 
 export function isDefaultTableInteractionState(state: TableInteractionState): boolean {
-  return !state.filter && state.sortColumn === null && state.sortDirection === 'none';
+  return !state.filter && (state.filterColumn ?? null) === null && state.sortColumn === null && state.sortDirection === 'none';
 }
 
 function headerCellsFor(table: HTMLTableElement): Element[] {

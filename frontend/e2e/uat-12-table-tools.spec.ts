@@ -52,38 +52,54 @@ test.describe('UAT-12 table reading tools', () => {
 
   test('filters and stably sorts suitable headered tables', async ({ page }) => {
     const table = page.locator('.table-shell').first();
-    await table.getByLabel('Filter table rows').fill('gamma');
-    await expect(table.getByText('1 / 3 rows')).toBeVisible();
+    await table.getByRole('button', { name: 'Filter Name' }).click();
+    await table.getByLabel('Filter Name column').fill('gamma');
+    await expect(table.locator('.table-row-count').filter({ hasText: '1 of 3 rows match' })).toBeVisible();
+    await expect(table.getByText('Name: "gamma"')).toBeVisible();
     await expect(table.getByRole('cell', { name: 'Gamma' })).toBeVisible();
     await expect(table.getByRole('cell', { name: 'Beta' })).toHaveCount(0);
 
     await table.getByRole('button', { name: 'Clear table filter' }).click();
     await table.getByRole('button', { name: 'Sort Score ascending' }).click();
+    await expect(table.getByText('Score: ascending')).toBeVisible();
     await expect.poll(async () => (await table.locator('tbody tr').first().locator('td').first().innerText()).trim()).toBe('Gamma');
 
     await table.getByRole('button', { name: 'Sort Score descending' }).click();
+    await expect(table.getByText('Score: descending')).toBeVisible();
     await expect.poll(async () => (await table.locator('tbody tr').first().locator('td').first().innerText()).trim()).toBe('Alpha');
 
     await table.getByRole('button', { name: 'Restore Score source order' }).click();
     await expect.poll(async () => (await table.locator('tbody tr').first().locator('td').first().innerText()).trim()).toBe('Beta');
   });
 
+  test('offers recoverable empty state for column filters', async ({ page }) => {
+    const table = page.locator('.table-shell').first();
+    await table.getByRole('button', { name: 'Filter Notes' }).click();
+    await table.getByLabel('Filter Notes column').fill('not-in-this-table');
+
+    await expect(table.locator('.table-row-count').filter({ hasText: '0 of 3 rows match' })).toBeVisible();
+    await expect(table.getByText('No rows match "not-in-this-table".')).toBeVisible();
+    await table.getByRole('button', { name: 'Clear filter' }).click();
+    await expect(table.getByRole('cell', { name: 'Beta' })).toBeVisible();
+  });
+
   test('suppresses controls for headerless and over-limit tables', async ({ page }) => {
     await page.getByRole('heading', { name: 'Headerless table' }).scrollIntoViewIfNeeded();
     const headerless = page.locator('.doc-block-table').filter({ hasText: 'Plain body row' });
-    await expect(headerless.getByLabel('Filter table rows')).toHaveCount(0);
+    await expect(headerless.getByRole('button', { name: /Filter/ })).toHaveCount(0);
     await expect(headerless.getByRole('button', { name: /Sort/ })).toHaveCount(0);
 
     await page.getByRole('heading', { name: 'Large table' }).scrollIntoViewIfNeeded();
     const large = page.locator('.doc-block-table').filter({ hasText: 'Large row 260' });
-    await expect(large.getByLabel('Filter table rows')).toHaveCount(0);
+    await expect(large.getByRole('button', { name: /Filter/ })).toHaveCount(0);
     await expect(large.getByRole('button', { name: /Sort/ })).toHaveCount(0);
   });
 
   test('keeps table interaction state across virtualizer remounts in the current session', async ({ page }) => {
     const table = page.locator('.table-shell').first();
-    await table.getByLabel('Filter table rows').fill('gamma');
-    await expect(table.getByText('1 / 3 rows')).toBeVisible();
+    await table.getByRole('button', { name: 'Filter Name' }).click();
+    await table.getByLabel('Filter Name column').fill('gamma');
+    await expect(table.locator('.table-row-count').filter({ hasText: '1 of 3 rows match' })).toBeVisible();
 
     const surface = page.getByRole('document', { name: 'Markdown document' });
     await surface.evaluate((element) => { element.scrollTop = element.scrollHeight; });
@@ -91,7 +107,7 @@ test.describe('UAT-12 table reading tools', () => {
     await surface.evaluate((element) => { element.scrollTop = 0; });
 
     const remounted = page.locator('.table-shell').first();
-    await expect(remounted.getByLabel('Filter table rows')).toHaveValue('gamma');
-    await expect(remounted.getByText('1 / 3 rows')).toBeVisible();
+    await expect(remounted.getByText('Name: "gamma"')).toBeVisible();
+    await expect(remounted.locator('.table-row-count').filter({ hasText: '1 of 3 rows match' })).toBeVisible();
   });
 });

@@ -56,6 +56,22 @@ describe('tableProjection', () => {
     expect(rows[0].cells[0].text).toBe('Renderer');
   });
 
+  it('can filter a specific column without matching the full row', () => {
+    const projection = projectTable(`
+      <table>
+        <thead><tr><th>Name</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Review queue</td><td>Ready</td></tr>
+          <tr><td>Renderer</td><td>Needs review</td></tr>
+        </tbody>
+      </table>
+    `)!;
+
+    const rows = visibleTableRows(projection, { ...defaultTableInteractionState(), filterColumn: 1, filter: 'review' });
+    expect(rows).toHaveLength(1);
+    expect(rows[0].cells[0].text).toBe('Renderer');
+  });
+
   it('sorts numeric, date-like, and text values stably', () => {
     const projection = projectTable(`
       <table>

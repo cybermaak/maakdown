@@ -58,6 +58,8 @@ machine, or user/manual confirmation when native behavior is involved.
 - reader theme preset cleanup
 - crash and error recovery pass
 - table measure, wrapping, sorting, and filtering tools
+- reader-feedback polish for settings clarity, table filter ergonomics, source
+  gutter alignment, minimap interpretation, and Mermaid source inspection
 
 ### Out Of Scope
 
@@ -417,6 +419,37 @@ Outputs:
 - suppression rules for headerless and very large tables
 - unit tests and UAT coverage for table reader behavior
 
+### P19 - Reader Feedback Polish
+
+Apply the first feedback pass from the implemented P14-P18 surfaces without
+expanding Maakdown into an editor or data grid. This phase keeps the app
+reader-first and uses the standalone feature mock as a layout reference while
+preserving the production design-system token palette.
+
+Scope:
+
+- redesign Reader Settings as a sectioned Display popover with visible labels,
+  concise helper copy, and left-aligned binary controls
+- explain table column-sizing choices directly in the settings surface
+- align wide code, Mermaid, and table blocks to the reading column's left edge
+  so document source-line labels share one stable margin
+- replace per-label gutter ticks with a continuous-looking source gutter rule
+  that remains virtualizer-friendly
+- make minimap semantics visible in the expanded outline: viewport, headings,
+  rich blocks, and search hits
+- improve table filtering from persistent generic chrome into quiet
+  table-specific controls with active chips, row counts, clear actions, and
+  empty-state recovery
+- add a Mermaid source toggle that swaps a rendered diagram with its sanitized
+  fenced source in place, without changing the document
+
+Out of scope:
+
+- editing table data or Mermaid source
+- persistent per-table sort/filter storage beyond the current reader session
+- full spreadsheet-style filter builders
+- source-code editor behavior for Markdown blocks
+
 ## 6. Testing Strategy
 
 Unit/component tests:
@@ -443,6 +476,10 @@ Browser/UAT tests:
 - constrained table width and wrapped cell text
 - headered table sort/filter
 - no-header and very-large table tool suppression
+- sectioned Display settings with labelled reader/code/table controls
+- wide-block line-number gutter alignment and continuous source rule
+- minimap legend for viewport, headings, rich blocks, and search hits
+- Mermaid diagram source toggle
 
 Benchmark tests:
 
@@ -451,6 +488,8 @@ Benchmark tests:
 - search/minimap mark projection cost
 - code-line-number rendering on large code fixtures
 - table column sizing/filtering cost on bounded large-table fixtures
+- no material mounted-block increase from Mermaid source toggles or minimap
+  legends
 - memory after repeated tab open/close cycles
 
 Native validation:
@@ -463,7 +502,7 @@ Native validation:
 
 The release is ready when:
 
-- all P13-P18 tasks in `docs/next-release-task-tracker.md` are `Done`
+- all P13-P19 tasks in `docs/next-release-task-tracker.md` are `Done`
 - every task has passed macOS validation
 - every task has passed or explicitly waived Windows/Linux validation
 - full local release check passes

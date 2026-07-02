@@ -43,7 +43,17 @@ test.describe('UAT-05 reader productivity tools', () => {
     await page.keyboard.press('Escape');
     await expect(dialog).toBeHidden();
 
+    await diagram.getByRole('button', { name: 'Show Mermaid source' }).click();
+    await expect(diagram.locator('.mermaid-source')).toContainText('flowchart');
+    await expect(diagram.locator('.mermaid-rendered svg')).toHaveCount(0);
+    await diagram.getByRole('button', { name: 'Show diagram' }).click();
+    await expect(diagram.locator('.mermaid-rendered svg')).toBeVisible({ timeout: 15_000 });
+
     await page.getByRole('button', { name: 'Settings', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Reading display' })).toBeVisible();
+    const tableSizingHelp = page.getByText('Balanced samples content. Equal gives each column the same width.');
+    await tableSizingHelp.scrollIntoViewIfNeeded();
+    await expect(tableSizingHelp).toBeVisible();
     await page.getByLabel(/Text size/).fill('18');
     await expect(page.locator('html')).toHaveCSS('--reader-font-size', '18px');
     await page.getByLabel('Document line numbers').check();
@@ -61,5 +71,34 @@ test.describe('UAT-05 reader productivity tools', () => {
 
     await page.keyboard.press(`${mod}+Shift+f`);
     await expect(page.getByRole('main')).toHaveClass(/focus-mode/);
+  });
+
+  test('document source gutter stays aligned across wide block types', async ({ page }) => {
+    await page.getByRole('button', { name: 'Settings', exact: true }).click();
+    await page.getByLabel('Document line numbers').check();
+    await page.getByRole('button', { name: 'Done' }).click();
+
+    async function sourceLineLeft(selector: string): Promise<number> {
+      const block = page.locator(selector).first();
+      await block.scrollIntoViewIfNeeded();
+      await expect(block.locator('.source-line')).toBeVisible();
+      return block.locator('.source-line').evaluate((element) => Math.round(element.getBoundingClientRect().left));
+    }
+
+    const lefts = [
+      await sourceLineLeft('.doc-block-heading'),
+      await sourceLineLeft('.doc-block-code'),
+      await sourceLineLeft('.doc-block-mermaid'),
+      await sourceLineLeft('.doc-block-table')
+    ];
+    expect(Math.max(...lefts) - Math.min(...lefts)).toBeLessThanOrEqual(1);
+
+    const gutter = await page.locator('.doc-block-code.with-source-line').first().evaluate((element) => {
+      const rule = getComputedStyle(element, '::before');
+      const label = getComputedStyle(element.querySelector('.source-line') as HTMLElement);
+      return { ruleWidth: rule.borderRightWidth, labelRuleWidth: label.borderRightWidth };
+    });
+    expect(gutter.ruleWidth).toBe('1px');
+    expect(gutter.labelRuleWidth).toBe('0px');
   });
 });

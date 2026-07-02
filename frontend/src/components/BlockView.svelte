@@ -4,7 +4,7 @@
   import { enhancementManager } from '../core/enhancement/enhancementManager';
   import { stabilizeMountedMermaid } from '../core/mermaid/mermaidManager';
   import { appConfig } from '../stores/configStore';
-  import { Copy, Maximize2 } from '@lucide/svelte';
+  import { Code2, Copy, Image, Maximize2 } from '@lucide/svelte';
   import { CodeBlockChrome, IconButton } from '../design-system';
   import TableBlock from './TableBlock.svelte';
   import type { TableInteractionState } from '../core/tables/tableProjection';
@@ -34,9 +34,11 @@
   let enhancementRun = 0;
   let enhancedKey = '';
   let codeWrapOverride = $state<boolean | null>(null);
+  let mermaidSourceVisible = $state(false);
   let codeWrapped = $derived(codeWrapOverride ?? $appConfig.codeWrap);
   let sourceLabel = $derived(block.sourceStart ? String(block.sourceStart) : '');
   let codeLineNumbers = $derived(block.kind === 'code' && $appConfig.codeLineNumbers);
+  let renderedMermaidVisible = $derived(printMode || !mermaidSourceVisible);
 
   $effect(() => {
     block;
@@ -48,6 +50,7 @@
       enhancedKey = '';
     }
     codeWrapOverride = null;
+    mermaidSourceVisible = false;
     observer?.disconnect();
     if (!element || block.enhancement === 'none') {
       observeSize();
@@ -78,10 +81,11 @@
     currentSearchBlockId;
     codeLineNumbers;
     codeWrapped;
+    mermaidSourceVisible;
     queueMicrotask(() => {
       markSearchResults();
       applyCodeDisplay();
-      if (element && block.kind === 'mermaid') {
+      if (element && block.kind === 'mermaid' && renderedMermaidVisible) {
         void stabilizeMountedMermaid(element);
       }
     });
@@ -206,10 +210,26 @@
     {@html html}
   {:else if block.kind === 'mermaid'}
     <div class="block-tools diagram">
-      <span>Diagram</span>
-      <IconButton icon={Maximize2} label="Inspect diagram" size="sm" onclick={() => onInspectDiagram?.('Mermaid diagram', html)} />
+      <span>{renderedMermaidVisible ? 'Diagram' : 'Mermaid source'}</span>
+      <span class="block-tool-actions">
+        {#if !printMode}
+          <IconButton
+            icon={renderedMermaidVisible ? Code2 : Image}
+            label={renderedMermaidVisible ? 'Show Mermaid source' : 'Show diagram'}
+            size="sm"
+            active={!renderedMermaidVisible}
+            onclick={() => (mermaidSourceVisible = !mermaidSourceVisible)}
+          />
+          <IconButton icon={Copy} label="Copy Mermaid source" size="sm" onclick={() => onCopy?.('Mermaid source copied', block.text ?? '')} />
+        {/if}
+        <IconButton icon={Maximize2} label="Inspect diagram" size="sm" onclick={() => onInspectDiagram?.('Mermaid diagram', html)} />
+      </span>
     </div>
-    {@html html}
+    {#if renderedMermaidVisible}
+      {@html html}
+    {:else}
+      <pre class="mermaid-source"><code>{block.text ?? ''}</code></pre>
+    {/if}
   {:else if block.kind === 'table'}
     <TableBlock
       {block}

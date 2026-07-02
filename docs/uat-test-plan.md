@@ -158,16 +158,38 @@ Verify:
    selected reader measure.
 3. Verify long cell text wraps inside the selected measure without page-level
    horizontal overflow.
-4. Filter a headered table and verify only matching rows remain visible.
-5. Sort a headered table by numeric/date/text-like columns and restore source
+4. Filter a headered table from a column header and verify only matching rows
+   remain visible.
+5. Verify active sort/filter chips, row counts, clear actions, and empty-state
+   recovery.
+6. Sort a headered table by numeric/date/text-like columns and restore source
    order.
-6. Verify headerless and over-limit tables suppress sort/filter controls.
-7. Scroll away and back to verify ephemeral table state survives virtualizer
+7. Verify headerless and over-limit tables suppress sort/filter controls.
+8. Scroll away and back to verify ephemeral table state survives virtualizer
    remounts for the current session.
 
 **Covers:** reader-only table projection, measure-constrained table layout,
 automatic column sizing, wrapping, sort/filter controls, suppression rules, and
 virtualizer remount state.
+
+### P19 Reader Feedback Polish Additions
+
+These assertions are folded into existing journeys to keep the suite below the
+release time budget:
+
+1. UAT-03 verifies the hover minimap legend explains viewport, heading,
+   rich-block, and search marks.
+2. UAT-05 verifies Display settings expose visible sections and helper copy for
+   table column sizing.
+3. UAT-05 verifies Mermaid diagrams can toggle to fenced source and back to the
+   rendered diagram without changing the document.
+4. UAT-05 verifies document source-line gutter alignment is stable across
+   headings, code, Mermaid, and tables.
+5. UAT-12 verifies the improved table filter controls, active chips, row
+   counts, and empty-state clear path.
+
+**Covers:** settings clarity, source gutter polish, minimap interpretation,
+table filtering ergonomics, and Mermaid source inspection.
 
 ## Requirements Traceability
 

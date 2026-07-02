@@ -16,6 +16,12 @@ test('UAT-03 finds and navigates offscreen matches in a large document', async (
   await input.fill('typescript implementation sample');
   await expect(page.getByRole('search')).toContainText(/1 \/\s*\d+/);
   await expect(page.locator('.minimap-tick.mark-search').first()).toBeAttached();
+  await page.locator('.minimap').hover();
+  const legend = page.locator('.minimap-legend');
+  await expect(legend).toContainText('Viewport');
+  await expect(legend).toContainText('Headings');
+  await expect(legend).toContainText('Code, diagrams, tables');
+  await expect(legend).toContainText('Search hits');
   await page.getByRole('button', { name: 'Next match' }).click();
   await expect(page.locator('mark.search-mark.current')).toBeVisible();
 

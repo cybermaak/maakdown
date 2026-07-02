@@ -53,6 +53,8 @@ user-visible outcome and the verification that covers it.
 | Reader recovery states (P16) | Missing, permission, parse, asset, enhancement, and oversized states are typed and recoverable where appropriate | UAT-04 + reader error unit tests | Executable |
 | Reader token contract and high contrast (P17) | Reader tokens document line gutters/minimap/code/print and high-contrast preset remains semantic | `docs/design-system/reader-token-contract.md`, theme unit tests, UAT-07 | Executable |
 | Table reading tools (P18) | Tables can be constrained to reader measure, auto-sized/wrapped, filtered, sorted, and safely suppress controls when unsuitable | UAT-12 + table projection unit tests | Executable |
+| Reader feedback polish (P19) | Display settings are sectioned and labelled; source gutters align; minimap marks are explained; Mermaid source can be inspected in place | UAT-03, UAT-05 | Executable |
+| Table filter ergonomics (P19) | Headered tables expose column filter controls with active chips, row counts, clear actions, and recoverable empty states | UAT-12 + table projection unit tests | Executable |
 
 Cross-platform acceptance remains tracked by P7.7/P11.11 and begins after the
 GitHub repository exists and the hosted workflow has produced its first matrix.

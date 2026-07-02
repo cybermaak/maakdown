@@ -8,18 +8,22 @@ The app is a viewer, not an editor. It renders CommonMark/GFM, code, KaTeX math,
 
 ## Current Phase
 
-**Phase:** P11.11 is active; P13-P18 implementation and macOS acceptance are
+**Phase:** P11.11 is active; P13-P19 implementation and macOS acceptance are
 complete for the next release; P0-P10 and P12 are complete
-**Active focus:** remaining native editorial acceptance plus cross-platform
-release validation. P13-P18 delivered the "Precision Reading & Performance"
+**Active focus:** remaining native editorial acceptance and cross-platform
+release validation. P13-P18 delivered the
+"Precision Reading & Performance"
 release scope: macOS benchmark baselines, source-position metadata,
 document/code line numbers, code wrap controls, model-driven minimap marks,
 viewport/search marks, reader statistics, pinned/missing recents, print
 metadata controls, high-contrast reader tokens, reader-only table projection,
 constrained table layout, headered-table sort/filter tools, UAT traceability,
-and macOS release acceptance. Cross-OS CI/UAT and native screenshot validation
-passed for P18 on `main` (`aa8dccf`) on 2026-07-02; release-smoke/manual
-release checks still gate the release. The remaining tracked P11.11 editorial
+and macOS release acceptance. P19 completed the first reader feedback polish
+pass: sectioned Display settings, source-line gutter alignment, minimap legend,
+column-targeted table filter ergonomics, and Mermaid source inspection. Cross-OS
+CI/UAT and native screenshot validation passed for P18 on `main` (`aa8dccf`) on
+2026-07-02; P19 Windows/Linux validation plus release-smoke/manual release
+checks still gate the release. The remaining tracked P11.11 editorial
 acceptance gaps are Linux WebKitGTK search/focus/drag/drop/print coverage.
 
 ## Major Files And Directories
@@ -30,7 +34,7 @@ acceptance gaps are Linux WebKitGTK search/focus/drag/drop/print coverage.
 - `docs/task-tracker.md`: project/progress tracker.
 - `docs/next-release-plan.md`: next feature release plan and implementation
   guidance.
-- `docs/next-release-task-tracker.md`: detailed P13-P18 task tracker with
+- `docs/next-release-task-tracker.md`: detailed P13-P19 task tracker with
   per-task macOS/Windows/Linux validation gates.
 - `docs/performance-audit-next-release.md`: P13 macOS performance baseline,
   parser source-position overhead, memory probes, and next-release thresholds.
@@ -53,8 +57,8 @@ acceptance gaps are Linux WebKitGTK search/focus/drag/drop/print coverage.
 - `frontend/src/core/minimap/`: model-driven minimap mark projection for
   headings, search hits, code, diagrams, and tables.
 - `frontend/src/core/tables/`: sanitized table projection, bounded column
-  sizing, row filtering, stable sorting, and suppression logic for unsuitable
-  table interactions.
+  sizing, row/column filtering, stable sorting, and suppression logic for
+  unsuitable table interactions.
 - `frontend/src/design-system/`: production Svelte primitives and deterministic gallery.
 - `frontend/src/components/`: reader surface, masthead, hover minimap, workspace
   chrome, dialogs, settings, and native-window controls.
@@ -221,6 +225,25 @@ acceptance gaps are Linux WebKitGTK search/focus/drag/drop/print coverage.
 - Cross-OS CI/UAT verification passed for P18 on `main` (`aa8dccf`) in run
   `28557373069` on 2026-07-02. Native WKWebView/WebView2/WebKitGTK screenshot
   capture also passed in run `28557373060`.
+- P19 treats the feature mock as a UX reference, not a wholesale React
+  implementation source. Settings now move toward sectioned Display controls,
+  and table filtering improves through quiet header controls and active chips
+  without adding spreadsheet-style editing or persistent table state.
+- Table filters are column-targeted when opened from a header. The all-cells
+  filter behavior remains the model fallback when no filter column is set, but
+  the reader UI intentionally exposes header-based filtering for clarity and
+  mock alignment.
+- Wide code, Mermaid, and table blocks align to the same source-line gutter
+  origin as prose by accounting for the line-number gutter width when document
+  line numbers are enabled. Mermaid SVGs are left-aligned inside their diagram
+  surface rather than centered.
+- Minimap marks are block-index projections: viewport pill, heading ticks,
+  structural rich-block ticks for code/diagrams/tables, and search-hit ticks.
+  The expanded outline should explain those marks compactly so the collapsed
+  rail is inspectable without persistent chrome.
+- Mermaid source inspection is an in-place reader toggle using `block.text`;
+  it does not edit source Markdown and print mode should continue to render
+  diagrams rather than source.
 
 ## Planned Tasks
 
@@ -259,6 +282,15 @@ See `docs/task-tracker.md` and `docs/next-release-task-tracker.md`.
   `npm run benchmark:workspace`, and `scripts/release-check.sh`. Cross-OS
   CI/UAT and native screenshot validation passed after push in runs
   `28557373069` and `28557373060`.
+- 2026-07-02: Completed P19 reader feedback polish on macOS. Reworked Reader
+  Settings into sectioned Display controls with visible helper copy, fixed
+  checkbox row alignment, clarified Balanced versus Equal table sizing, aligned
+  wide code/Mermaid/table blocks to the source gutter, made the source gutter
+  rule continuous-looking, added a minimap legend, upgraded table filtering to
+  header-opened column filters with chips/row counts/empty-state recovery, and
+  added an in-place Mermaid source toggle. Validation passed:
+  `npm run check`, `npm test`, `npm run build`, focused UAT-03/UAT-05/UAT-12
+  (9 tests), and full `npm run uat` (33 tests).
 - 2026-06-05: Created approved v0.3 spec and implementation plan in `docs/`.
 - 2026-06-05: Re-reviewed revised docs with Claude and Gemini; final consensus was approve.
 - 2026-06-05: Created P0 scaffold, repo guidance, project tracker, signing-safe folders, frontend shell, and Go service stubs.

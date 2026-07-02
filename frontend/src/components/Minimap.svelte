@@ -45,6 +45,12 @@
          outline never sits in the DOM during normal reading. -->
     <nav class="minimap-panel" class:open aria-label="Document outline" inert={!open}>
       <div class="minimap-title">Outline</div>
+      <div class="minimap-legend" aria-label="Minimap legend">
+        <span><i class="legend-viewport"></i>Viewport</span>
+        <span><i class="legend-heading"></i>Headings</span>
+        <span><i class="legend-structure"></i>Code, diagrams, tables</span>
+        <span><i class="legend-search"></i>Search hits</span>
+      </div>
       {#if open}
         {#each headings as heading}
           <TocItem id={heading.id} label={heading.text} depth={heading.depth} active={heading.id === activeHeadingId} onclick={() => onNavigate(heading.id)} />

@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import type { AppConfig } from '../stores/configStore';
   import { SegmentedControl } from '../design-system';
+  import { SlidersHorizontal } from '@lucide/svelte';
   import {
     isDefaultMarkdownHandler,
     isWindowsPlatform,
@@ -64,70 +65,127 @@
 </script>
 
 <div class="reader-settings" role="dialog" aria-label="Settings">
-  <div class="settings-heading"><strong>Settings</strong><button onclick={onClose}>Done</button></div>
-  <SegmentedControl
-    label="Typeface"
-    options={[{ value: 'sans', label: 'Sans' }, { value: 'serif', label: 'Serif' }]}
-    value={config.readerFont}
-    onchange={(value: AppConfig['readerFont']) => update({ readerFont: value })}
-  />
-  <label for="font-size">Text size <span>{config.readerFontSize}px</span></label>
-  <input id="font-size" type="range" min="13" max="22" value={config.readerFontSize} oninput={(event) => update({ readerFontSize: Number(event.currentTarget.value) })} />
-  <SegmentedControl
-    label="Line height"
-    options={[{ value: 'compact', label: 'Compact' }, { value: 'comfortable', label: 'Normal' }, { value: 'relaxed', label: 'Relaxed' }]}
-    value={config.readerLineHeight}
-    onchange={(value: AppConfig['readerLineHeight']) => update({ readerLineHeight: value })}
-  />
-  <SegmentedControl
-    label="Measure"
-    options={[{ value: 'narrow', label: 'Narrow' }, { value: 'standard', label: 'Standard' }, { value: 'wide', label: 'Wide' }]}
-    value={config.readerMeasure}
-    onchange={(value: AppConfig['readerMeasure']) => update({ readerMeasure: value })}
-  />
-  <SegmentedControl
-    label="Table columns"
-    options={[{ value: 'balanced', label: 'Balanced' }, { value: 'equal', label: 'Equal' }]}
-    value={config.tableColumnSizing}
-    onchange={(value: AppConfig['tableColumnSizing']) => update({ tableColumnSizing: value })}
-  />
-  <SegmentedControl
-    label="Reader theme"
-    options={[{ value: 'editorial', label: 'Editorial' }, { value: 'high-contrast', label: 'Contrast' }]}
-    value={config.readerTheme}
-    onchange={(value: AppConfig['readerTheme']) => update({ readerTheme: value })}
-  />
-  <SegmentedControl
-    label="Code highlighting"
-    options={[
-      { value: 'highlightjs', label: 'Highlight.js' },
-      { value: 'shiki-js-regex', label: 'Shiki' }
-    ]}
-    value={config.highlighterEngine}
-    onchange={(value: AppConfig['highlighterEngine']) => update({ highlighterEngine: value })}
-  />
-  <div class="settings-toggle-group" aria-label="Reader display options">
-    <label class="settings-check">
-      <input type="checkbox" checked={config.documentLineNumbers} onchange={(event) => update({ documentLineNumbers: event.currentTarget.checked })} />
-      <span>Document line numbers</span>
-    </label>
-    <label class="settings-check">
-      <input type="checkbox" checked={config.codeLineNumbers} onchange={(event) => update({ codeLineNumbers: event.currentTarget.checked })} />
-      <span>Code line numbers</span>
-    </label>
-    <label class="settings-check">
-      <input type="checkbox" checked={config.codeWrap} onchange={(event) => update({ codeWrap: event.currentTarget.checked })} />
-      <span>Wrap code by default</span>
-    </label>
-    <label class="settings-check">
-      <input type="checkbox" checked={config.tableConstrainToMeasure} onchange={(event) => update({ tableConstrainToMeasure: event.currentTarget.checked })} />
-      <span>Keep tables within text width</span>
-    </label>
-    <label class="settings-check">
-      <input type="checkbox" checked={config.printMetadata} onchange={(event) => update({ printMetadata: event.currentTarget.checked })} />
-      <span>Include metadata when printing</span>
-    </label>
+  <div class="settings-heading">
+    <span class="settings-title"><SlidersHorizontal size={15} aria-hidden="true" /> <strong>Display</strong></span>
+    <button onclick={onClose}>Done</button>
   </div>
+
+  <section class="settings-section">
+    <h3>Reading display</h3>
+    <div class="settings-field">
+      <span class="settings-field-label">Typeface</span>
+      <SegmentedControl
+        label="Typeface"
+        options={[{ value: 'sans', label: 'Sans' }, { value: 'serif', label: 'Serif' }]}
+        value={config.readerFont}
+        onchange={(value: AppConfig['readerFont']) => update({ readerFont: value })}
+      />
+    </div>
+    <div class="settings-field">
+      <label class="settings-field-label with-value" for="font-size">Text size <span>{config.readerFontSize}px</span></label>
+      <input id="font-size" aria-label="Text size" type="range" min="13" max="22" value={config.readerFontSize} oninput={(event) => update({ readerFontSize: Number(event.currentTarget.value) })} />
+    </div>
+    <div class="settings-field">
+      <span class="settings-field-label">Line height</span>
+      <SegmentedControl
+        label="Line height"
+        options={[{ value: 'compact', label: 'Compact' }, { value: 'comfortable', label: 'Normal' }, { value: 'relaxed', label: 'Relaxed' }]}
+        value={config.readerLineHeight}
+        onchange={(value: AppConfig['readerLineHeight']) => update({ readerLineHeight: value })}
+      />
+    </div>
+    <div class="settings-field">
+      <span class="settings-field-label">Measure</span>
+      <SegmentedControl
+        label="Measure"
+        options={[{ value: 'narrow', label: 'Narrow' }, { value: 'standard', label: 'Standard' }, { value: 'wide', label: 'Wide' }]}
+        value={config.readerMeasure}
+        onchange={(value: AppConfig['readerMeasure']) => update({ readerMeasure: value })}
+      />
+    </div>
+    <div class="settings-field">
+      <span class="settings-field-label">Reader theme</span>
+      <SegmentedControl
+        label="Reader theme"
+        options={[{ value: 'editorial', label: 'Editorial' }, { value: 'high-contrast', label: 'Contrast' }]}
+        value={config.readerTheme}
+        onchange={(value: AppConfig['readerTheme']) => update({ readerTheme: value })}
+      />
+    </div>
+  </section>
+
+  <section class="settings-section">
+    <h3>Document</h3>
+    <label class="settings-check">
+      <input aria-label="Document line numbers" type="checkbox" checked={config.documentLineNumbers} onchange={(event) => update({ documentLineNumbers: event.currentTarget.checked })} />
+      <span class="settings-check-copy">
+        <span>Document line numbers</span>
+        <small>Show source line starts in the reader gutter.</small>
+      </span>
+    </label>
+  </section>
+
+  <section class="settings-section">
+    <h3>Code blocks</h3>
+    <label class="settings-check">
+      <input aria-label="Code line numbers" type="checkbox" checked={config.codeLineNumbers} onchange={(event) => update({ codeLineNumbers: event.currentTarget.checked })} />
+      <span class="settings-check-copy">
+        <span>Code line numbers</span>
+        <small>Show a per-block code gutter.</small>
+      </span>
+    </label>
+    <label class="settings-check">
+      <input aria-label="Wrap code by default" type="checkbox" checked={config.codeWrap} onchange={(event) => update({ codeWrap: event.currentTarget.checked })} />
+      <span class="settings-check-copy">
+        <span>Wrap code by default</span>
+        <small>Long lines wrap unless a block is switched to scroll.</small>
+      </span>
+    </label>
+    <div class="settings-field">
+      <span class="settings-field-label">Code highlighting</span>
+      <SegmentedControl
+        label="Code highlighting"
+        options={[
+          { value: 'highlightjs', label: 'Highlight.js' },
+          { value: 'shiki-js-regex', label: 'Shiki' }
+        ]}
+        value={config.highlighterEngine}
+        onchange={(value: AppConfig['highlighterEngine']) => update({ highlighterEngine: value })}
+      />
+    </div>
+  </section>
+
+  <section class="settings-section">
+    <h3>Tables</h3>
+    <label class="settings-check">
+      <input aria-label="Keep tables within text width" type="checkbox" checked={config.tableConstrainToMeasure} onchange={(event) => update({ tableConstrainToMeasure: event.currentTarget.checked })} />
+      <span class="settings-check-copy">
+        <span>Keep tables within text width</span>
+        <small>Auto-size columns and wrap cells to the selected measure.</small>
+      </span>
+    </label>
+    <div class="settings-field">
+      <span class="settings-field-label">Column sizing</span>
+      <SegmentedControl
+        label="Table columns"
+        options={[{ value: 'balanced', label: 'Balanced' }, { value: 'equal', label: 'Equal' }]}
+        value={config.tableColumnSizing}
+        onchange={(value: AppConfig['tableColumnSizing']) => update({ tableColumnSizing: value })}
+      />
+      <p class="settings-field-help">Balanced samples content. Equal gives each column the same width.</p>
+    </div>
+  </section>
+
+  <section class="settings-section">
+    <h3>Printing</h3>
+    <label class="settings-check">
+      <input aria-label="Include metadata when printing" type="checkbox" checked={config.printMetadata} onchange={(event) => update({ printMetadata: event.currentTarget.checked })} />
+      <span class="settings-check-copy">
+        <span>Include metadata when printing</span>
+        <small>Print the frontmatter masthead with the document.</small>
+      </span>
+    </label>
+  </section>
   {#if handlerSupported}
     <div class="settings-association">
       <span class="settings-association-label">File association</span>
