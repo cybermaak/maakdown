@@ -29,7 +29,10 @@ the prose measure while preserving the large inspection modal. P19.9 refined
 the table filter popover, list source-line gutters, table row numbers, Settings
 surface, and command palette result metadata. P19.10 removed focus mode from
 the product scope and fixed list line-number placement so labels sit beside
-actual list rows instead of stacking in the block gutter.
+actual list rows instead of stacking in the block gutter. P19.11 tightened the
+source/table number ergonomics: list labels now share the normal gutter margin,
+reader copy strips visual number chrome, and table row numbers use a smaller
+column.
 Cross-OS CI/UAT and native screenshot validation passed for P18 on `main`
 (`aa8dccf`) on 2026-07-02; P19 Windows/Linux validation plus
 release-smoke/manual release checks still gate the release. The remaining
@@ -264,12 +267,17 @@ search/focus/drag/drop/print coverage.
   palette.
 - Table row numbers are a persisted v5 config setting named `tableRowNumbers`.
   They are reader-only, default off, and render as a leading visible-order
-  column after filtering/sorting rather than source row identity.
+  column after filtering/sorting rather than source row identity. The row
+  number column is intentionally narrow, targeting roughly 4% of table width.
 - List source-line gutter labels come from top-level Markdown list-item source
   spans captured during parser metadata collection. `Block.sourceLineGroups`
   keeps item-level source line groups so the reader can place labels beside the
   actual `<li>` rows instead of stacking several labels at the top of the list
   block.
+- Source-line labels and table row numbers are visual reader chrome, not
+  document content. The app strips `.source-line`, `.list-source-line`,
+  `.table-row-number`, and `.table-row-number-heading` from selected reader
+  text for native copy and the custom context-menu Copy command.
 - Command palette results are grouped into Commands, Open tabs, Recent files,
   and Headings. Items carry subtitles, leading icons, optional file paths, and
   shortcut chips so similarly named results are distinguishable.
@@ -388,6 +396,14 @@ See `docs/task-tracker.md` and `docs/next-release-task-tracker.md`.
   `npm test`, `npm run check`, focused UAT-05, `npm run build`, and seeded
   Playwright visual proof. Visual evidence was written to
   `/tmp/maakdown-line-number-list-fixed.png`.
+- 2026-07-02: Completed P19.11 source/table number ergonomics. Fixed list
+  source-line label alignment to the normal gutter coordinate, added selected
+  reader text sanitization for native copy and context-menu Copy, and reduced
+  table row-number real estate to a narrow 4% column with smaller type/padding.
+  Validation passed: `npm run check`,
+  `npm test -- --run src/core/pipeline/parseDocument.test.ts`, focused
+  UAT-05/UAT-12, and seeded Playwright visual proof. Visual evidence was
+  written to `/tmp/maakdown-line-number-copy-table-fixed.png`.
 - 2026-06-05: Created approved v0.3 spec and implementation plan in `docs/`.
 - 2026-06-05: Re-reviewed revised docs with Claude and Gemini; final consensus was approve.
 - 2026-06-05: Created P0 scaffold, repo guidance, project tracker, signing-safe folders, frontend shell, and Go service stubs.

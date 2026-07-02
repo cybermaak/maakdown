@@ -493,6 +493,36 @@
     void navigator.clipboard?.writeText(text).catch(() => {});
   }
 
+  function sanitizedSelectionText(): string {
+    const selection = window.getSelection?.();
+    if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return '';
+    const container = document.createElement('div');
+    for (let index = 0; index < selection.rangeCount; index += 1) {
+      container.append(selection.getRangeAt(index).cloneContents());
+    }
+    container.querySelectorAll('.source-line, .list-source-line, .table-row-number, .table-row-number-heading').forEach((node) => node.remove());
+    container.style.position = 'fixed';
+    container.style.left = '-10000px';
+    container.style.top = '0';
+    container.style.whiteSpace = 'pre-wrap';
+    document.body.append(container);
+    const text = container.innerText.trim();
+    container.remove();
+    return text;
+  }
+
+  function handleCopy(event: ClipboardEvent) {
+    const selection = window.getSelection?.();
+    if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return;
+    const anchor = selection.anchorNode instanceof Element ? selection.anchorNode : selection.anchorNode?.parentElement;
+    const focus = selection.focusNode instanceof Element ? selection.focusNode : selection.focusNode?.parentElement;
+    if (!anchor?.closest('.document-scroll') && !focus?.closest('.document-scroll')) return;
+    const text = sanitizedSelectionText();
+    if (!text) return;
+    event.clipboardData?.setData('text/plain', text);
+    event.preventDefault();
+  }
+
   function closeOthers(keepId: string) {
     for (const id of workspace.tabs.map((tab) => tab.id)) {
       if (id !== keepId) handleClose(id);
@@ -500,7 +530,7 @@
   }
 
   function readerMenuItems(target: HTMLElement): ContextMenuItem[] {
-    const selection = window.getSelection?.()?.toString().trim() ?? '';
+    const selection = sanitizedSelectionText();
     const link = target.closest('a');
     const image = target.closest('img');
     const pre = target.closest('pre');
@@ -618,6 +648,7 @@
     updateNarrow();
     narrowQuery.addEventListener('change', updateNarrow);
     window.addEventListener('keydown', handleKeydown);
+    window.addEventListener('copy', handleCopy);
     if (import.meta.env.MODE === 'benchmark') {
       (window as unknown as {
         __maakdownBenchmark?: {
@@ -738,6 +769,7 @@
     );
     removeListeners.push(() => window.removeEventListener('maakdown:palette', openPaletteEvent));
     removeListeners.push(() => narrowQuery.removeEventListener('change', updateNarrow));
+    removeListeners.push(() => window.removeEventListener('copy', handleCopy));
   });
 
   $effect(() => {

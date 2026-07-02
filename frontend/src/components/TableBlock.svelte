@@ -33,7 +33,7 @@
   let rowNumberColumnVisible = $derived(Boolean(showRowNumbers && projection && !printMode));
   let projectedColumnWidths = $derived(
     projection
-      ? projection.columnWidths.map((width) => rowNumberColumnVisible ? width * 0.92 : width)
+      ? projection.columnWidths.map((width) => rowNumberColumnVisible ? width * 0.96 : width)
       : []
   );
   let tableState = $derived(interactionState ?? defaultTableInteractionState());

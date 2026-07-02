@@ -797,7 +797,7 @@ a {
 }
 .list-source-line {
   position: absolute;
-  left: calc(-1 * (var(--source-line-gutter-width) + var(--list-source-label-offset, 0px)));
+  left: calc(-1 * var(--list-source-label-offset, 0px));
   top: calc(0.2em + (var(--list-source-line-index, 0) * var(--reader-line-height) * 1em));
   z-index: 1;
   min-width: var(--source-line-number-width, calc(var(--source-line-digits, 1) * 0.72em));
@@ -854,7 +854,7 @@ a {
   hyphens: auto;
 }
 .reader-table col.table-row-number-col {
-  width: 8%;
+  width: 4%;
 }
 .reader-table thead th {
   position: relative;
@@ -868,10 +868,14 @@ a {
   width: 1%;
   color: var(--reader-muted);
   font-family: var(--font-mono);
-  font-size: 0.78em;
+  font-size: 0.72em;
   font-variant-numeric: tabular-nums;
   text-align: right;
   white-space: nowrap;
+}
+.reader-table .table-row-number-heading,
+.reader-table .table-row-number {
+  padding-inline: 4px 6px;
 }
 .reader-table .table-row-number {
   font-weight: 500;

@@ -52,6 +52,12 @@ test.describe('UAT-12 table reading tools', () => {
     await expect(tableBlock).toHaveClass(/table-measure/);
     await expect(tableBlock.getByRole('columnheader', { name: '#' })).toBeVisible();
     await expect(tableBlock.locator('tbody .table-row-number').first()).toHaveText('1');
+    const rowNumberRatio = await tableBlock.locator('.reader-table').evaluate((table) => {
+      const rowNumber = table.querySelector('.table-row-number') as HTMLElement | null;
+      if (!rowNumber) return 1;
+      return rowNumber.getBoundingClientRect().width / table.getBoundingClientRect().width;
+    });
+    expect(rowNumberRatio).toBeLessThan(0.07);
     await expect.poll(() => tableBlock.evaluate((element) => Math.round(element.getBoundingClientRect().width))).toBeLessThanOrEqual(720);
 
     const longCell = tableBlock.getByRole('cell', { name: /very long operational note/ });

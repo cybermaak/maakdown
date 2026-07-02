@@ -128,9 +128,30 @@ test.describe('UAT-05 reader productivity tools', () => {
     const listLabels = listBlock.locator('.list-source-line');
     await expect.poll(() => listLabels.count()).toBeGreaterThan(1);
     const labelTops = await listLabels.evaluateAll((labels) => labels.map((label) => Math.round(label.getBoundingClientRect().top)));
+    const listLabelLeft = await listLabels.first().evaluate((element) => Math.round(element.getBoundingClientRect().left));
     const uniqueTops = new Set(labelTops);
     expect(uniqueTops.size).toBe(labelTops.length);
     expect([...uniqueTops].sort((a, b) => a - b)).toEqual(labelTops);
+    expect(Math.abs(listLabelLeft - lefts[0])).toBeLessThanOrEqual(1);
+
+    const firstListLabel = await listLabels.first().textContent();
+    const firstListItemText = await listBlock.locator('li').first().evaluate((item) => {
+      const clone = item.cloneNode(true) as HTMLElement;
+      clone.querySelectorAll('.list-source-line').forEach((node) => node.remove());
+      return clone.innerText.trim();
+    });
+    await listBlock.evaluate((block) => {
+      const selection = window.getSelection();
+      const range = document.createRange();
+      range.selectNodeContents(block);
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+    });
+    await listBlock.click({ button: 'right' });
+    await page.getByRole('menuitem', { name: 'Copy' }).click();
+    const copiedListText = await readMockState(page, (state) => state.clipboardText as string);
+    expect(copiedListText).toContain(firstListItemText);
+    expect(copiedListText).not.toContain(firstListLabel?.trim() ?? '');
 
     const gutter = await page.locator('.doc-block-code.with-source-line').first().evaluate((element) => {
       const rule = getComputedStyle(element, '::before');
