@@ -21,7 +21,7 @@
 | P10 | Done | Reading productivity | search, history, reader tools, and complete-document printing work |
 | P11 | In Progress | Editorial experience | browser-level cross-OS UAT and Windows WebView2 native acceptance are green; remaining native editorial gaps are Linux WebKitGTK search/focus/drag/drop/print coverage |
 | P12 | Done | OS integration | macOS, Linux, and Windows Markdown association are complete |
-| P13-P18 | In Progress | Next release: Precision Reading & Performance | P13-P18 implementation and macOS acceptance are complete; Windows/Linux validation after P18 push blocks release |
+| P13-P18 | In Progress | Next release: Precision Reading & Performance | P13-P18 implementation, macOS acceptance, cross-OS CI/UAT, and native screenshots are complete; release-smoke/manual release checks still gate release |
 
 ## P0 - Scaffold
 

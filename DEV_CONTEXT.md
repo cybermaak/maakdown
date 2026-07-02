@@ -17,9 +17,9 @@ document/code line numbers, code wrap controls, model-driven minimap marks,
 viewport/search marks, reader statistics, pinned/missing recents, print
 metadata controls, high-contrast reader tokens, reader-only table projection,
 constrained table layout, headered-table sort/filter tools, UAT traceability,
-and macOS release acceptance. Initial cross-OS CI/UAT passed for `487c875` on
-2026-07-02; Windows/Linux validation for the P18 changes still needs a push/CI
-run and remains release-blocking. The remaining tracked P11.11 editorial
+and macOS release acceptance. Cross-OS CI/UAT and native screenshot validation
+passed for P18 on `main` (`aa8dccf`) on 2026-07-02; release-smoke/manual
+release checks still gate the release. The remaining tracked P11.11 editorial
 acceptance gaps are Linux WebKitGTK search/focus/drag/drop/print coverage.
 
 ## Major Files And Directories
@@ -218,10 +218,9 @@ acceptance gaps are Linux WebKitGTK search/focus/drag/drop/print coverage.
 - Table interaction state is per active `DocumentView` session state keyed by
   block id, so it survives virtualizer remounts but is not written to Markdown
   and is reset when the document model changes.
-- Initial cross-OS CI/UAT verification for the pre-P18 `main` commit
-  (`487c875`) passed on macOS, Windows, and Linux on 2026-07-02. Re-run CI after
-  pushing P18 before treating Windows/Linux release gates as passed for the new
-  work.
+- Cross-OS CI/UAT verification passed for P18 on `main` (`aa8dccf`) in run
+  `28557373069` on 2026-07-02. Native WKWebView/WebView2/WebKitGTK screenshot
+  capture also passed in run `28557373060`.
 
 ## Planned Tasks
 
@@ -257,8 +256,9 @@ See `docs/task-tracker.md` and `docs/next-release-task-tracker.md`.
   updates. Validation passed: `go test ./internal/config`, `go test ./...`,
   `npm test`, `npm run check`, `npm run build`, focused UAT-12,
   `npm run uat` (31 tests), `npm run benchmark`,
-  `npm run benchmark:workspace`, and `scripts/release-check.sh`. Windows and
-  Linux validation for P18 remain pending until CI runs after push.
+  `npm run benchmark:workspace`, and `scripts/release-check.sh`. Cross-OS
+  CI/UAT and native screenshot validation passed after push in runs
+  `28557373069` and `28557373060`.
 - 2026-06-05: Created approved v0.3 spec and implementation plan in `docs/`.
 - 2026-06-05: Re-reviewed revised docs with Claude and Gemini; final consensus was approve.
 - 2026-06-05: Created P0 scaffold, repo guidance, project tracker, signing-safe folders, frontend shell, and Go service stubs.
