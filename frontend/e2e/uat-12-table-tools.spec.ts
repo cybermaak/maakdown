@@ -107,6 +107,9 @@ test.describe('UAT-12 table reading tools', () => {
     await scrollToHeading(page, 'Release readiness matrix');
     const matrix = page.locator('.table-shell').filter({ hasText: 'Reader startup' });
     await expect(matrix).toBeVisible();
+    const priorityHeaderLabel = matrix.locator('thead th').filter({ hasText: 'Priority' }).locator('.table-header-label');
+    await expect(priorityHeaderLabel).toBeVisible();
+    expect((await priorityHeaderLabel.boundingBox())?.width ?? 0).toBeGreaterThan(40);
 
     await matrix.getByRole('button', { name: 'Filter Status' }).click();
     const dialog = matrix.getByRole('dialog', { name: 'Filter Status' });
