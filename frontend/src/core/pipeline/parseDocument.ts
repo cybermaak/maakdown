@@ -44,6 +44,8 @@ interface ProcessorData {
   collectSourcePositions: boolean;
 }
 
+type SourcePosition = { start?: number; end?: number; lines?: number[]; lineGroups?: number[][] };
+
 export async function parseDocument(request: ParseRequest): Promise<DocumentModel> {
   const frontmatter = extractFrontmatter(request.source);
   const data: ProcessorData = {
@@ -164,6 +166,8 @@ function collectMarkdownMetadata(data: ProcessorData): Plugin<[], Nodes> {
           lines: sourceLinesForNode(child, data.sourceLineOffset),
           lineGroups: sourceLineGroupsForNode(child, data.sourceLineOffset)
         }));
+      annotateTopLevelSourceLines(tree, data.sourceLineOffset);
+      annotateListItemSourceLines(tree, data.sourceLineOffset);
     }
 
     visit(tree, 'code', (node: { lang?: string; value?: string }) => {
@@ -239,7 +243,8 @@ function buildBlocks(root: Root, data: ProcessorData): Block[] {
       continue;
     }
 
-    const source = data.sourcePositions[sourceIndex++];
+    const indexedSource = data.sourcePositions[sourceIndex++];
+    const source = sourcePositionForElement(child) ?? indexedSource;
     const headingLevel = headingDepth(child);
     const id = `block-${blocks.length + 1}`;
     const kind = blockKind(child);
@@ -287,6 +292,32 @@ interface SourcePositionedNode {
   type?: string;
   children?: SourcePositionedNode[];
   position?: { start: { line: number }; end: { line: number } };
+  data?: { hProperties?: Record<string, unknown> };
+}
+
+function annotateTopLevelSourceLines(tree: Nodes, offset: number): void {
+  if (!('children' in tree) || !Array.isArray(tree.children)) {
+    return;
+  }
+  for (const child of tree.children as SourcePositionedNode[]) {
+    annotateNodeSourceLines(child, offset);
+  }
+}
+
+function annotateNodeSourceLines(node: SourcePositionedNode, offset: number): void {
+  const start = addLineOffset(node.position?.start.line, offset);
+  if (typeof start !== 'number') {
+    return;
+  }
+  const end = addLineOffset(node.position?.end.line, offset) ?? start;
+  const lines = sourceLinesForRange(node.position?.start.line, node.position?.end.line, offset);
+  node.data = node.data ?? {};
+  node.data.hProperties = {
+    ...(node.data.hProperties ?? {}),
+    dataSourceStart: String(start),
+    dataSourceEnd: String(end),
+    dataSourceLines: lines.join(',')
+  };
 }
 
 function sourceLinesForNode(node: unknown, offset: number): number[] | undefined {
@@ -302,17 +333,71 @@ function sourceLineGroupsForNode(node: unknown, offset: number): number[][] | un
   }
   const groups: number[][] = [];
   for (const item of candidate.children) {
-    const start = addLineOffset(item.position?.start.line, offset);
-    const end = addLineOffset(item.position?.end.line, offset);
-    if (typeof start !== 'number') continue;
-    const finalLine = typeof end === 'number' && end >= start ? end : start;
-    const lines: number[] = [];
-    for (let line = start; line <= finalLine; line += 1) {
-      lines.push(line);
-    }
+    const lines = sourceLinesForRange(item.position?.start.line, item.position?.end.line, offset);
+    if (!lines.length) continue;
     groups.push(lines);
   }
   return groups.length ? groups : undefined;
+}
+
+function annotateListItemSourceLines(tree: Nodes, offset: number): void {
+  visit(tree, 'listItem', (node: SourcePositionedNode) => {
+    annotateNodeSourceLines(node, offset);
+  });
+}
+
+function sourceLinesForRange(startLine: number | undefined, endLine: number | undefined, offset: number): number[] {
+  const start = addLineOffset(startLine, offset);
+  const end = addLineOffset(endLine, offset);
+  if (typeof start !== 'number') {
+    return [];
+  }
+  const finalLine = typeof end === 'number' && end >= start ? end : start;
+  const lines: number[] = [];
+  for (let line = start; line <= finalLine; line += 1) {
+    lines.push(line);
+  }
+  return lines;
+}
+
+function sourcePositionForElement(node: Element): SourcePosition | undefined {
+  const start = sourceLineNumberProperty(node.properties?.dataSourceStart);
+  if (typeof start !== 'number') {
+    return undefined;
+  }
+  const end = sourceLineNumberProperty(node.properties?.dataSourceEnd) ?? start;
+  const lines = sourceLineArrayProperty(node.properties?.dataSourceLines);
+  return {
+    start,
+    end,
+    lines: lines.length > 1 ? lines : undefined,
+    lineGroups: sourceLineGroupsForElement(node)
+  };
+}
+
+function sourceLineGroupsForElement(node: Element): number[][] | undefined {
+  if (node.tagName !== 'ol' && node.tagName !== 'ul') {
+    return undefined;
+  }
+  const groups = node.children
+    .filter((child): child is Element => isElement(child) && child.tagName === 'li')
+    .map((item) => sourceLineArrayProperty(item.properties?.dataSourceLines))
+    .filter((lines) => lines.length > 0);
+  return groups.length ? groups : undefined;
+}
+
+function sourceLineNumberProperty(value: unknown): number | undefined {
+  const text = Array.isArray(value) ? value[0] : value;
+  const line = typeof text === 'number' ? text : typeof text === 'string' ? Number.parseInt(text, 10) : NaN;
+  return Number.isFinite(line) ? line : undefined;
+}
+
+function sourceLineArrayProperty(value: unknown): number[] {
+  const raw = Array.isArray(value) ? value.join(',') : typeof value === 'string' || typeof value === 'number' ? String(value) : '';
+  return raw
+    .split(',')
+    .map((item) => Number.parseInt(item, 10))
+    .filter((line): line is number => Number.isFinite(line));
 }
 
 function rehypeCallouts(): (tree: Root) => void {

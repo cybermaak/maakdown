@@ -103,6 +103,31 @@ describe('parseDocument', () => {
       sourceLines: [3, 4, 5, 6],
       sourceLineGroups: [[3], [4, 5], [6]]
     });
+    expect(model.blocks[1]?.html).toContain('data-source-lines="3"');
+    expect(model.blocks[1]?.html).toContain('data-source-lines="4,5"');
+    expect(model.blocks[1]?.html).toContain('data-source-lines="6"');
+  });
+
+  it('keeps list-item source labels when raw anchors precede lists', async () => {
+    const model = await parseDocument({
+      path: '/tmp/anchored-list.md',
+      source: [
+        '### Checkpoint',
+        '',
+        '<a id="checkpoint"></a>',
+        '',
+        'The checkpoint captures the operational contract:',
+        '',
+        '1. Parse and sanitize before HTML reaches the document surface.',
+        '2. Preserve plain text and source code while enhancements are pending.',
+        '3. Resolve navigation through stable document-model identifiers.'
+      ].join('\n')
+    });
+
+    const list = model.blocks.find((block) => block.html.includes('<ol'));
+    expect(list?.html).toContain('data-source-lines="7"');
+    expect(list?.html).toContain('data-source-lines="8"');
+    expect(list?.html).toContain('data-source-lines="9"');
   });
 
   it('recognizes sanitized GFM tables as table blocks', async () => {
@@ -112,7 +137,7 @@ describe('parseDocument', () => {
     });
 
     expect(model.blocks[0]).toMatchObject({ kind: 'table', text: 'NameCountAlpha2' });
-    expect(model.blocks[0]?.html).toContain('<table>');
+    expect(model.blocks[0]?.html).toContain('<table');
     expect(model.blocks[0]?.html).toContain('align="right"');
   });
 

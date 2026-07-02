@@ -31,7 +31,10 @@ export const sanitizeSchema = {
       ['className', ...classNames],
       ['id'],
       ['dataBlockId'],
-      ['dataAssetRef']
+      ['dataAssetRef'],
+      ['dataSourceStart'],
+      ['dataSourceEnd'],
+      ['dataSourceLines']
     ],
     a: [
       ...(defaultSchema.attributes?.a ?? []),

@@ -162,3 +162,45 @@ test.describe('UAT-05 reader productivity tools', () => {
     expect(gutter.labelRuleWidth).toBe('0px');
   });
 });
+
+test.describe('UAT-05 document source labels', () => {
+  test.beforeEach(async ({ page }) => {
+    await seedApp(page, {
+      documents: [{
+        path: '/uat/source-list-labels.md',
+        trustedRoot: '/uat',
+        contents: [
+          '### Checkpoint',
+          '',
+          '<a id="checkpoint"></a>',
+          '',
+          'The checkpoint captures the operational contract:',
+          '',
+          '1. Parse and sanitize before HTML reaches the document surface.',
+          '2. Preserve plain text and source code while enhancements are pending.',
+          '3. Resolve navigation through stable document-model identifiers.',
+          '',
+          '### Delivery checklist',
+          '',
+          '- [x] Define the scenario and its observable outcome.',
+          '- [x] Identify the trusted boundary and failure behavior.',
+          '- [ ] Capture performance values on macOS WebKit.'
+        ].join('\n')
+      }],
+      session: { tabs: [{ path: '/uat/source-list-labels.md' }], activePath: '/uat/source-list-labels.md' },
+      config: { documentLineNumbers: true }
+    });
+    await gotoApp(page);
+    await expectReaderReady(page);
+  });
+
+  test('labels every ordered and task-list item after raw anchors', async ({ page }) => {
+    const orderedList = page.locator('.doc-block').filter({ hasText: 'Parse and sanitize before HTML reaches the document surface.' }).first();
+    const taskList = page.locator('.doc-block').filter({ hasText: 'Define the scenario and its observable outcome.' }).first();
+
+    await expect(orderedList.locator('.list-source-line')).toHaveText(['7', '8', '9']);
+    await expect(taskList.locator('.list-source-line')).toHaveText(['13', '14', '15']);
+    await expect(orderedList.locator('.source-line')).toHaveCount(0);
+    await expect(taskList.locator('.source-line')).toHaveCount(0);
+  });
+});

@@ -38,8 +38,9 @@
   let mermaidSourceVisible = $state(false);
   let mermaidSourceHtml = $state('');
   let codeWrapped = $derived(codeWrapOverride ?? $appConfig.codeWrap);
-  let hasListSourceGroups = $derived(Boolean(block.sourceLineGroups?.length && /^<(ol|ul)\b/i.test(block.html.trim())));
-  let hasDocumentSourceLabel = $derived(Boolean(block.sourceStart || hasListSourceGroups));
+  let isSourceListBlock = $derived(/^<(ol|ul)\b/i.test(block.html.trim()));
+  let hasListSourceLabels = $derived(Boolean(isSourceListBlock && (block.sourceLineGroups?.length || /data-source-lines=/i.test(block.html))));
+  let hasDocumentSourceLabel = $derived(Boolean(block.sourceStart || hasListSourceLabels));
   let sourceLabel = $derived(block.sourceStart ? String(block.sourceStart) : '');
   let codeLineNumbers = $derived(block.kind === 'code' && $appConfig.codeLineNumbers);
   let renderedMermaidVisible = $derived(printMode || !mermaidSourceVisible);
@@ -197,11 +198,11 @@
       item.classList.remove('source-lined-list-item');
       item.style.removeProperty('--list-source-label-offset');
     });
-    if (!showDocumentLineNumbers || !hasListSourceGroups || !block.sourceLineGroups?.length) return;
+    if (!showDocumentLineNumbers || !hasListSourceLabels) return;
     const listItems = Array.from(element.querySelectorAll<HTMLElement>(':scope > ol > li, :scope > ul > li'));
     const blockLeft = element.getBoundingClientRect().left;
     listItems.forEach((item, index) => {
-      const lines = block.sourceLineGroups?.[index] ?? [];
+      const lines = sourceLinesFromListItem(item) ?? block.sourceLineGroups?.[index] ?? [];
       if (!lines.length) return;
       item.classList.add('source-lined-list-item');
       item.style.setProperty('--list-source-label-offset', `${item.getBoundingClientRect().left - blockLeft}px`);
@@ -215,6 +216,18 @@
         item.append(label);
       });
     });
+  }
+
+  function sourceLinesFromListItem(item: HTMLElement): number[] | null {
+    const raw = item.dataset.sourceLines;
+    if (!raw) {
+      return null;
+    }
+    const lines = raw
+      .split(',')
+      .map((value) => Number.parseInt(value, 10))
+      .filter((line): line is number => Number.isFinite(line));
+    return lines.length ? lines : null;
   }
 
   function addPreClass(source: string, className: string): string {
@@ -243,7 +256,7 @@
   data-source-end={block.sourceEnd ?? undefined}
   style={showDocumentLineNumbers ? `--source-line-digits: ${documentLineDigits}` : undefined}
 >
-  {#if showDocumentLineNumbers && !hasListSourceGroups && sourceLabel}
+  {#if showDocumentLineNumbers && !hasListSourceLabels && sourceLabel}
     <span class="source-line" aria-hidden="true" title={`Source line ${sourceLabel}`}>{sourceLabel}</span>
   {/if}
   {#if block.kind === 'code'}

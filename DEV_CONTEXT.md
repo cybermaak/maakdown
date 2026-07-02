@@ -835,3 +835,14 @@ provisioning profiles, notarization credentials, or signed release artifacts.
   `HKCU\Software\Classes\Maakdown.md\DefaultIcon`, and requested a shell
   association/icon refresh. Focused Windows icon tests passed:
   `go test -run "TestWindowsIconResource|TestEnsureWindowsMarkdownIcon" .`.
+- 2026-07-02: Stabilized document source labels around raw anchors and lists
+  (P19.12). The parser now attaches sanitized `data-source-start`,
+  `data-source-end`, and `data-source-lines` metadata to top-level rendered
+  Markdown elements, plus per-item metadata on list items. `BlockView` prefers
+  the rendered element/list-item metadata over the previous block-index
+  fallback, so raw HTML anchors and invisible nodes cannot collapse an ordered
+  or task list to one source label or shift following heading labels. Verified
+  parser regression coverage, focused UAT-05, and an ad hoc large-fixture
+  Playwright check on `fixtures/large-10k-lines.md`: Delivery checklist labels
+  were `335-340`, Delivery heading was `333`, and Quantitative model was `342`.
+  Screenshot evidence: `/tmp/maakdown-large-delivery-line-labels-fixed.png`.
