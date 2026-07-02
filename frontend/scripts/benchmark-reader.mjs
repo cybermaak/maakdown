@@ -146,6 +146,8 @@ try {
     const highlightedBlocks = await page.locator('[data-highlight-engine]').count();
     await page.locator('[data-highlight-engine="shiki-js-regex"]').first().waitFor();
     const shikiBlocks = await page.locator('[data-highlight-engine="shiki-js-regex"]').count();
+    await page.getByRole('button', { name: 'Done', exact: true }).click();
+    await page.locator('.settings-dismiss-layer').waitFor({ state: 'detached', timeout: 5_000 });
     const [renderedMath] = await scrollUntilMounted('.katex');
     const enhancements = {
       highlightedBlocks,
