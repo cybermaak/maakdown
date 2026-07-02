@@ -61,6 +61,14 @@ test.describe('UAT-05 reader productivity tools', () => {
     await page.getByRole('button', { name: 'Settings', exact: true }).click();
     const settings = page.getByRole('dialog', { name: 'Settings' });
     await expect(settings.getByRole('heading', { name: 'Reading display' })).toBeVisible();
+    const settingsBackground = await settings.evaluate((element) => getComputedStyle(element).backgroundColor);
+    await settings.getByRole('button', { name: 'Done' }).click();
+    await page.keyboard.press(`${mod}+k`);
+    const paletteBackground = await page.getByRole('dialog', { name: 'Command palette' }).evaluate((element) => getComputedStyle(element).backgroundColor);
+    expect(settingsBackground).toBe(paletteBackground);
+    await page.keyboard.press('Escape');
+
+    await page.getByRole('button', { name: 'Settings', exact: true }).click();
     await settings.getByLabel('Line height').selectOption('relaxed');
     await expect(page.locator('html')).toHaveCSS('--reader-line-height', '1.85');
     await settings.getByLabel('Measure').selectOption('wide');

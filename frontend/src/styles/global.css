@@ -342,7 +342,7 @@ a {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 16px 18px;
-  background: var(--surface-bg);
+  background: var(--panel-bg);
   box-shadow: var(--shadow-pop);
 }
 

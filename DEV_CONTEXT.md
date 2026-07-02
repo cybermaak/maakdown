@@ -364,7 +364,7 @@ See `docs/task-tracker.md` and `docs/next-release-task-tracker.md`.
   palette refinements. Fixed table text filter input containment; added
   per-list-item source-line labels for Markdown list blocks; added persisted
   reader-only table row numbers; removed the Settings "Display" title and
-  matched its background to the command palette; and enriched command palette
+  matched its root background token to the command palette; and enriched command palette
   rows with sections, subtitles, icons, paths, and shortcut chips. Validation
   passed: `go test ./internal/config`,
   `npm test -- --run src/core/pipeline/parseDocument.test.ts src/core/tables/tableProjection.test.ts`,
@@ -372,7 +372,8 @@ See `docs/task-tracker.md` and `docs/next-release-task-tracker.md`.
   Visual evidence was written to `/tmp/maakdown-filter-popup-fixed.png`,
   `/tmp/maakdown-list-line-numbers.png`,
   `/tmp/maakdown-table-row-numbers.png`,
-  `/tmp/maakdown-settings-refined.png`, and
+  `/tmp/maakdown-settings-refined.png`,
+  `/tmp/maakdown-settings-panel-bg-fixed.png`, and
   `/tmp/maakdown-command-palette-groups.png`.
 - 2026-06-05: Created approved v0.3 spec and implementation plan in `docs/`.
 - 2026-06-05: Re-reviewed revised docs with Claude and Gemini; final consensus was approve.
