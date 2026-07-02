@@ -60,12 +60,15 @@ test.describe('UAT-12 table reading tools', () => {
     const table = page.locator('.table-shell').first();
     await table.getByRole('button', { name: 'Filter Name' }).click();
     await table.getByLabel('Filter Name column').fill('gamma');
+    await expect(table.getByRole('dialog', { name: 'Filter Name' }).getByText('1 of 3 rows match')).toBeVisible();
+    await expect(table.getByRole('cell', { name: 'Beta' })).toBeVisible();
+    await table.getByRole('button', { name: 'Apply' }).click();
     await expect(table.locator('.table-row-count').filter({ hasText: '1 of 3 rows match' })).toBeVisible();
-    await expect(table.getByText('Name: "gamma"')).toBeVisible();
+    await expect(table.getByText('Name contains "gamma"')).toBeVisible();
     await expect(table.getByRole('cell', { name: 'Gamma' })).toBeVisible();
     await expect(table.getByRole('cell', { name: 'Beta' })).toHaveCount(0);
 
-    await table.getByRole('button', { name: 'Clear table filter' }).click();
+    await table.getByRole('button', { name: 'Remove Name filter' }).click();
     await table.getByRole('button', { name: 'Sort Score ascending' }).click();
     await expect(table.getByText('Score: ascending')).toBeVisible();
     await expect.poll(async () => (await table.locator('tbody tr').first().locator('td').first().innerText()).trim()).toBe('Gamma');
@@ -82,11 +85,30 @@ test.describe('UAT-12 table reading tools', () => {
     const table = page.locator('.table-shell').first();
     await table.getByRole('button', { name: 'Filter Notes' }).click();
     await table.getByLabel('Filter Notes column').fill('not-in-this-table');
+    await expect(table.getByRole('dialog', { name: 'Filter Notes' }).getByText('0 of 3 rows match')).toBeVisible();
+    await table.getByRole('button', { name: 'Apply' }).click();
 
     await expect(table.locator('.table-row-count').filter({ hasText: '0 of 3 rows match' })).toBeVisible();
-    await expect(table.getByText('No rows match "not-in-this-table".')).toBeVisible();
-    await table.getByRole('button', { name: 'Clear filter' }).click();
+    await expect(table.getByText('No rows match the current filters.')).toBeVisible();
+    await table.getByRole('button', { name: 'Clear filters' }).click();
     await expect(table.getByRole('cell', { name: 'Beta' })).toBeVisible();
+  });
+
+  test('uses per-column enum checklist filters from the header popover', async ({ page }) => {
+    await scrollToHeading(page, 'Release readiness matrix');
+    const matrix = page.locator('.table-shell').filter({ hasText: 'Reader startup' });
+    await expect(matrix).toBeVisible();
+
+    await matrix.getByRole('button', { name: 'Filter Status' }).click();
+    const dialog = matrix.getByRole('dialog', { name: 'Filter Status' });
+    await expect(dialog.getByText('Value checklist')).toBeVisible();
+    await dialog.getByRole('checkbox', { name: /stable/i }).check();
+    await expect(dialog.getByText('8 of 12 rows match')).toBeVisible();
+    await dialog.getByRole('button', { name: 'Apply' }).click();
+
+    await expect(matrix.getByText('Status: stable')).toBeVisible();
+    await expect(matrix.locator('.table-row-count').filter({ hasText: '8 of 12 rows match' })).toBeVisible();
+    await expect(matrix.getByRole('cell', { name: 'Needs review' })).toHaveCount(0);
   });
 
   test('suppresses controls for headerless and over-limit tables', async ({ page }) => {
@@ -110,6 +132,7 @@ test.describe('UAT-12 table reading tools', () => {
     const table = page.locator('.table-shell').first();
     await table.getByRole('button', { name: 'Filter Name' }).click();
     await table.getByLabel('Filter Name column').fill('gamma');
+    await table.getByRole('button', { name: 'Apply' }).click();
     await expect(table.locator('.table-row-count').filter({ hasText: '1 of 3 rows match' })).toBeVisible();
 
     const surface = page.getByRole('document', { name: 'Markdown document' });
@@ -118,7 +141,7 @@ test.describe('UAT-12 table reading tools', () => {
     await surface.evaluate((element) => { element.scrollTop = 0; });
 
     const remounted = page.locator('.table-shell').first();
-    await expect(remounted.getByText('Name: "gamma"')).toBeVisible();
+    await expect(remounted.getByText('Name contains "gamma"')).toBeVisible();
     await expect(remounted.locator('.table-row-count').filter({ hasText: '1 of 3 rows match' })).toBeVisible();
   });
 });

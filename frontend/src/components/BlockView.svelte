@@ -32,9 +32,11 @@
   let observer: IntersectionObserver | undefined;
   let resizeObserver: ResizeObserver | undefined;
   let enhancementRun = 0;
+  let mermaidSourceRun = 0;
   let enhancedKey = '';
   let codeWrapOverride = $state<boolean | null>(null);
   let mermaidSourceVisible = $state(false);
+  let mermaidSourceHtml = $state('');
   let codeWrapped = $derived(codeWrapOverride ?? $appConfig.codeWrap);
   let sourceLabel = $derived(block.sourceStart ? String(block.sourceStart) : '');
   let codeLineNumbers = $derived(block.kind === 'code' && $appConfig.codeLineNumbers);
@@ -51,6 +53,7 @@
     }
     codeWrapOverride = null;
     mermaidSourceVisible = false;
+    mermaidSourceHtml = '';
     observer?.disconnect();
     if (!element || block.enhancement === 'none') {
       observeSize();
@@ -82,6 +85,7 @@
     codeLineNumbers;
     codeWrapped;
     mermaidSourceVisible;
+    mermaidSourceHtml;
     queueMicrotask(() => {
       markSearchResults();
       applyCodeDisplay();
@@ -91,6 +95,11 @@
     });
   });
 
+  $effect(() => {
+    if (block.kind !== 'mermaid' || !mermaidSourceVisible) return;
+    void enhanceMermaidSource();
+  });
+
   async function enhance() {
     const run = ++enhancementRun;
     const next = await enhancementManager.enhance(block);
@@ -98,6 +107,14 @@
       html = next;
       enhancedKey = `${block.id}:${$appConfig.highlighterEngine}:${$appConfig.theme}`;
       onEnhanced?.(block.id);
+    }
+  }
+
+  async function enhanceMermaidSource() {
+    const run = ++mermaidSourceRun;
+    const highlighted = await enhancementManager.highlightSource(`${block.id}:source`, block.text ?? '', 'mermaid');
+    if (run === mermaidSourceRun) {
+      mermaidSourceHtml = addPreClass(highlighted, 'mermaid-source');
     }
   }
 
@@ -169,6 +186,14 @@
     }
   }
 
+  function addPreClass(source: string, className: string): string {
+    const preTag = source.match(/<pre\b[^>]*>/)?.[0] ?? '';
+    if (preTag.includes('class="')) {
+      return source.replace(/<pre([^>]*?)class="/, `<pre$1class="${className} `);
+    }
+    return source.replace('<pre', `<pre class="${className}"`);
+  }
+
   onDestroy(() => {
     observer?.disconnect();
     resizeObserver?.disconnect();
@@ -227,6 +252,8 @@
     </div>
     {#if renderedMermaidVisible}
       {@html html}
+    {:else if mermaidSourceHtml}
+      {@html mermaidSourceHtml}
     {:else}
       <pre class="mermaid-source"><code>{block.text ?? ''}</code></pre>
     {/if}

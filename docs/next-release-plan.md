@@ -320,9 +320,16 @@ Behavior:
 - Provide at least one deterministic auto-sizing mode. A balanced proportional
   mode based on header and sampled cell text length is the default; an equal
   column mode may be exposed if it remains simple.
-- Headered Markdown tables can show ephemeral sort and filter controls.
-- Filtering searches visible row text across the table and updates only the
-  rendered reader view.
+- Headered Markdown tables can show ephemeral sort and per-column filter
+  controls anchored to each column header.
+- Filtering is type-aware per column: numeric and date columns use inclusive
+  ranges, compact enum-like text columns use checklists, and general text
+  columns use contains search. Filters across columns combine with AND; selected
+  enum values within a column combine with OR.
+- Filter edits are staged in a popover and committed with Apply. Escape or
+  click-away cancels pending edits, and Clear removes that column's filter.
+- Active filter/sort chips, row counts, and a recoverable no-match state appear
+  only when table interactions are active.
 - Sorting is per column, stable, and cycles through ascending, descending, and
   source order.
 - Headerless tables do not show sort/filter controls.
@@ -340,11 +347,16 @@ Technical notes:
 - Compute column widths from bounded samples so large documents do not pay an
   unbounded sizing cost.
 - Compare numeric-looking values numerically, date-like values by timestamp, and
-  all other values with locale-aware text comparison.
+  all other values with locale-aware text comparison. Blanks sort last in both
+  directions.
+- Infer compact enum filters only when the distinct nonblank value count is at
+  most `min(12, round(0.4 * rowCount))` and values are short enough to remain
+  readable in a checklist.
 - Keep no-header and over-limit tables as plain rendered tables with wrapping
   and width behavior only.
-- Add UAT coverage for constrained width, text wrapping, sorting, filtering,
-  no-header suppression, and large-table suppression.
+- Add UAT coverage for constrained width, text wrapping, stable sorting,
+  per-column text/enum filtering, Apply/cancel behavior, no-header suppression,
+  and large-table suppression.
 
 ## 5. Release Phases
 
@@ -416,6 +428,7 @@ Outputs:
 - constrained table layout that respects the selected reader measure
 - reader-only table model projection from sanitized HTML
 - headered-table filter and stable sort controls
+- typed per-column filter popovers with active chips and row counts
 - suppression rules for headerless and very large tables
 - unit tests and UAT coverage for table reader behavior
 
@@ -433,21 +446,28 @@ Scope:
 - explain table column-sizing choices directly in the settings surface
 - align wide code, Mermaid, and table blocks to the reading column's left edge
   so document source-line labels share one stable margin
+- keep fenced code blocks constrained to the active prose measure rather than
+  using wide rich-block treatment
+- use one shared block-body chrome for fenced code, Mermaid source, and rendered
+  Mermaid diagram bodies so border/radius changes land in one place
 - replace per-label gutter ticks with a continuous-looking source gutter rule
   that remains virtualizer-friendly
 - make minimap semantics visible in the expanded outline: viewport, headings,
   rich blocks, and search hits
 - improve table filtering from persistent generic chrome into quiet
-  table-specific controls with active chips, row counts, clear actions, and
-  empty-state recovery
+  header-anchored per-column controls with typed editors, active chips, row
+  counts, clear actions, and empty-state recovery
 - add a Mermaid source toggle that swaps a rendered diagram with its sanitized
   fenced source in place, without changing the document
+- highlight Mermaid source blocks through the configured code-highlighting
+  pipeline when source view is active
 
 Out of scope:
 
 - editing table data or Mermaid source
 - persistent per-table sort/filter storage beyond the current reader session
-- full spreadsheet-style filter builders
+- spreadsheet-style multi-condition builders, column resizing, or formula-like
+  table behavior
 - source-code editor behavior for Markdown blocks
 
 ## 6. Testing Strategy

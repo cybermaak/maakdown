@@ -1,4 +1,5 @@
 import hljs from 'highlight.js/lib/common';
+import type { LanguageFn } from 'highlight.js';
 import { buildShikiTheme } from './shikiTheme';
 
 export interface HighlightTiming {
@@ -22,7 +23,9 @@ export function createHighlighter(engine: 'highlightjs' | 'shiki-js-regex'): Hig
 }
 
 class HighlightJsHighlighter implements Highlighter {
-  async init(): Promise<void> {}
+  async init(): Promise<void> {
+    ensureMermaidLanguage();
+  }
 
   async highlight(blockId: string, code: string, lang: string): Promise<string> {
     const language = hljs.getLanguage(lang) ? lang : 'plaintext';
@@ -36,6 +39,55 @@ class HighlightJsHighlighter implements Highlighter {
     return [];
   }
 }
+
+let mermaidRegistered = false;
+
+function ensureMermaidLanguage() {
+  if (mermaidRegistered || hljs.getLanguage('mermaid')) {
+    mermaidRegistered = true;
+    return;
+  }
+  hljs.registerLanguage('mermaid', mermaidLanguage);
+  mermaidRegistered = true;
+}
+
+const mermaidLanguage: LanguageFn = (api) => ({
+  name: 'Mermaid',
+  case_insensitive: true,
+  contains: [
+    api.COMMENT('%%', '$'),
+    {
+      className: 'keyword',
+      begin: /\b(?:flowchart|graph|sequenceDiagram|classDiagram|stateDiagram(?:-v2)?|erDiagram|journey|gantt|pie|mindmap|timeline|quadrantChart|requirementDiagram|gitGraph|C4Context|C4Container|C4Component|C4Dynamic|block-beta|subgraph|end|participant|actor|autonumber|loop|alt|else|opt|par|and|rect|critical|break|Note|note|over|right|left|of|direction|section|title|accTitle|accDescr)\b/
+    },
+    {
+      className: 'literal',
+      begin: /\b(?:LR|RL|TB|TD|BT|true|false)\b/
+    },
+    {
+      className: 'string',
+      begin: /"/,
+      end: /"/,
+      contains: [{ begin: /\\"/ }]
+    },
+    {
+      className: 'number',
+      begin: api.C_NUMBER_RE
+    },
+    {
+      className: 'symbol',
+      begin: /(?:-->|---|==>|-.->|--|->>|-->>|<<-|<-->|:::)/
+    },
+    {
+      className: 'title',
+      begin: /\b[A-Za-z_][\w-]*(?=\s*(?:\[|\(|\{|-->|---|==>|-.->|:::|:))/
+    },
+    {
+      className: 'attr',
+      begin: /\b(?:class|style|linkStyle|click)\b/
+    }
+  ]
+});
 
 class ShikiJsRegexHighlighter implements Highlighter {
   private highlighter: import('shiki').Highlighter | null = null;

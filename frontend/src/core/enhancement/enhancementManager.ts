@@ -54,6 +54,21 @@ class EnhancementManager {
     return html;
   }
 
+  async highlightSource(blockId: string, code: string, language: string): Promise<string> {
+    await this.configuration;
+    const key = `${this.engine}:${this.theme}:source:${language}:${blockId}:${contentFingerprint(code)}`;
+    const cached = this.cache.get(key);
+    if (cached) {
+      return cached;
+    }
+    if (!this.highlighter) {
+      await this.configure(this.engine, this.theme, this.languages);
+    }
+    const html = await this.highlighter!.highlight(blockId, code, language);
+    this.cache.set(key, html);
+    return html;
+  }
+
   clear() {
     this.cache.clear();
   }

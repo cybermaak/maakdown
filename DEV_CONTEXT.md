@@ -20,11 +20,15 @@ metadata controls, high-contrast reader tokens, reader-only table projection,
 constrained table layout, headered-table sort/filter tools, UAT traceability,
 and macOS release acceptance. P19 completed the first reader feedback polish
 pass: sectioned Display settings, source-line gutter alignment, minimap legend,
-column-targeted table filter ergonomics, and Mermaid source inspection. Cross-OS
-CI/UAT and native screenshot validation passed for P18 on `main` (`aa8dccf`) on
-2026-07-02; P19 Windows/Linux validation plus release-smoke/manual release
-checks still gate the release. The remaining tracked P11.11 editorial
-acceptance gaps are Linux WebKitGTK search/focus/drag/drop/print coverage.
+column-targeted table filter ergonomics, and Mermaid source inspection. P19.7
+then incorporated the annotated table-filter spec and mock refinements:
+prose-width code blocks, shaded table headers, type-aware per-column filters,
+shared block chrome for code/Mermaid bodies, and highlighted Mermaid source.
+Cross-OS CI/UAT and native screenshot validation passed for P18 on `main`
+(`aa8dccf`) on 2026-07-02; P19 Windows/Linux validation plus
+release-smoke/manual release checks still gate the release. The remaining
+tracked P11.11 editorial acceptance gaps are Linux WebKitGTK
+search/focus/drag/drop/print coverage.
 
 ## Major Files And Directories
 
@@ -57,7 +61,7 @@ acceptance gaps are Linux WebKitGTK search/focus/drag/drop/print coverage.
 - `frontend/src/core/minimap/`: model-driven minimap mark projection for
   headings, search hits, code, diagrams, and tables.
 - `frontend/src/core/tables/`: sanitized table projection, bounded column
-  sizing, row/column filtering, stable sorting, and suppression logic for
+  sizing, type-aware per-column filtering, stable sorting, and suppression logic for
   unsuitable table interactions.
 - `frontend/src/design-system/`: production Svelte primitives and deterministic gallery.
 - `frontend/src/components/`: reader surface, masthead, hover minimap, workspace
@@ -66,8 +70,8 @@ acceptance gaps are Linux WebKitGTK search/focus/drag/drop/print coverage.
 - `fixtures/table-tools.md`: manual and UAT-backed table interaction fixture for
   sorting, filtering, wrapping, and unsupported-table suppression checks.
 - `frontend/e2e/`: Playwright UI-driven UAT journeys and the mock-IPC seeding support.
-- `frontend/e2e/uat-12-table-tools.spec.ts`: table width, wrapping, filter,
-  sort, suppression, and virtualizer-remount state UAT.
+- `frontend/e2e/uat-12-table-tools.spec.ts`: table width, wrapping,
+  per-column filter, sort, suppression, and virtualizer-remount state UAT.
 - `frontend/src/ipc/uat-mock.ts`: deterministic Wails IPC mock used only in `vite --mode uat`.
 - `frontend/playwright.uat.config.ts`: headless-Chromium UAT runner config.
 - `docs/uat-test-plan.md` / `docs/uat-traceability.md`: UAT plan and requirements matrix.
@@ -218,9 +222,9 @@ acceptance gaps are Linux WebKitGTK search/focus/drag/drop/print coverage.
 - Table column sizing supports `balanced` and `equal`. `balanced` is the
   default and computes widths from bounded header/body text samples rather than
   DOM measurements or manual resizing.
-- Headered tables below the row/column/cell/text limits expose filter and
-  header-button sorting. Headerless, spanning, empty, or over-limit tables
-  render as plain tables without sort/filter controls.
+- Headered tables below the row/column/cell/text limits expose per-column
+  filter popovers and header-button sorting. Headerless, spanning, empty, or
+  over-limit tables render as plain tables without sort/filter controls.
 - Table interaction state is per active `DocumentView` session state keyed by
   block id, so it survives virtualizer remounts but is not written to Markdown
   and is reset when the document model changes.
@@ -231,21 +235,27 @@ acceptance gaps are Linux WebKitGTK search/focus/drag/drop/print coverage.
   implementation source. Settings now move toward sectioned Display controls,
   and table filtering improves through quiet header controls and active chips
   without adding spreadsheet-style editing or persistent table state.
-- Table filters are column-targeted when opened from a header. The all-cells
-  filter behavior remains the model fallback when no filter column is set, but
-  the reader UI intentionally exposes header-based filtering for clarity and
-  mock alignment.
-- Wide code, Mermaid, and table blocks align to the same source-line gutter
-  origin as prose by accounting for the line-number gutter width when document
-  line numbers are enabled. Mermaid SVGs are left-aligned inside their diagram
-  surface rather than centered.
+- Table filters are per-column and type-aware. Number/date columns use
+  inclusive ranges, compact enum columns use checklists, and general text
+  columns use contains search. Pending edits are committed with Apply; Escape
+  or click-away cancels the pending filter. Filters combine across columns with
+  AND, while selected enum values combine with OR.
+- Wide Mermaid and table blocks align to the same source-line gutter origin as
+  prose by accounting for the line-number gutter width when document line
+  numbers are enabled. Code blocks intentionally follow the active prose
+  measure. Mermaid SVGs are left-aligned inside their diagram surface rather
+  than centered.
+- Fenced code, Mermaid source, and rendered Mermaid diagram bodies share one
+  block-body border/radius rule in `frontend/src/styles/global.css`. Future
+  block chrome changes should update that shared selector instead of duplicating
+  per-block borders.
 - Minimap marks are block-index projections: viewport pill, heading ticks,
   structural rich-block ticks for code/diagrams/tables, and search-hit ticks.
   The expanded outline should explain those marks compactly so the collapsed
   rail is inspectable without persistent chrome.
 - Mermaid source inspection is an in-place reader toggle using `block.text`;
-  it does not edit source Markdown and print mode should continue to render
-  diagrams rather than source.
+  it runs through the configured highlighter, does not edit source Markdown,
+  and print mode should continue to render diagrams rather than source.
 
 ## Planned Tasks
 
@@ -302,6 +312,22 @@ See `docs/task-tracker.md` and `docs/next-release-task-tracker.md`.
   `git diff --check` for the changed files, and a seeded Playwright visual
   check confirming both code and Mermaid source bodies use 1px side/bottom
   borders with 6px bottom radii.
+- 2026-07-02: Completed the annotated table-filter and block-chrome refinement
+  pass for P19.7. Reviewed rendered PDFs for `Maakdown - Feature Mocks` and
+  `Maakdown - Table Sort & Filter Spec`; replaced the table global filter with
+  per-column type-aware filters, Apply/cancel popovers, shaded table headers,
+  active chips, and row counts; constrained code blocks to the prose measure;
+  unified fenced code, Mermaid source, and Mermaid diagram body chrome; and
+  added Highlight.js Mermaid source highlighting. Validation passed:
+  `npm test -- --run src/core/tables/tableProjection.test.ts`,
+  `npm run check`, `npm test`,
+  `npm test -- --run src/core/highlight/highlighter.test.ts src/core/tables/tableProjection.test.ts`,
+  `npm run uat -- uat-05-reader-tools.spec.ts uat-12-table-tools.spec.ts`,
+  `npm run build`, and `git diff --check`. The in-app Browser was available,
+  but seeded visual proof needed pre-navigation mock-IPC state injection that
+  the Browser API did not expose, so standalone Playwright produced
+  `/tmp/maakdown-refinement-blocks.png` and
+  `/tmp/maakdown-refinement-table-filter.png`.
 - 2026-06-05: Created approved v0.3 spec and implementation plan in `docs/`.
 - 2026-06-05: Re-reviewed revised docs with Claude and Gemini; final consensus was approve.
 - 2026-06-05: Created P0 scaffold, repo guidance, project tracker, signing-safe folders, frontend shell, and Go service stubs.
