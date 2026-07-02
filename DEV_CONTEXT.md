@@ -8,17 +8,19 @@ The app is a viewer, not an editor. It renders CommonMark/GFM, code, KaTeX math,
 
 ## Current Phase
 
-**Phase:** P11.11 is active; P13-P17 implementation and macOS acceptance are
+**Phase:** P11.11 is active; P13-P18 implementation and macOS acceptance are
 complete for the next release; P0-P10 and P12 are complete
 **Active focus:** remaining native editorial acceptance plus cross-platform
-release validation. P13-P17 delivered the "Precision Reading & Performance"
+release validation. P13-P18 delivered the "Precision Reading & Performance"
 release scope: macOS benchmark baselines, source-position metadata,
 document/code line numbers, code wrap controls, model-driven minimap marks,
 viewport/search marks, reader statistics, pinned/missing recents, print
-metadata controls, high-contrast reader tokens, UAT traceability, and macOS
-release acceptance. Windows/Linux validation remains release-blocking. The
-remaining tracked P11.11 editorial acceptance gaps are Linux WebKitGTK
-search/focus/drag/drop/print coverage.
+metadata controls, high-contrast reader tokens, reader-only table projection,
+constrained table layout, headered-table sort/filter tools, UAT traceability,
+and macOS release acceptance. Initial cross-OS CI/UAT passed for `487c875` on
+2026-07-02; Windows/Linux validation for the P18 changes still needs a push/CI
+run and remains release-blocking. The remaining tracked P11.11 editorial
+acceptance gaps are Linux WebKitGTK search/focus/drag/drop/print coverage.
 
 ## Major Files And Directories
 
@@ -28,7 +30,7 @@ search/focus/drag/drop/print coverage.
 - `docs/task-tracker.md`: project/progress tracker.
 - `docs/next-release-plan.md`: next feature release plan and implementation
   guidance.
-- `docs/next-release-task-tracker.md`: detailed P13-P17 task tracker with
+- `docs/next-release-task-tracker.md`: detailed P13-P18 task tracker with
   per-task macOS/Windows/Linux validation gates.
 - `docs/performance-audit-next-release.md`: P13 macOS performance baseline,
   parser source-position overhead, memory probes, and next-release thresholds.
@@ -50,11 +52,16 @@ search/focus/drag/drop/print coverage.
   durable session projection, and workspace tests.
 - `frontend/src/core/minimap/`: model-driven minimap mark projection for
   headings, search hits, code, diagrams, and tables.
+- `frontend/src/core/tables/`: sanitized table projection, bounded column
+  sizing, row filtering, stable sorting, and suppression logic for unsuitable
+  table interactions.
 - `frontend/src/design-system/`: production Svelte primitives and deterministic gallery.
 - `frontend/src/components/`: reader surface, masthead, hover minimap, workspace
   chrome, dialogs, settings, and native-window controls.
 - `fixtures/`: deterministic Markdown evaluation documents and local fixture assets.
 - `frontend/e2e/`: Playwright UI-driven UAT journeys and the mock-IPC seeding support.
+- `frontend/e2e/uat-12-table-tools.spec.ts`: table width, wrapping, filter,
+  sort, suppression, and virtualizer-remount state UAT.
 - `frontend/src/ipc/uat-mock.ts`: deterministic Wails IPC mock used only in `vite --mode uat`.
 - `frontend/playwright.uat.config.ts`: headless-Chromium UAT runner config.
 - `docs/uat-test-plan.md` / `docs/uat-traceability.md`: UAT plan and requirements matrix.
@@ -196,6 +203,25 @@ search/focus/drag/drop/print coverage.
 - Local packaged macOS build validation is no longer blocked. `scripts/release-check.sh`
   found Wails v2.12.0 through GOPATH and passed the macOS `darwin/arm64` build,
   frontend tests/check/build, Go tests, benchmarks, and full UAT on 2026-07-01.
+- Table reader tools project from already sanitized table block HTML in
+  `frontend/src/core/tables/tableProjection.ts`; the original Markdown document
+  model and source file remain unchanged.
+- Table width constraint is a persisted reader setting and defaults off for new
+  or migrated v3 state so existing wide-table behavior is preserved. When
+  enabled, it respects the active reader measure.
+- Table column sizing supports `balanced` and `equal`. `balanced` is the
+  default and computes widths from bounded header/body text samples rather than
+  DOM measurements or manual resizing.
+- Headered tables below the row/column/cell/text limits expose filter and
+  header-button sorting. Headerless, spanning, empty, or over-limit tables
+  render as plain tables without sort/filter controls.
+- Table interaction state is per active `DocumentView` session state keyed by
+  block id, so it survives virtualizer remounts but is not written to Markdown
+  and is reset when the document model changes.
+- Initial cross-OS CI/UAT verification for the pre-P18 `main` commit
+  (`487c875`) passed on macOS, Windows, and Linux on 2026-07-02. Re-run CI after
+  pushing P18 before treating Windows/Linux release gates as passed for the new
+  work.
 
 ## Planned Tasks
 
@@ -223,6 +249,16 @@ See `docs/task-tracker.md` and `docs/next-release-task-tracker.md`.
   `npm run benchmark`, `npm run benchmark:workspace`, `npm run uat`, and
   `scripts/release-check.sh`. Windows and Linux validation remain
   release-blocking.
+- 2026-07-02: Completed P18 table reading tools on macOS. Added sanitized table
+  projection, persisted table measure/column-sizing settings, constrained
+  auto-wrapping table rendering, headered-table filter and stable sort controls,
+  suppression for headerless/spanning/empty/over-limit tables, per-document
+  session state across virtualizer remounts, table UAT coverage, and tracker
+  updates. Validation passed: `go test ./internal/config`, `go test ./...`,
+  `npm test`, `npm run check`, `npm run build`, focused UAT-12,
+  `npm run uat` (31 tests), `npm run benchmark`,
+  `npm run benchmark:workspace`, and `scripts/release-check.sh`. Windows and
+  Linux validation for P18 remain pending until CI runs after push.
 - 2026-06-05: Created approved v0.3 spec and implementation plan in `docs/`.
 - 2026-06-05: Re-reviewed revised docs with Claude and Gemini; final consensus was approve.
 - 2026-06-05: Created P0 scaffold, repo guidance, project tracker, signing-safe folders, frontend shell, and Go service stubs.

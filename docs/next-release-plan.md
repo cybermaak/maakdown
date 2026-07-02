@@ -2,8 +2,8 @@
 
 **Release theme:** Precision Reading & Performance  
 **Target:** next feature release after `v0.1.1`  
-**Status:** Planning  
-**Last updated:** 2026-07-01
+**Status:** Implementation
+**Last updated:** 2026-07-02
 
 ## 1. Release Intent
 
@@ -57,6 +57,7 @@ machine, or user/manual confirmation when native behavior is involved.
 - print/export polish
 - reader theme preset cleanup
 - crash and error recovery pass
+- table measure, wrapping, sorting, and filtering tools
 
 ### Out Of Scope
 
@@ -299,6 +300,50 @@ Technical notes:
 - Add regression fixtures for parse, asset, Mermaid, and missing-file cases.
 - Keep messages concise and non-alarming.
 
+### 4.11 Table Reading Tools
+
+Make Markdown tables easier to read inside the same lightweight reader model.
+These tools are reader-only projections over sanitized table HTML. They never
+edit the source Markdown.
+
+Behavior:
+
+- Add a reader option to constrain tables to the active prose measure.
+- Keep the table-width option off by default so existing wide-table behavior is
+  preserved until the reader opts in.
+- When constrained, tables respect the existing Narrow, Standard, and Wide
+  measure choices instead of expanding to the wider rich-block width.
+- Constrained tables auto-size columns and wrap cell text so table content stays
+  inside the selected measure without manual column resizing.
+- Provide at least one deterministic auto-sizing mode. A balanced proportional
+  mode based on header and sampled cell text length is the default; an equal
+  column mode may be exposed if it remains simple.
+- Headered Markdown tables can show ephemeral sort and filter controls.
+- Filtering searches visible row text across the table and updates only the
+  rendered reader view.
+- Sorting is per column, stable, and cycles through ascending, descending, and
+  source order.
+- Headerless tables do not show sort/filter controls.
+- Very large tables disable interactive controls once row, column, or cell-count
+  limits would make filtering/sorting expensive or visually noisy.
+- Sort and filter state may be kept in the current app session, including across
+  virtualizer remounts, but it must not be written back into the Markdown file.
+
+Technical notes:
+
+- Parse table structure from the already sanitized block HTML, not from the DOM
+  after rendering and not from the original Markdown source.
+- Keep the original block model unchanged; table controls live in the reader
+  component layer and work only for mounted table blocks.
+- Compute column widths from bounded samples so large documents do not pay an
+  unbounded sizing cost.
+- Compare numeric-looking values numerically, date-like values by timestamp, and
+  all other values with locale-aware text comparison.
+- Keep no-header and over-limit tables as plain rendered tables with wrapping
+  and width behavior only.
+- Add UAT coverage for constrained width, text wrapping, sorting, filtering,
+  no-header suppression, and large-table suppression.
+
 ## 5. Release Phases
 
 ### P13 - Performance Baseline And Instrumentation
@@ -358,6 +403,20 @@ Outputs:
 - macOS task-by-task validation complete
 - Windows/Linux release-blocking validation complete
 
+### P18 - Table Reading Tools
+
+Add table measure controls, automatic column sizing, wrapping, and lightweight
+headered-table sort/filter tools.
+
+Outputs:
+
+- persisted table-width and column-sizing settings
+- constrained table layout that respects the selected reader measure
+- reader-only table model projection from sanitized HTML
+- headered-table filter and stable sort controls
+- suppression rules for headerless and very large tables
+- unit tests and UAT coverage for table reader behavior
+
 ## 6. Testing Strategy
 
 Unit/component tests:
@@ -369,6 +428,8 @@ Unit/component tests:
 - search mark projection
 - print option persistence
 - error taxonomy additions
+- table model parsing, filtering, sorting, and column sizing
+- settings migration for table layout preferences
 
 Browser/UAT tests:
 
@@ -379,6 +440,9 @@ Browser/UAT tests:
 - pinned recents
 - print metadata include/exclude
 - error recovery scenarios
+- constrained table width and wrapped cell text
+- headered table sort/filter
+- no-header and very-large table tool suppression
 
 Benchmark tests:
 
@@ -386,6 +450,7 @@ Benchmark tests:
 - source-position extraction overhead
 - search/minimap mark projection cost
 - code-line-number rendering on large code fixtures
+- table column sizing/filtering cost on bounded large-table fixtures
 - memory after repeated tab open/close cycles
 
 Native validation:
@@ -398,7 +463,7 @@ Native validation:
 
 The release is ready when:
 
-- all P13-P17 tasks in `docs/next-release-task-tracker.md` are `Done`
+- all P13-P18 tasks in `docs/next-release-task-tracker.md` are `Done`
 - every task has passed macOS validation
 - every task has passed or explicitly waived Windows/Linux validation
 - full local release check passes

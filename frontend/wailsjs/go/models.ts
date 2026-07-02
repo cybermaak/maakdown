@@ -20,7 +20,6 @@ export namespace assetservice {
 	}
 
 }
-
 export namespace config {
 	
 	export class AppConfig {
@@ -40,6 +39,8 @@ export namespace config {
 	    codeLineNumbers: boolean;
 	    codeWrap: boolean;
 	    printMetadata: boolean;
+	    tableConstrainToMeasure: boolean;
+	    tableColumnSizing: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new AppConfig(source);
@@ -63,6 +64,8 @@ export namespace config {
 	        this.codeLineNumbers = source["codeLineNumbers"];
 	        this.codeWrap = source["codeWrap"];
 	        this.printMetadata = source["printMetadata"];
+	        this.tableConstrainToMeasure = source["tableConstrainToMeasure"];
+	        this.tableColumnSizing = source["tableColumnSizing"];
 	    }
 	}
 	export class RecentDocument {

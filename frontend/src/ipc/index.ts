@@ -53,7 +53,9 @@ export async function getConfig(): Promise<AppConfig> {
     documentLineNumbers: Boolean(result.documentLineNumbers),
     codeLineNumbers: Boolean(result.codeLineNumbers),
     codeWrap: result.codeWrap !== false,
-    printMetadata: result.printMetadata !== false
+    printMetadata: result.printMetadata !== false,
+    tableConstrainToMeasure: result.tableConstrainToMeasure === true,
+    tableColumnSizing: result.tableColumnSizing === 'equal' ? 'equal' : 'balanced'
   };
 }
 
@@ -75,7 +77,9 @@ export async function setConfig(next: AppConfig): Promise<AppConfig> {
     documentLineNumbers: Boolean(result.documentLineNumbers),
     codeLineNumbers: Boolean(result.codeLineNumbers),
     codeWrap: result.codeWrap !== false,
-    printMetadata: result.printMetadata !== false
+    printMetadata: result.printMetadata !== false,
+    tableConstrainToMeasure: result.tableConstrainToMeasure === true,
+    tableColumnSizing: result.tableColumnSizing === 'equal' ? 'equal' : 'balanced'
   };
 }
 

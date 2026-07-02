@@ -150,6 +150,25 @@ Verify:
 - reduced-motion behavior
 - no serious or critical Axe violations
 
+### UAT-12 Table Reading Tools
+
+1. Open a document containing a headered data table, a headerless table, and an
+   over-limit table.
+2. Enable the table-width option and verify constrained tables respect the
+   selected reader measure.
+3. Verify long cell text wraps inside the selected measure without page-level
+   horizontal overflow.
+4. Filter a headered table and verify only matching rows remain visible.
+5. Sort a headered table by numeric/date/text-like columns and restore source
+   order.
+6. Verify headerless and over-limit tables suppress sort/filter controls.
+7. Scroll away and back to verify ephemeral table state survives virtualizer
+   remounts for the current session.
+
+**Covers:** reader-only table projection, measure-constrained table layout,
+automatic column sizing, wrapping, sort/filter controls, suppression rules, and
+virtualizer remount state.
+
 ## Requirements Traceability
 
 Maintain a table alongside the executable suite with these columns:

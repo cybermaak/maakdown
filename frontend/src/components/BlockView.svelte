@@ -6,6 +6,8 @@
   import { appConfig } from '../stores/configStore';
   import { Copy, Maximize2 } from '@lucide/svelte';
   import { CodeBlockChrome, IconButton } from '../design-system';
+  import TableBlock from './TableBlock.svelte';
+  import type { TableInteractionState } from '../core/tables/tableProjection';
 
   interface Props {
     block: Block;
@@ -19,9 +21,12 @@
     onEnhanced?: (blockId: string) => void;
     showDocumentLineNumbers?: boolean;
     documentLineDigits?: number;
+    tableState?: TableInteractionState;
+    onTableStateChange?: (blockId: string, state: TableInteractionState | null) => void;
+    printMode?: boolean;
   }
 
-  let { block, onMeasure, searchQuery = '', caseSensitive = false, currentSearchBlockId = null, onCopy, onInspectDiagram, forceEnhance = false, onEnhanced, showDocumentLineNumbers = false, documentLineDigits = 1 }: Props = $props();
+  let { block, onMeasure, searchQuery = '', caseSensitive = false, currentSearchBlockId = null, onCopy, onInspectDiagram, forceEnhance = false, onEnhanced, showDocumentLineNumbers = false, documentLineDigits = 1, tableState, onTableStateChange, printMode = false }: Props = $props();
   let element = $state<HTMLElement | undefined>();
   let html = $state('');
   let observer: IntersectionObserver | undefined;
@@ -171,6 +176,7 @@
   id={block.id}
   class={`doc-block doc-block-${block.kind}`}
   class:with-source-line={showDocumentLineNumbers && Boolean(sourceLabel)}
+  class:table-measure={block.kind === 'table' && $appConfig.tableConstrainToMeasure}
   data-block-id={block.id}
   data-enhancement={block.enhancement}
   data-source-start={block.sourceStart ?? undefined}
@@ -204,6 +210,15 @@
       <IconButton icon={Maximize2} label="Inspect diagram" size="sm" onclick={() => onInspectDiagram?.('Mermaid diagram', html)} />
     </div>
     {@html html}
+  {:else if block.kind === 'table'}
+    <TableBlock
+      {block}
+      constrained={$appConfig.tableConstrainToMeasure}
+      columnSizing={$appConfig.tableColumnSizing}
+      state={tableState}
+      onStateChange={onTableStateChange}
+      {printMode}
+    />
   {:else}
     {@html html}
   {/if}

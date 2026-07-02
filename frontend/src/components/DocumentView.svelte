@@ -11,6 +11,7 @@
   import DiagramDialog from './DiagramDialog.svelte';
   import Masthead from './Masthead.svelte';
   import type { DocumentStats } from '../core/stats/documentStats';
+  import type { TableInteractionState } from '../core/tables/tableProjection';
 
   interface Props {
     model: DocumentModel;
@@ -39,6 +40,7 @@
   let diagram = $state<{ title: string; html: string } | null>(null);
   let printMode = $state(false);
   let enhancedForPrint = new Set<string>();
+  let tableStates = $state(new Map<string, TableInteractionState>());
   let documentLineDigits = $derived(Math.max(1, String(model.sourceLineCount ?? model.blocks.length).length));
   // Cache resolved asset URLs per raw path so blocks that unmount and remount
   // during virtualized scrolling re-attach their image without re-resolving.
@@ -55,9 +57,13 @@
     if (restoredPath === documentPath && restoredModel === model) {
       return;
     }
+    const changedDocument = restoredPath !== documentPath || restoredModel !== model;
     restoredModel = model;
     if (restoredPath !== documentPath) {
       assetUrlCache = new Map();
+    }
+    if (changedDocument) {
+      tableStates = new Map();
     }
     virtualizer = new BlockVirtualizer(model.blocks.length);
     const viewportHeight = untrack(() => surface?.clientHeight ?? 900);
@@ -313,6 +319,16 @@
       announcement = 'Copy failed';
     }
   }
+
+  function updateTableState(blockId: string, state: TableInteractionState | null) {
+    const next = new Map(tableStates);
+    if (state) {
+      next.set(blockId, state);
+    } else {
+      next.delete(blockId);
+    }
+    tableStates = next;
+  }
 </script>
 
 <!-- svelte-ignore a11y_no_noninteractive_tabindex, a11y_no_noninteractive_element_interactions - document surface delegates sanitized internal anchor clicks from rendered Markdown -->
@@ -345,6 +361,9 @@
       onEnhanced={(blockId) => enhancedForPrint.add(blockId)}
       showDocumentLineNumbers={showDocumentLineNumbers}
       {documentLineDigits}
+      tableState={tableStates.get(block.id)}
+      onTableStateChange={updateTableState}
+      printMode={printMode}
     />
   {/each}
   <div class="virtual-spacer" style={`height: ${range.bottom}px`} aria-hidden="true"></div>

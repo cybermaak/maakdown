@@ -359,7 +359,8 @@ a {
   .doc-block { max-width: none !important; break-inside: avoid; }
   .doc-block :is(h1, h2, h3, h4, h5, h6) { break-after: avoid; page-break-after: avoid; }
   .doc-block pre, .doc-block table, .mermaid-rendered, .doc-block blockquote.callout { break-inside: avoid; }
-  .block-tools, .heading-tools, .source-line { display: none !important; }
+  .table-shell { overflow: visible; }
+  .block-tools, .heading-tools, .source-line, .table-tools, .table-empty { display: none !important; }
   .doc-block.with-source-line { padding-left: 0; }
 }
 .reader-settings label { display: flex; justify-content: space-between; color: var(--muted); font-size: 12px; font-weight: 600; }
@@ -569,15 +570,122 @@ a {
   text-align: right;
   user-select: none;
 }
-.doc-block:is(.doc-block-code, .doc-block-table, .doc-block-mermaid) { max-width: min(1100px, calc(100vw - 120px)); }
-.doc-block table { width: 100%; border-collapse: collapse; }
-.doc-block th, .doc-block td { border-bottom: 1px solid var(--reader-rule); padding: 8px 10px; text-align: left; }
+.doc-block:is(.doc-block-code, .doc-block-mermaid) { max-width: min(1100px, calc(100vw - 120px)); }
+.doc-block-table { max-width: min(1100px, calc(100vw - 120px)); }
+.doc-block.doc-block-table.table-measure { max-width: var(--reading-measure); }
+.table-shell {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+}
+.table-shell.table-constrained {
+  overflow-x: hidden;
+}
+.table-shell table,
+.doc-block table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.table-shell.table-constrained table,
+.table-shell.table-projected table {
+  table-layout: fixed;
+}
+.doc-block th,
+.doc-block td {
+  border-bottom: 1px solid var(--reader-rule);
+  padding: 8px 10px;
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  hyphens: auto;
+}
 .doc-block tbody tr:hover { background: color-mix(in srgb, var(--reader-selection) 45%, transparent); }
 .doc-block input[type="checkbox"] { accent-color: var(--reader-link); }
 .doc-block .footnotes { color: var(--reader-muted); font-size: 0.9em; }
 .block-tools { display: flex; min-height: 30px; align-items: center; justify-content: space-between; border: 1px solid var(--reader-rule); border-bottom: 0; border-radius: 6px 6px 0 0; padding: 0 6px 0 10px; color: var(--reader-muted); background: var(--reader-code-bg); font-family: var(--font-mono); font-size: 11px; }
 .block-tool-actions { display: inline-flex; gap: 3px; align-items: center; }
 .doc-block-code .block-tools + pre, .doc-block-mermaid .block-tools + .mermaid-rendered { margin-top: 0; border-radius: 0 0 6px 6px; }
+.table-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  margin-bottom: 6px;
+  color: var(--reader-muted);
+  font-size: 12px;
+  user-select: none;
+}
+.table-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: min(280px, 100%);
+  border: 1px solid var(--reader-rule);
+  border-radius: 6px;
+  padding: 4px 8px;
+  background: var(--reader-bg);
+  color: var(--reader-muted);
+}
+.table-filter input {
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--reader-ink);
+  font: inherit;
+}
+.table-tool-button {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--reader-rule);
+  border-radius: 5px;
+  background: var(--reader-bg);
+  color: var(--reader-muted);
+}
+.table-tool-button:hover,
+.table-tool-button:focus-visible {
+  border-color: var(--reader-link);
+  color: var(--reader-link);
+}
+.table-row-count {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.table-sort-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  text-align: inherit;
+}
+.table-sort-button > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.table-sort-icon {
+  flex: 0 0 auto;
+  color: var(--reader-muted);
+}
+.table-sort-icon.active {
+  color: var(--reader-link);
+}
+.table-empty {
+  color: var(--reader-muted);
+  text-align: center;
+}
 .heading-tools { position: absolute; right: -34px; top: 0; opacity: 0; }
 .doc-block-heading:hover .heading-tools, .heading-tools:focus-within { opacity: 1; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }

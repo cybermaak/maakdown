@@ -86,6 +86,12 @@
     onchange={(value: AppConfig['readerMeasure']) => update({ readerMeasure: value })}
   />
   <SegmentedControl
+    label="Table columns"
+    options={[{ value: 'balanced', label: 'Balanced' }, { value: 'equal', label: 'Equal' }]}
+    value={config.tableColumnSizing}
+    onchange={(value: AppConfig['tableColumnSizing']) => update({ tableColumnSizing: value })}
+  />
+  <SegmentedControl
     label="Reader theme"
     options={[{ value: 'editorial', label: 'Editorial' }, { value: 'high-contrast', label: 'Contrast' }]}
     value={config.readerTheme}
@@ -100,7 +106,7 @@
     value={config.highlighterEngine}
     onchange={(value: AppConfig['highlighterEngine']) => update({ highlighterEngine: value })}
   />
-  <div class="settings-toggle-group" aria-label="Reader source orientation">
+  <div class="settings-toggle-group" aria-label="Reader display options">
     <label class="settings-check">
       <input type="checkbox" checked={config.documentLineNumbers} onchange={(event) => update({ documentLineNumbers: event.currentTarget.checked })} />
       <span>Document line numbers</span>
@@ -112,6 +118,10 @@
     <label class="settings-check">
       <input type="checkbox" checked={config.codeWrap} onchange={(event) => update({ codeWrap: event.currentTarget.checked })} />
       <span>Wrap code by default</span>
+    </label>
+    <label class="settings-check">
+      <input type="checkbox" checked={config.tableConstrainToMeasure} onchange={(event) => update({ tableConstrainToMeasure: event.currentTarget.checked })} />
+      <span>Keep tables within text width</span>
     </label>
     <label class="settings-check">
       <input type="checkbox" checked={config.printMetadata} onchange={(event) => update({ printMetadata: event.currentTarget.checked })} />

@@ -17,6 +17,8 @@ export interface AppConfig {
   codeLineNumbers: boolean;
   codeWrap: boolean;
   printMetadata: boolean;
+  tableConstrainToMeasure: boolean;
+  tableColumnSizing: 'balanced' | 'equal';
 }
 
 export const appConfig = writable<AppConfig>({
@@ -35,5 +37,7 @@ export const appConfig = writable<AppConfig>({
   documentLineNumbers: false,
   codeLineNumbers: false,
   codeWrap: true,
-  printMetadata: true
+  printMetadata: true,
+  tableConstrainToMeasure: false,
+  tableColumnSizing: 'balanced'
 });

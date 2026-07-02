@@ -83,6 +83,17 @@ describe('parseDocument', () => {
     expect(model.blocks[2]).toMatchObject({ kind: 'code', sourceStart: 8, sourceEnd: 10 });
   });
 
+  it('recognizes sanitized GFM tables as table blocks', async () => {
+    const model = await parseDocument({
+      path: '/tmp/table.md',
+      source: ['| Name | Count |', '|---|---:|', '| Alpha | 2 |'].join('\n')
+    });
+
+    expect(model.blocks[0]).toMatchObject({ kind: 'table', text: 'NameCountAlpha2' });
+    expect(model.blocks[0]?.html).toContain('<table>');
+    expect(model.blocks[0]?.html).toContain('align="right"');
+  });
+
   it('can disable source-position collection for benchmarks', async () => {
     const model = await parseDocument({
       path: '/tmp/note.md',
