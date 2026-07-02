@@ -861,3 +861,13 @@ provisioning profiles, notarization credentials, or signed release artifacts.
   Playwright check on `fixtures/large-10k-lines.md`: Delivery checklist labels
   were `335-340`, Delivery heading was `333`, and Quantitative model was `342`.
   Screenshot evidence: `/tmp/maakdown-large-delivery-line-labels-fixed.png`.
+- 2026-07-02: Started P20 reader line numbering redesign after additional
+  large-fixture screenshots showed that one-off source-position fixes are still
+  producing blank-line gaps and stacked labels. Added
+  `docs/reader-line-numbering-spec.md` as a review draft. The key product
+  decision is to treat the feature as reader-content line numbers rather than
+  physical source-file line numbers: source-only blank lines, invisible anchors,
+  and structural spacing do not count; headings, paragraphs, list items, and
+  explicit hard breaks count; framed objects such as code, Mermaid, tables, and
+  images use one outer document line while their local numbering remains
+  separate. Implementation is intentionally deferred until the spec is reviewed.
