@@ -1,8 +1,19 @@
 # Review Notes: Reader Line Numbering Specification
 
-**Reviewed document:** `docs/reader-line-numbering-spec.md` (v0.1 draft)
-**Review date:** 2026-07-02
+**Reviewed document:** `docs/reader-line-numbering-spec.md`
+**Review passes:** v0.1 draft on 2026-07-02 (first pass, below); v0.2 draft on
+2026-07-03 (second pass, at the end of this document)
 **Reviewer:** Claude Code review pass with user product direction
+**Current verdict (v0.2):** Approve for implementation once two spec
+clarifications land (N1 label-placement architecture, N2 anchor trust and
+injection ordering). All seven first-pass items (R1–R3, S1–S4) were verified
+as genuinely incorporated, not just claimed. Remaining findings N3–N7 are
+recommendations that can be resolved during implementation.
+
+---
+
+# First Pass: v0.1 Draft (2026-07-02)
+
 **Verdict:** Approve the product model and counting policies. Three changes are
 required before implementation starts (R1–R3); four are recommended (S1–S4).
 The open questions are dispositioned at the end.
@@ -185,3 +196,139 @@ only behavioral UAT. Add:
   combinations (footnote hard breaks, deeply nested multi-block items)
   falling back to parent-block counting until reported. This keeps P20.2–20.4
   from being blocked by corner cases the large fixture does not even contain.
+
+---
+
+# Second Pass: v0.2 Draft (2026-07-03)
+
+## Disposition Verification
+
+The v0.2 "Review Feedback Disposition" section claims all seven first-pass
+items were incorporated. Verified against the spec text — each claim is real:
+
+| Item | Verified in v0.2 |
+|---|---|
+| R1 parser-worker counting | Counting Architecture: post-sanitize tree, worker-owned, eight-step flow; renderer forbidden from inferring numbers from offsets/indexes/pixels/CSS counters |
+| R2 hard-break mechanism | Full policy chosen: parser-emitted segment anchors required; `Range.getClientRects()` counting explicitly disallowed and listed as a failure case |
+| R3 enhancement swaps | Placement trigger list includes enhancement completion and font readiness; failure case added; "never store labels inside a subtree that enhancement code owns" |
+| S1 stats reconciliation | Masthead "lines" and gutter digit width move to the Line Map total |
+| S2 go-to-line | Specified with input validation; tracker adds P20.5 |
+| S3 overlaps by construction | Global Rule 9: at most one entry per block id plus anchor id at build time |
+| S4 placement tests and perf gate | Test plan items 6 and 14 |
+
+The new Research Basis section is accurate: `data-sourcepos`/remark positions
+are source coordinates, browser rects are placement-only, CSS counters cannot
+encode these policies. It correctly strengthens rather than reopens the
+product decision.
+
+## New Findings
+
+### N1 (required): Resolve the "global gutter layer" ambiguity
+
+The spec says labels render in "one dedicated layer" / "one global gutter
+layer." Two architectures satisfy that wording, with very different failure
+modes:
+
+- **Detached overlay:** one DOM layer beside the scroll content, every label
+  absolutely positioned from measured document offsets. This must re-measure
+  and re-place on every scroll, virtualizer remount, and block height change —
+  it fights the virtualizer and recreates the geometry-tracking fragility the
+  redesign exists to remove.
+- **Per-block placement, globally aligned (recommended):** each label lives in
+  a `BlockView`-owned wrapper *outside* the enhancement-owned inner content,
+  horizontally pinned to the global gutter column via CSS, vertically
+  positioned from its anchor's offset within the block. Labels then ride the
+  virtualizer for free; scroll costs nothing; only intra-block layout changes
+  trigger re-placement.
+
+The generalized current design is the second option, and it is consistent
+with every v0.2 requirement (including "never store labels inside a subtree
+that enhancement code owns" — the BlockView wrapper is outside that subtree).
+The spec should state that "layer" means a *visually* unified gutter column
+plus an ownership rule, not a physically detached overlay, and name the
+recommended placement model. This is the one remaining ambiguity large enough
+to send an implementer down the wrong architecture.
+
+### N2 (required): State the anchor trust and injection ordering
+
+The current `dataSourceStart`/`dataSourceEnd`/`dataSourceLines` attributes are
+attached in remark (pre-sanitize) and therefore had to be allow-listed in
+`frontend/src/core/sanitize/schema.ts`. Because `rehype-raw` parses
+author-supplied HTML, an author can forge those attributes today
+(`<p data-source-start="999">` survives sanitization, and the reader prefers
+element metadata since P19.12). Display-only, so low severity — but the new
+design must not inherit the pattern. The spec's counting flow already implies
+the fix (anchors are emitted in step 6, after sanitization in step 3); make it
+explicit:
+
+- Reader-line anchor attributes are injected by the parser **after**
+  sanitization (the post-sanitize tree is available to plugins ordered after
+  `rehype-sanitize` and is what `buildBlocks` serializes).
+- The anchor attribute names must **not** be added to the sanitize schema
+  allow-list, so any author-supplied copies are stripped before injection.
+- Add a test: raw HTML carrying the anchor attribute names cannot create,
+  shift, or relabel Line Map entries (extends test plan item 2).
+
+### N3 (recommended): Prefer marker insertion over segment splitting for hard breaks
+
+The allowed approach says "split rendered inline content into hard-break
+segments." Splitting is real tree surgery when a hard break sits inside
+inline formatting — `<em>first<br>second</em>` requires cloning the `<em>`
+across segments, and the same applies to links and nested emphasis. A cheaper
+mechanism satisfies every stated requirement: **insert an empty anchor span
+immediately after each `<br>`** (a line-start marker). Insertion never
+restructures author content, is trivially idempotent, contributes nothing to
+copy (empty node), and the marker's position *is* the start of the segment's
+first visual row. Counting stays "number of `<br>` descendants + 1" on the
+post-sanitize tree, uniform across Markdown hard breaks and raw `<br>`. The
+spec need not mandate this, but it should permit it explicitly so the
+"split into segments" phrasing doesn't force the harder surgery. Either way,
+add `<em>a<br>b</em>` (hard break inside inline formatting) to test plan
+item 3.
+
+### N4 (recommended): Trim or defer `textPreview`; define or drop `localRole`
+
+`textPreview` on every Line Map entry duplicates document text into the model
+that crosses the worker boundary. On the 10k-line fixture (~thousands of
+entries) that is a measurable transfer-payload increase, and P13 explicitly
+tracks `transferBytes`. No consumer in the spec needs it yet — go-to-line
+takes a number, not a preview. Make it optional/omitted until a UI needs it,
+or cap its length. `localRole` appears once in the Line Map shape and is
+never defined; define it or drop it.
+
+### N5 (recommended): Unify the two model shapes and the two total names
+
+The Line Map Shape section shows a side table (`entriesByBlockId`) while the
+Document Model section shows per-block fields (`Block.readerLines[]`); flow
+step 8 permits either. Pick one — `Block.readerLines[]` plus a document-level
+count is simpler, and go-to-line can resolve a number to a block by scan or
+binary search. Likewise `lineMapTotal` (flow step 7) and
+`DocumentModel.readerLineCount` (model section) name the same value; use one
+name.
+
+### N6 (recommended): Reword Global Rule 6's phantom exception
+
+"Framed objects count once … unless explicitly covered by a nested-list rule"
+implies an exception that does not exist — the List Items With Multiple
+Blocks policy *confirms* framed objects count once inside list items. Drop
+the "unless" clause to avoid an implementer hunting for the override.
+
+### N7 (recommended): Two small test-plan additions
+
+- **Go-to-line to an unmounted target:** the mapped anchor may be far outside
+  the virtualized range; navigation needs the same multi-pass settle the
+  heading navigation uses. Test a target deep in the large fixture.
+- **Shared copy-exclusion constants:** the copy sanitizer strips decoration
+  classes by name (`sanitizedSelectionText` in `App.svelte`); the new label
+  class must join that list. Export the class names from one constant shared
+  by the renderer, the copy sanitizer, and the tests — this is the same
+  shared-constants pattern recommended in
+  `docs/code-design-stability-proposal.md` (decoration registry).
+
+## Verdict
+
+Approve v0.2 for implementation once N1 and N2 land in the spec text — both
+are one-paragraph edits that close the last places where an implementer could
+faithfully follow the spec and still rebuild a fragile design. N3–N7 are
+recommendations: N3 meaningfully de-risks P20.2/P20.3 and is worth deciding
+up front; N4–N7 can be resolved during implementation without spec churn.
