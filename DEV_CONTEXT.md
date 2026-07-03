@@ -871,3 +871,25 @@ provisioning profiles, notarization credentials, or signed release artifacts.
   explicit hard breaks count; framed objects such as code, Mermaid, tables, and
   images use one outer document line while their local numbering remains
   separate. Implementation is intentionally deferred until the spec is reviewed.
+- 2026-07-03: Revised `docs/reader-line-numbering-spec.md` to v0.2 after
+  external research and review of `docs/reader-line-numbering-spec-review.md`.
+  The revised decision is a semantic reader Line Map: source-position APIs are
+  useful only for source correlation, browser rect APIs only for placement, and
+  CSS counters only for simple element numbering. Maakdown will build logical
+  reader line numbers in the parser worker from the post-sanitize rendered tree,
+  emit stable anchors for lists and hard-break segments, keep code/table/Mermaid
+  local numbering separate, derive line stats/digit width from the Line Map
+  total, rerun placement after progressive enhancement, and add `Go to line...`
+  to P20 scope. No implementation has started; the v0.2 spec is pending user
+  review and must not be committed until explicitly approved.
+- 2026-07-03: Incorporated second-pass implementation clarifications into the
+  P20 line-numbering spec. Reader-line labels should be owned by each mounted
+  `BlockView` in wrappers outside enhancement-owned content, while CSS aligns
+  them to one visual gutter column; a detached document-wide overlay is
+  explicitly disallowed. Reader-line anchors are trusted only when injected
+  after sanitization and must not be sanitize-allow-listed, preventing forged
+  raw HTML attributes from influencing numbering. Hard-break support now prefers
+  empty parser-injected marker anchors after `<br>` instead of inline tree
+  splitting, and the test plan now includes forged anchors, inline formatted
+  hard breaks, unmounted go-to-line targets, and shared copy-exclusion
+  decoration constants. Changes remain uncommitted pending user review.

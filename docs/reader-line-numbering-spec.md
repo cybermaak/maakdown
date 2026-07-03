@@ -1,39 +1,57 @@
 # Reader Line Numbering Specification
 
-**Version:** 0.1 draft
-**Status:** Pending review
+**Version:** 0.2 draft
+**Status:** Pending user review
 **Owner:** Frontend/Reader Experience
-**Last updated:** 2026-07-02
+**Last updated:** 2026-07-03
 
 ## Purpose
 
-Maakdown's document line numbers should help a reader orient themselves in the
-rendered document. They are not an editor feature and they are not exact
-physical source-file line numbers.
+Maakdown's line numbers are a reader-orientation feature. They should help a
+reader say "go back to line 340" inside the rendered document.
 
-The current implementation mixes physical Markdown source positions with
-rendered layout. That produces visible reader bugs:
+They are not source-file coordinates, and they are not visual wrap rows. The
+reader never sees the Markdown source, and the app window is resizable, so both
+physical source numbering and browser visual-line numbering create confusing
+behavior.
 
-- Blank source lines create apparent numbering gaps, for example heading `299`
-  followed by paragraph `301`.
-- Raw anchors or invisible nodes can shift source metadata and place two labels
-  on top of each other.
-- Lists, code blocks, diagrams, and tables need repeated one-off positioning
-  fixes because the numbering model is not defined independently from the
-  rendered surface.
+The feature is therefore defined as:
 
-This spec resets the feature around a single rule:
+> Line numbers label logical rendered content lines in the reader. Source-only
+> blank lines, invisible anchors, hidden content, and structural spacing do not
+> receive labels and do not increment the counter.
 
-> Document line numbers label visible rendered content lines. Structural
-> spacing, source-only blank lines, and invisible anchors do not get labels and
-> do not increment the counter.
+## Research Basis
 
-## Product Decision
+The web and Markdown ecosystem has several related mechanisms, but no single
+standard for "rendered Markdown document line numbers":
 
-Use **reader content line numbers**, not physical source line numbers.
+- CommonMark/cmark/commonmark.js can emit source positions such as
+  `data-sourcepos`. These are physical source ranges. They are useful for
+  source navigation, but they naturally include source-only blank-line effects
+  and list range quirks that are not visible to the reader.
+- Unified/remark/micromark preserve parser positions on syntax nodes. These
+  positions are also source coordinates, not reader line numbers.
+- Markdown-it exposes token source maps with source line ranges. Again, these
+  map source to tokens, not rendered reader lines.
+- Browser `Range`/`getClientRects()` can detect rendered visual line boxes, but
+  those boxes change with width, font loading, zoom, theme, and platform text
+  layout. They are appropriate for measuring placement, not for deciding the
+  logical numbering.
+- CSS counters can number elements that generate boxes, but they cannot encode
+  Maakdown's Markdown-specific policies for hard breaks, lists, framed objects,
+  virtualization, table filtering, copy exclusion, and enhancement swaps.
 
-This means the displayed numbers are continuous over the rendered document body.
-They intentionally skip source-only blank lines and invisible Markdown syntax.
+The practical design is therefore a custom semantic **Line Map** built from the
+sanitized rendered document tree. The Line Map owns the numbers; layout code
+only places labels for those already-decided numbers.
+
+## Product Decisions
+
+### D1. Logical Reader Lines, Not Physical Source Lines
+
+Displayed numbers are continuous over visible rendered content. Physical blank
+lines in the Markdown source do not create gaps.
 
 Example:
 
@@ -43,16 +61,43 @@ N     2. Navigation and Reader Position: Evaluation Scenario 1
 N+1   This scenario examines Making anchors reliable...
 ```
 
-Even if the Markdown file has an empty physical line between the heading and the
-paragraph, the rendered document shows a heading, vertical spacing, and then
-paragraph text. The spacing is not content, so it is not numbered.
+If the Markdown file has one blank line, five blank lines, or an invisible raw
+anchor between those two blocks, the reader still sees one heading followed by
+one paragraph. The paragraph is numbered `N+1`.
 
-### Consequence
+### D2. Logical Lines, Not Visual Wrap Rows
 
-Line numbers will no longer be reliable coordinates for opening the same line in
-an external source editor. If exact source navigation becomes a future feature,
-it should be a separate source-position affordance, such as "Copy source line"
-or "Reveal source line", not the reader gutter.
+Soft wrapping does not create new line numbers. A long paragraph keeps the same
+logical line number at every window width.
+
+Example at a narrow width:
+
+```text
+N     This paragraph wraps onto
+      another visual row because the window is narrow.
+```
+
+Only the first visual row receives label `N`. The continuation row has no
+separate label.
+
+### D3. Physical Source Positions Stay Separate
+
+Physical source positions may remain in the model for debugging or future
+"Reveal source line" commands. They must not drive the reader gutter.
+
+If exact source navigation becomes a product feature, it is a separate
+affordance from reader line numbers.
+
+### D4. Current UI Label Can Stay Simple
+
+The Settings label can remain **Document line numbers** or **Line numbers**.
+The semantics belong in this specification and tests, not in a long settings
+label.
+
+### D5. Print Is Default-Off
+
+Reader line numbers are screen navigation chrome. Print output omits them by
+default unless a future print setting explicitly adds them.
 
 ## Vocabulary
 
@@ -60,96 +105,153 @@ or "Reveal source line", not the reader gutter.
 |---|---|
 | Physical source line | A literal newline-delimited line in the Markdown file. |
 | Source-only blank line | A physical source line containing only whitespace and used for Markdown spacing or block separation. |
-| Rendered content line | A logical line of content visible in the reader. This is what the gutter numbers. |
+| Logical reader line | A visible rendered content unit counted by the reader gutter. |
+| Visual wrap row | A browser-created row caused by text wrapping to the current width. |
 | Structural spacing | Margins, padding, loose-list spacing, blank lines between Markdown blocks, and other visual breathing room. |
-| Hard line break | An explicit rendered line break, such as Markdown hard break syntax or `<br>`. |
-| Soft wrap | A visual wrap caused only by the window width or reader measure. |
-| Local numbering | Numbering inside a rendered object, such as code block line numbers or table row numbers. |
+| Hard line break | An authored rendered line break, such as Markdown hard-break syntax or `<br>`. |
+| Framed object | A rendered content object with its own internal structure, such as code, Mermaid, table, image, or display math. |
+| Local numbering | Numbering inside a framed object, such as code block line numbers or table row numbers. |
+| Line Map | Parser-produced ordered list of logical reader lines and their anchors. |
+| Anchor | Stable target inside a rendered block where the gutter label should align. |
 
-## Counting Model
+## Counting Architecture
 
-The reader builds a **Line Map** from the final rendered document model. The map
-is an ordered list of visible content line entries:
+### Source Of Truth
+
+The parser worker builds the Line Map from the post-sanitize rendered document
+tree. In the current implementation this tree is the sanitized HAST tree, but
+the architectural requirement is broader: count from the sanitized semantic
+render tree before it reaches the UI.
+
+The UI renderer must never infer numbers from:
+
+- physical source line offsets
+- DOM child indexes
+- block source ranges
+- pixel positions
+- CSS counters
+- already-rendered gutter labels
+
+### Line Map Shape
+
+The model exposes one document-level total and per-block line entries. Do not
+ship a separate side-table unless implementation proves it is required.
+
+Conceptual shape:
 
 ```text
-lineNumber, targetBlock, targetSubpart, visualAnchor, copyBehavior
+DocumentModel.readerLineCount: number
+Block.readerLines:
+  - lineNumber: number
+    anchorId: string
+    kind: "block" | "list-item" | "hard-break-segment" | "callout-title"
 ```
 
-The counter starts at `1` for the first visible rendered document-body content.
-For every eligible rendered content line, increment by `1`. For every ineligible
-spacing or invisible item, increment by `0`.
+Each entry represents exactly one logical reader line. `anchorId` is stable
+within the rendered block and is emitted by the parser when the block needs
+subpart anchors, such as list items or hard-break segments.
 
-The Line Map is the only source of truth for the gutter. The gutter renderer
-must not infer numbers independently from source offsets, block indexes, or DOM
-positions.
+`textPreview` and other display-only metadata should be omitted until a UI
+needs them. If a future feature needs previews, cap their length so the parser
+worker transfer payload stays within the P13/P20 budget.
 
-## Global Rules
+### Counting Flow
 
-1. **No source-only blank lines.** Blank Markdown lines used to separate blocks
-   never receive a label and never increment the counter.
-2. **No invisible content.** Raw anchors, invisible HTML, hidden table rows,
-   hidden metadata, comments, and sanitized-away content do not receive labels.
-3. **One visible content unit, one counter step.** Headings, paragraphs, list
-   items, table rows, diagrams, and other visible units increment the counter
-   according to the element-specific policy below.
-4. **Hard breaks count.** Explicit rendered line breaks inside text create
-   additional content lines.
-5. **Soft wraps do not count.** If the same paragraph wraps differently because
-   the window is narrower, the line numbers remain stable. The first visual row
-   of the logical line receives the label; wrapped continuation rows do not.
-6. **Large framed blocks use outer numbering.** Code blocks, diagrams, images,
-   and tables are numbered as document objects in the outer gutter. Their
-   internal lines, if any, use local numbering.
-7. **Generated controls do not count.** Toolbar buttons, table filter controls,
-   diagram inspection controls, settings chrome, minimap marks, and metadata
-   side panels are not document content.
-8. **Copy excludes numbers.** Selecting and copying reader text must not include
-   gutter numbers or local row/line numbers.
-9. **Accessibility excludes decoration.** Gutter labels are `aria-hidden` and do
-   not enter the tab order.
-10. **No overlaps.** The rendered gutter must have at most one label at a given
-    visual anchor. If two model entries resolve to the same visual position, the
-    Line Map is invalid and the renderer should fail the test rather than stack
-    labels.
+1. Parse Markdown into the Markdown syntax tree.
+2. Convert to the rendered semantic tree.
+3. Apply raw HTML handling, GFM transforms, KaTeX/callout transforms, and
+   sanitization.
+4. Walk the post-sanitize tree in rendered reading order.
+5. Emit Line Map entries according to this spec.
+6. Inject trusted reader-line anchor attributes into the already-sanitized tree
+   and emit matching model metadata needed by the UI to place labels.
+7. Store `readerLineCount` on the document model.
+8. Store per-block line entries on each block.
+
+Reader-line anchor attributes are injected after sanitization. Their attribute
+names must not be added to the sanitize schema allow-list. This guarantees
+author-supplied raw HTML cannot forge anchors, create labels, shift numbering,
+or relabel nearby content.
+
+### Renderer Responsibility
+
+The renderer places labels for the Line Map. It does not decide which numbers
+exist.
+
+Renderer responsibilities:
+
+- find the anchor for each mounted line entry
+- position the label in the global gutter
+- keep labels out of selection, copy, and the accessibility tree
+- re-place labels after layout-affecting changes
+- remain idempotent when run repeatedly
+
+### Layout Measurement Rule
+
+Layout measurement may determine where a known label is drawn. It must not
+determine whether a line exists or what number it receives.
+
+`getClientRects()` and similar APIs are allowed for placement checks only, not
+for counting.
+
+## Global Counting Rules
+
+1. **Source-only blank lines do not count.** Blank Markdown lines used to
+   separate blocks never receive labels and never increment the counter.
+2. **Invisible content does not count.** Raw anchors, hidden nodes,
+   sanitized-away content, comments, and generated controls do not receive
+   labels.
+3. **Content counts in rendered reading order.** The Line Map follows the
+   order a reader encounters content in the rendered document body.
+4. **Hard breaks count.** Authored hard breaks inside textual content create
+   additional logical reader lines.
+5. **Soft wraps do not count.** Browser wrapping is a display artifact.
+6. **Framed objects count once.** Code, Mermaid, tables, images, and display
+   math each count as one outer document line.
+7. **Local numbering stays local.** Code line numbers, table row numbers, and
+   ordered-list markers are not document line numbers.
+8. **Controls do not count.** Toolbars, filter inputs, sort buttons, diagram
+   controls, metadata panels, minimap marks, and settings chrome are app UI.
+9. **No duplicate anchors.** The Line Map builder must emit at most one entry
+   for a given block id plus anchor id. Overlaps should be impossible by
+   construction, not merely cleaned up by the renderer.
+10. **Copy excludes numbering.** Reader line numbers and local numbering chrome
+    are decorative and never copied with document text.
 
 ## Element Policies
 
-### Document Masthead And Metadata
+### Application Chrome, Masthead, And Metadata
 
-The document masthead, file title, generated metadata panel, and application
-chrome are outside the Markdown body.
+App chrome, title bars, tabs, the generated masthead, and metadata side panels
+are outside the Markdown body.
 
 Policy:
 
 - Count: `0`
-- Display: no document gutter labels
-- Reason: these surfaces are reader workspace chrome, not document content
+- Gutter: no label
 
 ### YAML Frontmatter
 
-If frontmatter is shown as metadata rather than Markdown body content, it does
-not contribute to reader line numbers.
+Frontmatter displayed as metadata does not contribute to reader line numbers.
 
 Policy:
 
 - Count: `0`
-- Display: no document gutter labels
-- Reason: frontmatter is metadata, and the body starts after it
+- Gutter: no label
 
-If a future mode renders frontmatter inline as document content, that mode must
-define its own frontmatter line policy before implementation.
+If a future mode renders frontmatter inline as document body content, that mode
+must define a separate frontmatter policy before implementation.
 
 ### Headings
 
-Each rendered Markdown heading is one content line.
+Each rendered heading is one logical reader line.
 
 Policy:
 
 - Count: `1`
-- Soft wrap: does not add lines
-- Hard break inside heading: discouraged, but if rendered, adds one line per
-  hard break
-- Gutter anchor: first visual row of the heading text
+- Soft wrap: no extra lines
+- Hard break inside heading: count each hard-break segment
+- Anchor: heading text start, or parser-emitted hard-break segment anchor
 
 Example:
 
@@ -159,16 +261,16 @@ N     2. Navigation and Reader Position
 
 ### Paragraphs
 
-Each paragraph is one content line unless it contains explicit rendered hard
-line breaks.
+Each paragraph is one logical reader line unless it contains authored hard
+breaks.
 
 Policy:
 
 - Count: `1 + hardBreakCount`
-- Soft source newlines inside a Markdown paragraph: count `0`; Markdown renders
-  them as spaces
-- Soft visual wraps caused by measure/window width: count `0`
-- Gutter anchor: first visual row of each logical paragraph/hard-break segment
+- Soft source newline inside a Markdown paragraph: `0`
+- Soft visual wrap: `0`
+- Anchor: first segment starts at the paragraph; later hard-break segments use
+  parser-emitted segment anchors
 
 Example:
 
@@ -183,7 +285,7 @@ Rendered and counted as:
 N     First line still same paragraph in Markdown.
 ```
 
-Example with hard break:
+Hard-break example:
 
 ```markdown
 First line<br>
@@ -197,16 +299,21 @@ N     First line
 N+1   Second line
 ```
 
+Implementation requirement:
+
+- The parser must emit stable anchors for hard-break segments.
+- The UI must not discover those segments by scanning text nodes with
+  `Range.getClientRects()`.
+
 ### Source-Only Blank Lines
 
-Markdown blank lines that separate blocks are structural spacing.
+Markdown blank lines used to separate blocks are structural spacing.
 
 Policy:
 
 - Count: `0`
-- Display: no label
-- The next visible content line receives `previous + 1`, not the next physical
-  file line number
+- Gutter: no label
+- Effect on numbering: none
 
 Example:
 
@@ -226,30 +333,30 @@ N+1   Paragraph.
 
 ### Thematic Breaks
 
-A visible thematic break is document content because it is an authored divider.
+A visible thematic break is authored document content.
 
 Policy:
 
 - Count: `1`
-- Gutter anchor: vertical center or top edge of the divider, whichever aligns
-  more consistently with surrounding text
+- Anchor: the divider block
 
 ### Blockquotes
 
-Blockquotes count their visible inner content using normal text/list rules. The
-quote rail itself does not count.
+Blockquotes count visible inner content using the same policies as normal
+content. The quote rail and quote spacing do not count.
 
 Policy:
 
-- Paragraph inside quote: same as paragraph
-- List inside quote: same as list
-- Blank quoted lines used for spacing: count `0`
-- Gutter anchor: visible inner content line, aligned to the document gutter
+- Quote rail: `0`
+- Paragraph inside quote: paragraph policy
+- List inside quote: list policy
+- Blank quoted spacing: `0`
+- Anchor: visible inner content, aligned to the global gutter
 
 ### Callouts
 
-Callouts are blockquotes with semantic styling. Count the visible callout title
-and body content, not the box chrome.
+Callouts are semantic blockquotes with styled chrome. Count the visible title
+and body content, not the box.
 
 Policy:
 
@@ -257,7 +364,7 @@ Policy:
 - Body paragraph: paragraph policy
 - Body list: list policy
 - Empty spacing between title and body: `0`
-- Gutter anchor: title/body content rows, aligned to the document gutter
+- Callout box/border/icon chrome: `0`
 
 Example:
 
@@ -268,16 +375,16 @@ N+1   The body starts here.
 
 ### Unordered Lists
 
-Each top-level list item is a content line. The bullet marker is part of the
-item's visual row, but it does not create a separate line.
+Each list item is a logical reader line. The bullet marker is part of the item
+row but not a separate line.
 
 Policy:
 
 - Count: `1` per item
-- Hard break inside item text: adds one line per hard break
-- Loose-list blank spacing: count `0`
-- Soft wrap: count `0`
-- Gutter anchor: first visual row of the item marker/text
+- Hard break inside item text: count each hard-break segment
+- Loose-list spacing: `0`
+- Soft wrap: `0`
+- Anchor: parser-emitted list-item anchor, not indentation-dependent geometry
 
 Example:
 
@@ -289,15 +396,15 @@ N+2   - Third item
 
 ### Ordered Lists
 
-Ordered lists follow unordered-list counting. The rendered ordered marker does
-not affect the document line number.
+Ordered lists follow the same document-line policy as unordered lists. The
+ordered marker is local list presentation.
 
 Policy:
 
 - Count: `1` per item
-- Hard break inside item text: adds one line per hard break
-- Loose-list blank spacing: count `0`
-- Nested blocks: count in visual reading order
+- Hard break inside item text: count each hard-break segment
+- Loose-list spacing: `0`
+- Ordered marker: local presentation, not the document line number
 
 Example:
 
@@ -309,15 +416,14 @@ N+2   3. Resolve navigation through stable document-model identifiers.
 
 ### Task Lists
 
-Task lists are lists with checkbox affordances. The checkbox is part of the item
-row and does not affect counting.
+Task lists are lists with checkbox affordances.
 
 Policy:
 
 - Count: `1` per task item
+- Checkbox control: `0`
 - Checked/unchecked state: no effect
-- Disabled checkbox control: not separately counted
-- Hard break inside item: adds one line per hard break
+- Hard break inside item text: count each hard-break segment
 
 Example:
 
@@ -329,15 +435,15 @@ N+2   - [ ] Capture performance values on macOS WebKit.
 
 ### Nested Lists
 
-Nested list items count in visual reading order.
+Nested list items count in rendered reading order. Their labels stay in the
+global gutter.
 
 Policy:
 
 - Parent item first line: `1`
-- Nested child item: `1` each
+- Nested child item: `1`
 - Blank spacing between parent and nested list: `0`
-- Gutter labels remain in the global document gutter, not inside the nested
-  indentation
+- Gutter x-position: global, not nested indentation
 
 Example:
 
@@ -350,9 +456,12 @@ N+3   - Next parent
 
 ### List Items With Multiple Blocks
 
-A list item can contain a paragraph, nested list, code block, quote, or other
-block. Count the first item line and then count nested visible blocks in the
-order they appear.
+A list item may contain paragraphs, nested lists, code, Mermaid, tables, images,
+blockquotes, callouts, or math. Count the first item line and then count nested
+visible blocks in rendered reading order.
+
+Framed objects inside list items keep their framed-object policy: one outer
+document line each, with any local numbering remaining inside the object.
 
 Example:
 
@@ -363,20 +472,22 @@ N+2      Nested diagram block.
 N+3   2. Next item.
 ```
 
-Blank spacing used to make a Markdown loose list remains `0`.
+Loose-list spacing still counts `0`.
 
 ### Tables
 
-Tables are dense structured objects. The outer document gutter counts the table
-as a document object, while the table component owns row-level orientation.
+Tables are framed objects. The outer document gutter counts a table once.
+Table-local row numbers remain separate.
 
 Policy:
 
-- Outer document count: `1` for the table block
-- Local table row numbers: optional and independent
-- Header shading/filter/sort controls: count `0`
-- Hidden rows caused by filtering: do not affect outer document numbering
-- Wrapped cell content: does not add outer document lines
+- Outer document count: `1`
+- Header row: included in the table object, not a separate document line
+- Body rows: table-local only
+- Table row numbers: local and optional
+- Header controls, filter popovers, sort controls: `0`
+- Hidden rows caused by filtering: no effect on outer document numbering
+- Wrapped cell content: no effect on outer document numbering
 
 Example:
 
@@ -384,25 +495,24 @@ Example:
 N     [table block]
 ```
 
-Inside the table, optional row numbers may show visible row `1`, `2`, `3`, but
-those are not document gutter numbers.
+Rationale:
 
-Rationale: table row numbering and sorting/filtering are already table-local
-features. Counting each row in the outer document gutter would make document
-numbers change under table filtering and would duplicate row-number UI.
+Sorting and filtering are reader projections. If every visible row changed the
+outer document count, table interaction would renumber the surrounding document.
+That would make the gutter worse as an orientation tool.
 
 ### Code Blocks
 
-Code blocks are framed reader objects. The outer document gutter counts the code
-block once. Code line numbers are local to the code block.
+Code blocks are framed objects. The outer document gutter counts the code block
+once. Code line numbers are local to the code block.
 
 Policy:
 
-- Outer document count: `1` for the code block
-- Local code lines: controlled by the code-line-number setting
-- Blank lines inside code: count in local code numbering, not the outer document
-  gutter
+- Outer document count: `1`
+- Code line numbers: local setting
+- Blank lines inside code: local code numbering only
 - Wrapped code lines: local display concern only
+- Enhancement/highlighting completion: must not change the outer line entry
 
 Example:
 
@@ -421,15 +531,16 @@ Inside the code block:
 
 ### Mermaid Diagrams
 
-Mermaid diagram blocks are visual objects. The outer document gutter counts the
-diagram once.
+Mermaid diagrams are framed objects.
 
 Policy:
 
 - Rendered diagram mode: `1`
-- Mermaid source mode: outer count remains `1`
-- Mermaid source local code lines: use code-block local numbering if enabled
-- Inspect modal: count `0`; it is not part of the document flow
+- Mermaid source mode: still `1` outer document line
+- Mermaid source local code lines: use local code numbering if enabled
+- Inspect modal: `0`
+- Enhancement completion: must not lose, duplicate, or renumber the outer line
+  label
 
 Example:
 
@@ -439,55 +550,54 @@ N     [diagram block]
 
 ### Images
 
-Images count as one document object when they are visible.
+Visible block images count as one framed object.
 
 Policy:
 
-- Image block: `1`
-- Image inside paragraph with text: paragraph policy; image does not add a
-  separate line unless it renders as its own block
+- Block image: `1`
+- Inline image inside paragraph: parent paragraph policy
 - Missing-image placeholder: `1`, because it is visible document content
 
 ### Math
 
-Inline math follows its parent paragraph/list item and does not change counting.
-Display math is a rendered block and counts once.
+Inline math follows its parent text policy. Display math is a framed object.
 
 Policy:
 
 - Inline math: parent policy
 - Display math block: `1`
-- Explicit multi-line equation environments: count as `1` unless the renderer
-  exposes intentional separate equation rows in a future design
+- Multi-line equation environments: still `1` unless a future design exposes
+  intentional per-equation rows
 
 ### Raw HTML
 
-Raw HTML is counted by what remains visible after sanitization and rendering.
+Raw HTML is counted by what remains visible after sanitization.
 
 Policy:
 
 - Invisible anchors: `0`
 - Sanitized-away content: `0`
-- Visible block-level HTML: `1` per visible rendered object unless it maps
-  cleanly to known text/list/table/code policies
+- Hidden elements: `0`
 - Visible inline HTML: parent policy
+- Visible block-level HTML: `1` per visible rendered object unless it maps
+  cleanly to a known policy above
 
-Raw HTML must never be allowed to shift nearby content numbers.
+Raw HTML must never shift nearby content numbers by consuming hidden entries.
 
 ### Footnotes
 
-Footnotes count like a generated ordered list at the point they are rendered in
-the document body.
+Footnotes count like generated ordered-list content at the point they are
+rendered in the document body.
 
 Policy:
 
 - Footnote item: `1`
-- Hard break inside footnote: adds lines
-- Backreference controls: count `0`
+- Hard break inside footnote: count each hard-break segment
+- Backreference controls: `0`
 
-### Links, Wikilinks, Emphasis, Inline Code, And Badges
+### Links, Wikilinks, Emphasis, Inline Code, Tags, And Badges
 
-Inline decorations do not affect document line numbers.
+Inline decorations do not affect line numbers.
 
 Policy:
 
@@ -498,7 +608,23 @@ Policy:
 
 ## Visual Layout Requirements
 
-The gutter is a dedicated visual layer generated from the Line Map.
+The gutter is generated from the Line Map and must read as one continuous visual
+column. That does not mean it is one detached overlay DOM layer.
+
+Recommended architecture:
+
+- Each mounted `BlockView` owns the labels for its own `Block.readerLines`.
+- Labels live in a wrapper controlled by `BlockView`, outside enhancement-owned
+  inner content.
+- CSS pins every label to the same global gutter column.
+- Vertical placement is measured from parser-emitted anchors within the block.
+- Labels ride the existing virtualizer. Scrolling should not require measuring
+  or moving every label in the document.
+
+Avoid a detached overlay that positions every label from document-level absolute
+scroll offsets. That approach fights virtualization, requires remeasurement on
+scroll/remount/height changes, and recreates the geometry-tracking fragility
+this redesign is meant to remove.
 
 Requirements:
 
@@ -506,14 +632,17 @@ Requirements:
 - Labels are right-aligned with tabular numerals.
 - The gutter rule is continuous through visible content and spacing.
 - The gutter layer is not selectable and is excluded from copy.
-- Labels do not move horizontally based on block indentation. List nesting,
-  table width, code block chrome, and diagram framing do not shift the gutter.
-- A label is anchored to the first visual row of the content line it represents.
-- If a block has top margin, the label aligns to the content, not the margin.
+- Labels do not move horizontally based on block indentation, table width, code
+  chrome, diagram framing, or nested-list indentation.
+- A label is anchored to the first visual row of the logical content line.
+- If a block has top margin, the label aligns to content, not margin.
 - If content is filtered or hidden, no label is rendered for it.
-- The gutter recalculates after layout-affecting changes such as typography,
-  measure, line height, table filter state, Mermaid source toggle, or window
-  resize.
+- Renderer passes are idempotent. Running placement again removes stale labels
+  or updates positions without duplicating labels.
+- The gutter recalculates label placement after layout-affecting changes:
+  typography, measure, line height, table filter state, Mermaid source toggle,
+  window resize, virtualizer remount, font readiness, and progressive
+  enhancement completion.
 
 ## Numbering Examples
 
@@ -551,7 +680,7 @@ N+5   4. Keep filesystem paths behind the backend trust boundary.
 N+6   5. Verify the same behavior in a packaged build.
 ```
 
-There are no labels on the blank spacing rows. There are no stacked labels.
+There are no labels on blank spacing rows. There are no stacked labels.
 
 ### Task List Followed By Heading
 
@@ -567,8 +696,8 @@ N+3   - [ ] Capture performance values on macOS WebKit.
 N+4   Quantitative model
 ```
 
-The heading after the list receives the next content number. It does not inherit
-the first list item's number.
+The heading after the list receives the next logical reader line. It does not
+inherit the first list item's number.
 
 ### Long Paragraph With Soft Wrap
 
@@ -596,7 +725,8 @@ N     First rendered line
 N+1   Second rendered line after a hard break
 ```
 
-Hard breaks are content.
+Hard breaks are authored content lines. The parser emits an anchor for the
+second segment.
 
 ### Code Block
 
@@ -617,7 +747,7 @@ Code-local numbering:
 The blank code line is local code content. It does not affect the outer document
 line counter.
 
-## Interaction Rules
+## Reader Interactions
 
 ### Copy
 
@@ -626,101 +756,254 @@ When a user copies selected document content:
 - Document gutter labels are excluded.
 - Code block local line numbers are excluded.
 - Table row numbers are excluded.
-- The copied content should match the visible text content as closely as
+- The copied content should match the visible document text as closely as
   possible without reader-only numbering chrome.
 
 ### Search
 
-Document line numbers do not participate in search indexing or highlighting.
+Line numbers do not participate in search indexing or highlighting.
 
-Search result navigation may scroll to a content block or line-map target, but
-the result count is based on document text, not line labels.
+Search result navigation may scroll to a Line Map target, but result counts are
+based on document text, not line labels.
+
+### Go To Line
+
+The Line Map enables a `Go to line...` command.
+
+Policy:
+
+- Input is a logical reader line number.
+- The command scrolls to the mapped block/subpart anchor.
+- The mapped target may be outside the current virtualized range; navigation
+  must perform the same kind of multi-pass settle used by heading navigation.
+- Invalid values report the valid range.
+- The command does not search physical source lines.
+
+This should be part of P20 implementation scope because it turns the gutter from
+passive decoration into an orientation workflow.
+
+### Masthead And Stats
+
+Any user-facing stat labeled "lines" should use the Line Map total once P20
+lands. Physical source line count can remain internal metadata or be shown only
+with explicit source-oriented copy.
+
+The gutter digit width should also derive from `readerLineCount`, not physical
+`sourceLineCount`.
 
 ### Table Sort And Filter
 
 Table sorting and filtering are ephemeral reader projections. Because the outer
-document gutter counts the table as one block, changing sort/filter state does
-not renumber the surrounding document.
+document gutter counts the table as one framed object, changing sort/filter
+state does not renumber the surrounding document.
 
-Table-local row numbers may update to reflect the visible sorted/filtered row
-order.
+Table-local row numbers may update to reflect visible sorted/filtered row order.
 
 ### Print
 
-Default print output should omit reader line numbers unless a future print
-setting explicitly includes them.
-
-Rationale: line numbers are reader navigation chrome, and print layout can
-change page wrapping.
+Default print output omits reader line numbers. A future explicit print setting
+may include them, but that setting must be designed separately.
 
 ## Failure Cases To Prevent
 
-The implementation must reject or test against these visible failures:
+Implementation must reject or test against these visible failures:
 
 - A source-only blank line creates a numeric gap between adjacent rendered
   content lines.
 - A raw anchor, footnote backlink, hidden element, or sanitized element consumes
   a reader line number.
+- Author-supplied raw HTML carrying reader-line anchor attribute names creates,
+  shifts, or relabels Line Map entries.
 - Two labels render on top of each other.
 - A list renders one label for the whole list instead of one label per item.
 - A label's horizontal position changes because a list is indented or a block is
   centered.
 - Copying selected text includes document line numbers, code line numbers, or
   table row numbers.
-- Resizing the window changes line numbers because of soft wrapping.
+- Resizing the window changes logical line numbers because of soft wrapping.
 - Table filtering renumbers the surrounding document.
 - Virtualization remounts a block with different line numbers.
+- Progressive enhancement replaces block HTML and loses, duplicates, or shifts
+  the label.
+- A hard-break segment requires Range-based text measurement to determine its
+  number.
 
 ## Implementation Direction
 
-This section intentionally stays above concrete HTML details, but it constrains
-the architecture:
+### Parser Worker
 
-1. Build a document-level Line Map from the rendered document model before
-   drawing labels.
-2. Count only rendered content units according to this spec.
-3. Store stable line-map entries by document block id plus subpart id.
-4. Render gutter labels from the Line Map in one dedicated layer.
-5. Measure visual anchors after layout, but do not derive counting from layout
-   geometry.
-6. Keep local numbering systems separate:
-   - code block line numbers
-   - table row numbers
-   - ordered-list markers
-7. Treat physical source positions as optional debugging metadata, not the
-   displayed reader line number.
+Implement Line Map construction in the parser worker, after sanitization.
+
+The parser worker must:
+
+- walk the post-sanitize rendered semantic tree in reading order
+- apply this spec's element policies
+- emit the Line Map as model data
+- emit stable anchors for sub-block entries such as list items and hard-break
+  segments
+- emit `readerLineCount`
+- avoid using physical source ranges for displayed line numbers
+
+Anchor trust rule:
+
+- Strip any author-supplied reader-line anchor attributes during sanitization by
+  leaving those names out of the sanitize allow-list.
+- Inject reader-line anchor attributes only after sanitization, inside the
+  parser-controlled pipeline.
+- Treat the injected anchors and `Block.readerLines` model entries as the only
+  trusted inputs for gutter placement.
+
+### Document Model
+
+Add explicit reader-line data to the document model rather than overloading
+source-position fields.
+
+Conceptual additions:
+
+```text
+DocumentModel.readerLineCount
+Block.readerLines[]
+ReaderLine.lineNumber
+ReaderLine.anchorId
+ReaderLine.kind
+```
+
+Physical source data can continue to exist under source-specific names. It must
+not be consumed by the gutter renderer.
+
+### Gutter Renderer
+
+The renderer must:
+
+- render from `Block.readerLines`
+- place labels in per-block wrappers that align to one global gutter column
+- align labels to anchors emitted by the parser
+- keep label wrappers outside enhancement-owned inner content
+- be idempotent across repeated placement passes
+- keep labels `aria-hidden`
+- exclude labels from copy
+- rerun placement after layout changes and enhancement completion
+
+The renderer must not use a detached document-wide overlay that tracks all label
+positions from scroll offsets.
+
+### Hard-Break Anchors
+
+Hard-break support uses parser-emitted anchors.
+
+Allowed approach:
+
+- During parsing, insert an empty trusted anchor marker after each rendered
+  `<br>` so the marker represents the start of the next hard-break segment.
+- If marker insertion is insufficient for a future case, parser-side segment
+  wrapping is allowed, but only if it preserves sanitized inline markup.
+- Preserve safe/sanitized markup.
+- Use those anchors for label placement.
+
+Disallowed approach:
+
+- Measuring raw text nodes with `Range.getClientRects()` to discover hard-break
+  or wrap-derived "lines" at runtime.
+
+### Enhancement Swaps
+
+Code highlighting, Mermaid rendering, KaTeX, image resolution, and other
+progressive enhancements may replace or resize block content. The label layer
+must survive these swaps.
+
+Preferred approach:
+
+- Keep outer block anchors stable outside enhancement-replaced inner content
+  when possible.
+- Re-run placement after enhancement completion.
+- Never store labels inside a subtree that enhancement code owns and replaces.
+
+### Local Numbering Systems
+
+Keep these systems separate:
+
+- reader line numbers
+- code block line numbers
+- table row numbers
+- ordered-list markers
+- physical source positions
+
+They may coexist visually, but they must not share counters or copy behavior.
 
 ## Test Plan For Implementation
 
 Implementation should not proceed without these tests:
 
-1. **Line-map unit tests:** Given a document model, produce the expected
-   continuous reader line numbers for headings, paragraphs, blank source lines,
-   hard breaks, ordered lists, task lists, nested lists, code, Mermaid, tables,
-   blockquotes, callouts, images, math, raw anchors, and footnotes.
-2. **Fixture test:** Add a dedicated fixture that includes every policy case in
-   this spec.
-3. **Large fixture regression:** Verify `fixtures/large-10k-lines.md` has no
-   numeric gaps caused only by blank source lines and no stacked labels around
-   Checkpoint and Delivery sections.
-4. **Visual UAT:** Enable document line numbers, scroll through representative
-   sections, and assert:
-   - no duplicate/stacked labels at the same position
+1. **Line-map unit tests:** Given parser output, produce expected logical reader
+   numbers for headings, paragraphs, source-only blank lines, hard breaks,
+   ordered lists, task lists, nested lists, multi-block list items, code,
+   Mermaid, tables, blockquotes, callouts, images, math, raw anchors, and
+   footnotes.
+2. **Sanitized raw HTML tests:** Verify invisible anchors, hidden content,
+   sanitized-away content, and author-supplied reader-line anchor attribute
+   names do not create, shift, or relabel Line Map entries.
+3. **Hard-break anchor tests:** Verify hard-break segments count and have stable
+   anchors without layout measurement, including hard breaks inside inline
+   formatting such as `<em>a<br>b</em>`.
+4. **Dedicated fixture:** Add a fixture that includes every policy case in this
+   spec.
+5. **Large fixture regression:** Verify `fixtures/large-10k-lines.md` has no
+   numeric gaps caused by blank source lines and no stacked labels around
+   Checkpoint, Delivery, Quantitative model, code, Mermaid, and table sections.
+6. **Placement fixture test:** Verify label placement is idempotent, list-item
+   anchors align to the global gutter, and hard-break segment anchors place
+   correctly.
+7. **Visual UAT:** Enable line numbers, scroll through representative sections,
+   and assert:
+   - no duplicate/stacked labels
    - no labels on blank spacing
    - list items each have labels
    - code/table/Mermaid outer labels remain block-level
-5. **Copy UAT:** Selecting text across labels copies only document text.
-6. **Resize UAT:** Narrow and wide windows keep the same logical numbers for
+8. **Copy UAT:** Selecting text across labels copies only document text. The
+   renderer, copy sanitizer, and tests should share decoration class names from
+   one exported registry rather than duplicating string literals.
+9. **Resize UAT:** Narrow and wide windows keep the same logical numbers for
    soft-wrapped paragraphs.
-7. **Table UAT:** Sorting/filtering table rows does not renumber surrounding
-   document content.
-8. **Virtualization UAT:** Scroll away and back; line numbers are unchanged.
+10. **Table UAT:** Sorting/filtering table rows does not renumber surrounding
+    document content.
+11. **Enhancement UAT:** Highlighting and Mermaid enhancement completion do not
+    lose, duplicate, or renumber labels.
+12. **Virtualization UAT:** Scroll away and back; line numbers are unchanged.
+13. **Go-to-line UAT:** Command palette navigation jumps to the mapped logical
+    reader line, including a deep target outside the current virtualized range,
+    and reports valid range for invalid input.
+14. **Performance gate:** Line Map construction and label placement on
+    `fixtures/large-10k-lines.md` stay within the P13/P20 performance budget.
 
-## Open Questions For Review
+## Review Feedback Disposition
 
-1. Should the UI label remain **Document line numbers**, or should it become
-   **Reader line numbers** to make the non-source semantics explicit?
-2. Should display math with explicit multi-line equation environments count as
-   one block or multiple equation rows?
-3. Should print ever include reader line numbers, or should they remain
-   screen-only?
+This v0.2 draft incorporates the applicable feedback from
+`docs/reader-line-numbering-spec-review.md`:
+
+- R1 accepted: counting happens in the parser worker on the post-sanitize tree.
+- R2 accepted with the full policy: hard breaks count, and parser-emitted
+  segment anchors are required.
+- R3 accepted: progressive enhancement completion is a placement trigger and a
+  failure case.
+- S1 accepted: masthead/stat line totals and gutter digit width move to the
+  Line Map total.
+- S2 accepted: `Go to line...` is added to P20 scope.
+- S3 accepted: duplicate labels are prevented by Line Map construction.
+- S4 accepted: placement tests and performance gates are required.
+- N1 accepted: "global gutter layer" means per-block label ownership aligned to
+  one visual gutter column, not a detached document-wide overlay.
+- N2 accepted: reader-line anchors are injected after sanitization and are not
+  sanitize-allow-listed, so author-supplied raw HTML cannot forge them.
+- N3 accepted as implementation guidance: hard-break anchors should prefer
+  empty marker insertion after `<br>` before considering segment wrapping.
+- N4/N5 accepted: the model shape uses `DocumentModel.readerLineCount` plus
+  `Block.readerLines[]`; optional previews are omitted until a UI needs them.
+- N6 accepted: framed objects count once without a phantom nested-list
+  exception.
+- N7 accepted: tests include unmounted go-to-line targets and shared decoration
+  class names for copy exclusion.
+
+The review's product model approval still applies after the external research.
+The research strengthened the same conclusion: source-position APIs solve source
+correlation; browser rects solve placement; CSS counters solve simple element
+numbering. Maakdown needs a semantic reader Line Map.
