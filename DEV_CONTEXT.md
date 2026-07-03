@@ -8,7 +8,7 @@ The app is a viewer, not an editor. It renders CommonMark/GFM, code, KaTeX math,
 
 ## Current Phase
 
-**Phase:** P11.11 is active; P13-P19 implementation and macOS acceptance are
+**Phase:** P11.11 is active; P13-P20 implementation and macOS acceptance are
 complete for the next release; P0-P10 and P12 are complete
 **Active focus:** remaining native editorial acceptance and cross-platform
 release validation. P13-P18 delivered the
@@ -32,7 +32,10 @@ the product scope and fixed list line-number placement so labels sit beside
 actual list rows instead of stacking in the block gutter. P19.11 tightened the
 source/table number ergonomics: list labels now share the normal gutter margin,
 reader copy strips visual number chrome, and table row numbers use a smaller
-column.
+column. P20 replaced physical source-line display numbering with semantic
+reader-content line numbers driven by a parser-emitted Line Map, trusted
+post-sanitize anchors, per-block reader gutter labels, reader-line stats, and a
+`Go to line...` command.
 Cross-OS CI/UAT and native screenshot validation passed for P18 on `main`
 (`aa8dccf`) on 2026-07-02; P19 Windows/Linux validation plus
 release-smoke/manual release checks still gate the release. The remaining
@@ -880,8 +883,8 @@ provisioning profiles, notarization credentials, or signed release artifacts.
   emit stable anchors for lists and hard-break segments, keep code/table/Mermaid
   local numbering separate, derive line stats/digit width from the Line Map
   total, rerun placement after progressive enhancement, and add `Go to line...`
-  to P20 scope. No implementation has started; the v0.2 spec is pending user
-  review and must not be committed until explicitly approved.
+  to P20 scope. At that point no implementation had started, and the v0.2 spec
+  was pending explicit user approval before commit.
 - 2026-07-03: Incorporated second-pass implementation clarifications into the
   P20 line-numbering spec. Reader-line labels should be owned by each mounted
   `BlockView` in wrappers outside enhancement-owned content, while CSS aligns
@@ -892,4 +895,22 @@ provisioning profiles, notarization credentials, or signed release artifacts.
   empty parser-injected marker anchors after `<br>` instead of inline tree
   splitting, and the test plan now includes forged anchors, inline formatted
   hard breaks, unmounted go-to-line targets, and shared copy-exclusion
-  decoration constants. Changes remain uncommitted pending user review.
+  decoration constants. These spec changes remained uncommitted until the user
+  explicitly asked to commit the specs.
+- 2026-07-03: Implemented the P20 semantic reader Line Map after explicit user
+  approval. The parser worker now emits `Block.readerLines` and
+  `DocumentModel.readerLineCount` from the post-sanitize rendered tree, injects
+  trusted `data-reader-line-anchor` attributes only after sanitization, strips
+  forged author anchors, counts list items and hard-break segments as reader
+  lines, and treats code, Mermaid, and tables as one outer document line with
+  local numbering left separate. `BlockView` renders `.reader-line` labels in
+  the mounted wrapper, `DocumentView` derives gutter digit width from
+  `readerLineCount` and can scroll to a reader line, the masthead reports
+  reader-line stats, copy handling shares reader decoration exclusion constants,
+  and the command palette includes `Go to line...`. The benchmark harness now
+  closes Settings before deep-anchor navigation and reports `readerLineCount`.
+  Verification passed: `npm test -- --run
+  src/core/pipeline/parseDocument.test.ts src/core/stats/documentStats.test.ts`,
+  full `npm test`, `npm run check`, `npm run build`, focused UAT-05, and
+  `npm run benchmark` with `large-10k-lines.md` reporting 2,606 blocks, 3,626
+  reader lines, bounded mounted blocks, and deep anchor offset `0`.

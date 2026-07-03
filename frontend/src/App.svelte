@@ -64,6 +64,7 @@
     type MinimapViewport
   } from './core/minimap/minimap';
   import { projectDocumentStats } from './core/stats/documentStats';
+  import { READER_COPY_EXCLUDED_CLASSES } from './core/reader/decorations';
   import {
     moveHistory as moveNavigationHistory,
     pushHistory,
@@ -318,6 +319,23 @@
     documentView?.scrollToAnchor(anchorId);
   }
 
+  async function goToReaderLine() {
+    const total = activeTab?.model?.readerLineCount ?? 0;
+    if (!documentView || total < 1) {
+      announcement = 'No line numbers available';
+      return;
+    }
+    const raw = window.prompt(`Go to line (1-${total})`);
+    if (raw == null) return;
+    const lineNumber = Number.parseInt(raw.trim(), 10);
+    if (!Number.isFinite(lineNumber) || lineNumber < 1 || lineNumber > total) {
+      announcement = `Enter a line from 1 to ${total}`;
+      return;
+    }
+    const found = await documentView.scrollToReaderLine(lineNumber);
+    announcement = found ? `Line ${lineNumber}` : `Line ${lineNumber} not found`;
+  }
+
   async function moveHistory(offset: number) {
     if (!activeTab) return;
     const current = currentLocation(activeTab);
@@ -475,6 +493,7 @@
     if (command === 'previous-tab') cycleTab(-1);
     if (command === 'reload' && activeTab) void reloadDocument(activeTab.path);
     if (command === 'find') showSearch();
+    if (command === 'go-to-line') void goToReaderLine();
     if (command === 'line-numbers') updateConfig({ ...$appConfig, documentLineNumbers: !$appConfig.documentLineNumbers });
     // Outline/metadata toggles are no longer surfaced as toolbar buttons, but the
     // wiring stays reachable for future advanced settings.
@@ -500,7 +519,8 @@
     for (let index = 0; index < selection.rangeCount; index += 1) {
       container.append(selection.getRangeAt(index).cloneContents());
     }
-    container.querySelectorAll('.source-line, .list-source-line, .table-row-number, .table-row-number-heading').forEach((node) => node.remove());
+    const excludedSelector = READER_COPY_EXCLUDED_CLASSES.map((className) => `.${className}`).join(', ');
+    container.querySelectorAll(excludedSelector).forEach((node) => node.remove());
     container.style.position = 'fixed';
     container.style.left = '-10000px';
     container.style.top = '0';
@@ -666,6 +686,7 @@
             durationMs: performance.now() - started,
             blockCount: model.blocks.length,
             sourceLineCount: model.sourceLineCount,
+            readerLineCount: model.readerLineCount,
             sourcePositionedBlocks: model.blocks.filter((block) => block.sourceStart).length,
             transferBytes: new TextEncoder().encode(JSON.stringify(model)).byteLength
           };
@@ -674,7 +695,8 @@
           blocks: activeTab?.model?.blocks.length ?? 0,
           headings: activeTab?.model?.headings.length ?? 0,
           languages: activeTab?.model?.languages.length ?? 0,
-          sourceLineCount: activeTab?.model?.sourceLineCount ?? 0
+          sourceLineCount: activeTab?.model?.sourceLineCount ?? 0,
+          readerLineCount: activeTab?.model?.readerLineCount ?? 0
         })
       };
     }

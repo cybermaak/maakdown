@@ -9,7 +9,7 @@ export interface DocumentStats {
   images: number;
   tables: number;
   tasks: number;
-  sourceLines: number;
+  readerLines: number;
 }
 
 const WORDS_PER_MINUTE = 225;
@@ -36,7 +36,7 @@ export function projectDocumentStats(model: DocumentModel): DocumentStats {
     images,
     tables: model.blocks.filter((block) => block.kind === 'table').length,
     tasks,
-    sourceLines: model.sourceLineCount ?? 0
+    readerLines: model.readerLineCount ?? model.sourceLineCount ?? 0
   };
 }
 

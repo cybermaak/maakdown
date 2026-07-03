@@ -17,7 +17,8 @@ const model = {
   frontmatter: {},
   languages: ['ts'],
   unresolvedWikilinks: [],
-  sourceLineCount: 32
+  sourceLineCount: 32,
+  readerLineCount: 6
 } satisfies DocumentModel;
 
 describe('projectDocumentStats', () => {
@@ -31,7 +32,7 @@ describe('projectDocumentStats', () => {
       images: 1,
       tables: 1,
       tasks: 1,
-      sourceLines: 32
+      readerLines: 6
     });
   });
 });

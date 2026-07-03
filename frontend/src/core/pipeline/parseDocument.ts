@@ -16,8 +16,9 @@ import { unified } from 'unified';
 import { visit } from 'unist-util-visit';
 import type { Element, Nodes, Root, Text } from 'hast';
 import type { Plugin } from 'unified';
-import type { DocumentModel, Block, BlockKind, EnhancementKind, Heading, VaultIndexSnapshot } from '../model/types';
+import type { DocumentModel, Block, BlockKind, EnhancementKind, Heading, ReaderLine, ReaderLineKind, VaultIndexSnapshot } from '../model/types';
 import { sanitizeSchema } from '../sanitize/schema';
+import { READER_BLOCK_ANCHOR, READER_LINE_ANCHOR_PROPERTY } from '../reader/decorations';
 
 export interface ParseRequest {
   source: string;
@@ -44,8 +45,6 @@ interface ProcessorData {
   collectSourcePositions: boolean;
 }
 
-type SourcePosition = { start?: number; end?: number; lines?: number[]; lineGroups?: number[][] };
-
 export async function parseDocument(request: ParseRequest): Promise<DocumentModel> {
   const frontmatter = extractFrontmatter(request.source);
   const data: ProcessorData = {
@@ -62,7 +61,7 @@ export async function parseDocument(request: ParseRequest): Promise<DocumentMode
   const processor = buildProcessor(data, request.vaultIndex);
   const result = await processor.run(processor.parse(frontmatter.body));
   const root = result as Root;
-  const blocks = buildBlocks(root, data);
+  const { blocks, readerLineCount } = buildBlocks(root, data);
 
   return {
     blocks,
@@ -73,7 +72,8 @@ export async function parseDocument(request: ParseRequest): Promise<DocumentMode
     languages: Array.from(data.languages).sort(),
     unresolvedWikilinks: Array.from(data.unresolvedWikilinks).sort(),
     sourceLineCount: countLines(request.source),
-    sourcePositionsEnabled: data.collectSourcePositions
+    sourcePositionsEnabled: data.collectSourcePositions,
+    readerLineCount
   };
 }
 
@@ -166,8 +166,6 @@ function collectMarkdownMetadata(data: ProcessorData): Plugin<[], Nodes> {
           lines: sourceLinesForNode(child, data.sourceLineOffset),
           lineGroups: sourceLineGroupsForNode(child, data.sourceLineOffset)
         }));
-      annotateTopLevelSourceLines(tree, data.sourceLineOffset);
-      annotateListItemSourceLines(tree, data.sourceLineOffset);
     }
 
     visit(tree, 'code', (node: { lang?: string; value?: string }) => {
@@ -216,10 +214,15 @@ function collectHtmlMetadata(data: ProcessorData): Plugin<[], Root> {
   };
 }
 
-function buildBlocks(root: Root, data: ProcessorData): Block[] {
+function buildBlocks(root: Root, data: ProcessorData): { blocks: Block[]; readerLineCount: number } {
   const blocks: Block[] = [];
   let headingIndex = 0;
   let sourceIndex = 0;
+  let readerLineCount = 0;
+  const nextReaderLineNumber = () => {
+    readerLineCount += 1;
+    return readerLineCount;
+  };
 
   for (const child of root.children) {
     if (isWhitespaceText(child)) {
@@ -229,6 +232,7 @@ function buildBlocks(root: Root, data: ProcessorData): Block[] {
     if (!isElement(child)) {
       const id = `block-${blocks.length + 1}`;
       const source = data.sourcePositions[sourceIndex++];
+      const readerLines: ReaderLine[] = [];
       blocks.push({
         id,
         kind: 'other',
@@ -238,18 +242,20 @@ function buildBlocks(root: Root, data: ProcessorData): Block[] {
         sourceStart: source?.start,
         sourceEnd: source?.end,
         sourceLines: source?.lines,
-        sourceLineGroups: source?.lineGroups
+        sourceLineGroups: source?.lineGroups,
+        readerLines
       });
       continue;
     }
 
     const indexedSource = data.sourcePositions[sourceIndex++];
-    const source = sourcePositionForElement(child) ?? indexedSource;
+    const source = indexedSource;
     const headingLevel = headingDepth(child);
     const id = `block-${blocks.length + 1}`;
     const kind = blockKind(child);
     const enhancement = enhancementFor(child);
     const language = kind === 'code' || kind === 'mermaid' ? codeLanguage(child) ?? undefined : undefined;
+    const readerLines = buildReaderLinesForBlock(child, id, kind, nextReaderLineNumber);
     const html = toHtml(child);
     const text = textContent(child).trim();
 
@@ -272,11 +278,12 @@ function buildBlocks(root: Root, data: ProcessorData): Block[] {
       sourceStart: source?.start,
       sourceEnd: source?.end,
       sourceLines: source?.lines,
-      sourceLineGroups: source?.lineGroups
+      sourceLineGroups: source?.lineGroups,
+      readerLines
     });
   }
 
-  return blocks;
+  return { blocks, readerLineCount };
 }
 
 function countLines(source: string): number {
@@ -292,32 +299,6 @@ interface SourcePositionedNode {
   type?: string;
   children?: SourcePositionedNode[];
   position?: { start: { line: number }; end: { line: number } };
-  data?: { hProperties?: Record<string, unknown> };
-}
-
-function annotateTopLevelSourceLines(tree: Nodes, offset: number): void {
-  if (!('children' in tree) || !Array.isArray(tree.children)) {
-    return;
-  }
-  for (const child of tree.children as SourcePositionedNode[]) {
-    annotateNodeSourceLines(child, offset);
-  }
-}
-
-function annotateNodeSourceLines(node: SourcePositionedNode, offset: number): void {
-  const start = addLineOffset(node.position?.start.line, offset);
-  if (typeof start !== 'number') {
-    return;
-  }
-  const end = addLineOffset(node.position?.end.line, offset) ?? start;
-  const lines = sourceLinesForRange(node.position?.start.line, node.position?.end.line, offset);
-  node.data = node.data ?? {};
-  node.data.hProperties = {
-    ...(node.data.hProperties ?? {}),
-    dataSourceStart: String(start),
-    dataSourceEnd: String(end),
-    dataSourceLines: lines.join(',')
-  };
 }
 
 function sourceLinesForNode(node: unknown, offset: number): number[] | undefined {
@@ -340,12 +321,6 @@ function sourceLineGroupsForNode(node: unknown, offset: number): number[][] | un
   return groups.length ? groups : undefined;
 }
 
-function annotateListItemSourceLines(tree: Nodes, offset: number): void {
-  visit(tree, 'listItem', (node: SourcePositionedNode) => {
-    annotateNodeSourceLines(node, offset);
-  });
-}
-
 function sourceLinesForRange(startLine: number | undefined, endLine: number | undefined, offset: number): number[] {
   const start = addLineOffset(startLine, offset);
   const end = addLineOffset(endLine, offset);
@@ -360,44 +335,192 @@ function sourceLinesForRange(startLine: number | undefined, endLine: number | un
   return lines;
 }
 
-function sourcePositionForElement(node: Element): SourcePosition | undefined {
-  const start = sourceLineNumberProperty(node.properties?.dataSourceStart);
-  if (typeof start !== 'number') {
-    return undefined;
-  }
-  const end = sourceLineNumberProperty(node.properties?.dataSourceEnd) ?? start;
-  const lines = sourceLineArrayProperty(node.properties?.dataSourceLines);
-  return {
-    start,
-    end,
-    lines: lines.length > 1 ? lines : undefined,
-    lineGroups: sourceLineGroupsForElement(node)
+function buildReaderLinesForBlock(node: Element, blockId: string, kind: BlockKind, nextLineNumber: () => number): ReaderLine[] {
+  const lines: ReaderLine[] = [];
+  const nextAnchorId = () => `${blockId}-reader-line-${lines.length + 1}`;
+  const emit = (anchorId: string, lineKind: ReaderLineKind) => {
+    lines.push({ lineNumber: nextLineNumber(), anchorId, kind: lineKind });
   };
-}
+  const markElement = (element: Element, anchorId: string) => {
+    element.properties = { ...element.properties, [READER_LINE_ANCHOR_PROPERTY]: anchorId };
+  };
+  const emitElementLine = (element: Element, lineKind: ReaderLineKind = 'block') => {
+    const anchorId = nextAnchorId();
+    markElement(element, anchorId);
+    emit(anchorId, lineKind);
+  };
+  const emitBlockLine = () => emit(READER_BLOCK_ANCHOR, 'block');
+  const emitHardBreakLine = (parent: Element, insertAfter: number) => {
+    const anchorId = nextAnchorId();
+    const marker: Element = {
+      type: 'element',
+      tagName: 'span',
+      properties: {
+        [READER_LINE_ANCHOR_PROPERTY]: anchorId,
+        ariaHidden: 'true',
+        className: ['reader-line-anchor']
+      },
+      children: []
+    };
+    parent.children.splice(insertAfter + 1, 0, marker);
+    emit(anchorId, 'hard-break-segment');
+  };
+  const collectHardBreakSegments = (element: Element, skipBlockDescendants = false) => {
+    for (let index = 0; index < element.children.length; index += 1) {
+      const child = element.children[index];
+      if (!isElement(child)) {
+        continue;
+      }
+      if (child.tagName === 'br') {
+        emitHardBreakLine(element, index);
+        index += 1;
+        continue;
+      }
+      if (skipBlockDescendants && isReaderBlockBoundary(child)) {
+        continue;
+      }
+      collectHardBreakSegments(child, skipBlockDescendants);
+    }
+  };
+  const processTextContainer = (element: Element, lineKind: ReaderLineKind = 'block') => {
+    if (!hasVisibleContent(element)) {
+      return;
+    }
+    emitElementLine(element, lineKind);
+    collectHardBreakSegments(element);
+  };
+  const processList = (list: Element) => {
+    for (const item of list.children) {
+      if (!isElement(item) || item.tagName !== 'li' || !hasVisibleContent(item)) {
+        continue;
+      }
+      emitElementLine(item, 'list-item');
+      collectHardBreakSegments(item, true);
+      let consumedFirstParagraph = false;
+      for (const child of item.children) {
+        if (!isElement(child)) {
+          continue;
+        }
+        if (child.tagName === 'p' && !consumedFirstParagraph) {
+          consumedFirstParagraph = true;
+          collectHardBreakSegments(child);
+          continue;
+        }
+        if (child.tagName === 'ul' || child.tagName === 'ol') {
+          processList(child);
+        } else if (child.tagName === 'p') {
+          processTextContainer(child);
+        } else if (isFramedReaderObject(child)) {
+          emitElementLine(child);
+        } else if (child.tagName === 'blockquote') {
+          processBlockquote(child);
+        } else if (isReaderBlockBoundary(child) && hasVisibleContent(child)) {
+          processTextContainer(child);
+        }
+      }
+    }
+  };
+  const processBlockquote = (quote: Element) => {
+    if (!hasVisibleContent(quote)) {
+      return;
+    }
+    for (const child of quote.children) {
+      if (!isElement(child)) {
+        continue;
+      }
+      if (child.tagName === 'ul' || child.tagName === 'ol') {
+        processList(child);
+      } else if (isFramedReaderObject(child)) {
+        emitElementLine(child);
+      } else if (child.tagName === 'blockquote') {
+        processBlockquote(child);
+      } else if (hasClass(child, 'callout-title')) {
+        processTextContainer(child, 'callout-title');
+      } else if (hasVisibleContent(child)) {
+        processTextContainer(child);
+      }
+    }
+  };
+  const processContainer = (element: Element) => {
+    let emitted = false;
+    for (const child of element.children) {
+      if (!isElement(child)) {
+        continue;
+      }
+      const before = lines.length;
+      if (child.tagName === 'ul' || child.tagName === 'ol') {
+        processList(child);
+      } else if (isFramedReaderObject(child)) {
+        emitElementLine(child);
+      } else if (child.tagName === 'blockquote') {
+        processBlockquote(child);
+      } else if (hasVisibleContent(child)) {
+        processTextContainer(child);
+      }
+      emitted = emitted || lines.length > before;
+    }
+    if (!emitted && hasVisibleContent(element)) {
+      processTextContainer(element);
+    }
+  };
 
-function sourceLineGroupsForElement(node: Element): number[][] | undefined {
-  if (node.tagName !== 'ol' && node.tagName !== 'ul') {
-    return undefined;
+  if (!hasVisibleContent(node)) {
+    return lines;
   }
-  const groups = node.children
-    .filter((child): child is Element => isElement(child) && child.tagName === 'li')
-    .map((item) => sourceLineArrayProperty(item.properties?.dataSourceLines))
-    .filter((lines) => lines.length > 0);
-  return groups.length ? groups : undefined;
+  if (kind === 'code' || kind === 'mermaid' || kind === 'table' || kind === 'math') {
+    emitBlockLine();
+  } else if (node.tagName === 'ul' || node.tagName === 'ol') {
+    processList(node);
+  } else if (node.tagName === 'blockquote') {
+    processBlockquote(node);
+  } else if (node.tagName === 'div' || node.tagName === 'section') {
+    processContainer(node);
+  } else {
+    processTextContainer(node);
+  }
+  return lines;
 }
 
-function sourceLineNumberProperty(value: unknown): number | undefined {
-  const text = Array.isArray(value) ? value[0] : value;
-  const line = typeof text === 'number' ? text : typeof text === 'string' ? Number.parseInt(text, 10) : NaN;
-  return Number.isFinite(line) ? line : undefined;
+function isFramedReaderObject(node: Element): boolean {
+  return node.tagName === 'pre'
+    || node.tagName === 'table'
+    || node.tagName === 'img'
+    || hasClass(node, 'katex-display')
+    || codeLanguage(node) === 'mermaid';
 }
 
-function sourceLineArrayProperty(value: unknown): number[] {
-  const raw = Array.isArray(value) ? value.join(',') : typeof value === 'string' || typeof value === 'number' ? String(value) : '';
-  return raw
-    .split(',')
-    .map((item) => Number.parseInt(item, 10))
-    .filter((line): line is number => Number.isFinite(line));
+function isReaderBlockBoundary(node: Element): boolean {
+  return ['blockquote', 'div', 'dl', 'figure', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ol', 'p', 'pre', 'section', 'table', 'ul'].includes(node.tagName)
+    || hasClass(node, 'katex-display');
+}
+
+function hasVisibleContent(node: Element): boolean {
+  if (node.properties?.hidden === true || node.properties?.ariaHidden === 'true') {
+    return false;
+  }
+  if (['br', 'script', 'style'].includes(node.tagName)) {
+    return false;
+  }
+  if (textContent(node).trim().length > 0) {
+    return true;
+  }
+  return Boolean(findElement(node, (child) => ['img', 'input', 'svg', 'table', 'pre'].includes(child.tagName)));
+}
+
+function findElement(node: Element, predicate: (node: Element) => boolean): Element | null {
+  for (const child of node.children) {
+    if (!isElement(child)) {
+      continue;
+    }
+    if (predicate(child)) {
+      return child;
+    }
+    const found = findElement(child, predicate);
+    if (found) {
+      return found;
+    }
+  }
+  return null;
 }
 
 function rehypeCallouts(): (tree: Root) => void {

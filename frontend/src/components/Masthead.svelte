@@ -52,7 +52,7 @@
           <div class="masthead-meta-item"><dt>words</dt> <dd>{stats.words.toLocaleString()}</dd></div>
           <div class="masthead-meta-item"><dt>sections</dt> <dd>{stats.headings}</dd></div>
           <div class="masthead-meta-item"><dt>code</dt> <dd>{formatStatValue(stats.codeBlocks, 'block')}</dd></div>
-          <div class="masthead-meta-item"><dt>lines</dt> <dd>{stats.sourceLines.toLocaleString()}</dd></div>
+          <div class="masthead-meta-item"><dt>lines</dt> <dd>{stats.readerLines.toLocaleString()}</dd></div>
         </dl>
       {/if}
     </div>

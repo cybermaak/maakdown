@@ -11,6 +11,14 @@ export type BlockKind =
 
 export type EnhancementKind = 'none' | 'code' | 'mermaid';
 
+export type ReaderLineKind = 'block' | 'list-item' | 'hard-break-segment' | 'callout-title';
+
+export interface ReaderLine {
+  lineNumber: number;
+  anchorId: string;
+  kind: ReaderLineKind;
+}
+
 export interface Block {
   id: string;
   kind: BlockKind;
@@ -23,6 +31,7 @@ export interface Block {
   sourceEnd?: number;
   sourceLines?: number[];
   sourceLineGroups?: number[][];
+  readerLines?: ReaderLine[];
 }
 
 export interface Heading {
@@ -48,6 +57,7 @@ export interface DocumentModel {
   unresolvedWikilinks: string[];
   sourceLineCount?: number;
   sourcePositionsEnabled?: boolean;
+  readerLineCount?: number;
 }
 
 export interface VaultIndexSnapshot {

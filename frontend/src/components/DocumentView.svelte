@@ -12,6 +12,7 @@
   import Masthead from './Masthead.svelte';
   import type { DocumentStats } from '../core/stats/documentStats';
   import type { TableInteractionState } from '../core/tables/tableProjection';
+  import { READER_BLOCK_ANCHOR, READER_LINE_ANCHOR_ATTRIBUTE } from '../core/reader/decorations';
 
   interface Props {
     model: DocumentModel;
@@ -41,7 +42,7 @@
   let printMode = $state(false);
   let enhancedForPrint = new Set<string>();
   let tableStates = $state(new Map<string, TableInteractionState>());
-  let documentLineDigits = $derived(Math.max(1, String(model.sourceLineCount ?? model.blocks.length).length));
+  let documentLineDigits = $derived(Math.max(1, String(model.readerLineCount ?? model.blocks.length).length));
   // Cache resolved asset URLs per raw path so blocks that unmount and remount
   // during virtualized scrolling re-attach their image without re-resolving.
   let assetUrlCache = new Map<string, string>();
@@ -180,6 +181,33 @@
     updateRange();
     await tick();
     document.getElementById(blockId)?.scrollIntoView({ block: 'center' });
+  }
+
+  export async function scrollToReaderLine(lineNumber: number): Promise<boolean> {
+    const blockIndex = model.blocks.findIndex((block) => block.readerLines?.some((line) => line.lineNumber === lineNumber));
+    if (blockIndex < 0 || !surface) return false;
+    const block = model.blocks[blockIndex];
+    const line = block.readerLines?.find((item) => item.lineNumber === lineNumber);
+    surface.scrollTop = virtualizer.offsetFor(blockIndex);
+    updateRange();
+    for (let attempt = 0; attempt < 6; attempt += 1) {
+      await tick();
+      const blockElement = document.getElementById(block.id);
+      if (!blockElement) {
+        updateRange();
+        continue;
+      }
+      const target = line?.anchorId && line.anchorId !== READER_BLOCK_ANCHOR
+        ? blockElement.querySelector<HTMLElement>(`[${READER_LINE_ANCHOR_ATTRIBUTE}="${CSS.escape(line.anchorId)}"]`) ?? blockElement
+        : blockElement;
+      const delta = target.getBoundingClientRect().top - surface.getBoundingClientRect().top;
+      if (Math.abs(delta) <= 2) {
+        return true;
+      }
+      surface.scrollTop += delta;
+      updateRange();
+    }
+    return true;
   }
 
   export function scrollToOffset(scrollTop: number) {

@@ -8,6 +8,7 @@
   import { CodeBlockChrome, IconButton } from '../design-system';
   import TableBlock from './TableBlock.svelte';
   import type { TableInteractionState } from '../core/tables/tableProjection';
+  import { READER_BLOCK_ANCHOR, READER_LINE_ANCHOR_ATTRIBUTE, READER_LINE_LABEL_CLASS } from '../core/reader/decorations';
 
   interface Props {
     block: Block;
@@ -38,10 +39,7 @@
   let mermaidSourceVisible = $state(false);
   let mermaidSourceHtml = $state('');
   let codeWrapped = $derived(codeWrapOverride ?? $appConfig.codeWrap);
-  let isSourceListBlock = $derived(/^<(ol|ul)\b/i.test(block.html.trim()));
-  let hasListSourceLabels = $derived(Boolean(isSourceListBlock && (block.sourceLineGroups?.length || /data-source-lines=/i.test(block.html))));
-  let hasDocumentSourceLabel = $derived(Boolean(block.sourceStart || hasListSourceLabels));
-  let sourceLabel = $derived(block.sourceStart ? String(block.sourceStart) : '');
+  let hasDocumentSourceLabel = $derived(Boolean(block.readerLines?.length));
   let codeLineNumbers = $derived(block.kind === 'code' && $appConfig.codeLineNumbers);
   let renderedMermaidVisible = $derived(printMode || !mermaidSourceVisible);
 
@@ -90,10 +88,11 @@
     mermaidSourceVisible;
     mermaidSourceHtml;
     showDocumentLineNumbers;
+    block.readerLines;
     queueMicrotask(() => {
       markSearchResults();
       applyCodeDisplay();
-      applyListSourceLines();
+      applyReaderLineLabels();
       if (element && block.kind === 'mermaid' && renderedMermaidVisible) {
         void stabilizeMountedMermaid(element);
       }
@@ -191,43 +190,33 @@
     }
   }
 
-  function applyListSourceLines() {
+  function applyReaderLineLabels() {
     if (!element) return;
-    element.querySelectorAll('.list-source-line').forEach((label) => label.remove());
-    element.querySelectorAll<HTMLElement>('li.source-lined-list-item').forEach((item) => {
-      item.classList.remove('source-lined-list-item');
-      item.style.removeProperty('--list-source-label-offset');
-    });
-    if (!showDocumentLineNumbers || !hasListSourceLabels) return;
-    const listItems = Array.from(element.querySelectorAll<HTMLElement>(':scope > ol > li, :scope > ul > li'));
-    const blockLeft = element.getBoundingClientRect().left;
-    listItems.forEach((item, index) => {
-      const lines = sourceLinesFromListItem(item) ?? block.sourceLineGroups?.[index] ?? [];
-      if (!lines.length) return;
-      item.classList.add('source-lined-list-item');
-      item.style.setProperty('--list-source-label-offset', `${item.getBoundingClientRect().left - blockLeft}px`);
-      lines.forEach((line, lineIndex) => {
-        const label = document.createElement('span');
-        label.className = 'list-source-line';
-        label.setAttribute('aria-hidden', 'true');
-        label.title = `Source line ${line}`;
-        label.textContent = String(line);
-        label.style.setProperty('--list-source-line-index', String(lineIndex));
-        item.append(label);
-      });
+    const host = element;
+    host.querySelectorAll(`.${READER_LINE_LABEL_CLASS}`).forEach((label) => label.remove());
+    if (!showDocumentLineNumbers || !block.readerLines?.length) return;
+    const blockRect = host.getBoundingClientRect();
+    block.readerLines.forEach((line) => {
+      const anchor = readerLineAnchor(line.anchorId);
+      if (!anchor) return;
+      const anchorRect = anchor.getBoundingClientRect();
+      const anchorStyle = getComputedStyle(anchor);
+      const fontSize = Number.parseFloat(anchorStyle.fontSize || '0') || 0;
+      const label = document.createElement('span');
+      label.className = READER_LINE_LABEL_CLASS;
+      label.setAttribute('aria-hidden', 'true');
+      label.title = `Line ${line.lineNumber}`;
+      label.textContent = String(line.lineNumber);
+      label.style.top = `${Math.max(0, anchorRect.top - blockRect.top + fontSize * 0.2)}px`;
+      host.append(label);
     });
   }
 
-  function sourceLinesFromListItem(item: HTMLElement): number[] | null {
-    const raw = item.dataset.sourceLines;
-    if (!raw) {
-      return null;
-    }
-    const lines = raw
-      .split(',')
-      .map((value) => Number.parseInt(value, 10))
-      .filter((line): line is number => Number.isFinite(line));
-    return lines.length ? lines : null;
+  function readerLineAnchor(anchorId: string): HTMLElement | null {
+    if (!element) return null;
+    if (anchorId === READER_BLOCK_ANCHOR) return element;
+    const escaped = typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(anchorId) : anchorId.replace(/"/g, '\\"');
+    return element.querySelector<HTMLElement>(`[${READER_LINE_ANCHOR_ATTRIBUTE}="${escaped}"]`);
   }
 
   function addPreClass(source: string, className: string): string {
@@ -248,17 +237,12 @@
   bind:this={element}
   id={block.id}
   class={`doc-block doc-block-${block.kind}`}
-  class:with-source-line={showDocumentLineNumbers && hasDocumentSourceLabel}
+  class:with-reader-line={showDocumentLineNumbers && hasDocumentSourceLabel}
   class:table-measure={block.kind === 'table' && $appConfig.tableConstrainToMeasure}
   data-block-id={block.id}
   data-enhancement={block.enhancement}
-  data-source-start={block.sourceStart ?? undefined}
-  data-source-end={block.sourceEnd ?? undefined}
-  style={showDocumentLineNumbers ? `--source-line-digits: ${documentLineDigits}` : undefined}
+  style={showDocumentLineNumbers ? `--reader-line-digits: ${documentLineDigits}` : undefined}
 >
-  {#if showDocumentLineNumbers && !hasListSourceLabels && sourceLabel}
-    <span class="source-line" aria-hidden="true" title={`Source line ${sourceLabel}`}>{sourceLabel}</span>
-  {/if}
   {#if block.kind === 'code'}
     <CodeBlockChrome
       language={block.language}
