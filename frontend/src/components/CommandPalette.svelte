@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import type { Component } from 'svelte';
   import {
+    Code2,
     Command,
     Eye,
     FileText,
@@ -69,6 +70,8 @@
     { id: 'theme', label: 'Toggle theme', subtitle: 'Setting', icon: Moon },
     { id: 'settings', label: 'Reading display...', subtitle: 'Setting', icon: Settings },
     { id: 'line-numbers', label: 'Toggle document line numbers', subtitle: 'Setting', icon: List },
+    { id: 'highlighter-shiki', label: 'Use Shiki highlighter', subtitle: 'Setting - Code highlighting', icon: Code2 },
+    { id: 'highlighter-highlightjs', label: 'Use Highlight.js highlighter', subtitle: 'Setting - Code highlighting', icon: Code2 },
     { id: 'toggle-outline', label: 'Toggle outline', subtitle: 'Setting', icon: PanelLeft },
     { id: 'toggle-metadata', label: 'Toggle metadata', subtitle: 'Setting', icon: PanelRight },
     { id: 'about', label: 'About Maakdown', subtitle: 'Command', icon: Info }

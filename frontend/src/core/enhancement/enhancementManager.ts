@@ -4,7 +4,7 @@ import { MermaidManager } from '../mermaid/mermaidManager';
 
 class EnhancementManager {
   private highlighter: Highlighter | null = null;
-  private engine: 'highlightjs' | 'shiki-js-regex' = 'highlightjs';
+  private engine: 'highlightjs' | 'shiki-js-regex' = 'shiki-js-regex';
   private theme = 'light';
   private languages: string[] = [];
   private mermaid = new MermaidManager();

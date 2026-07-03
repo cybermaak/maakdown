@@ -37,6 +37,54 @@ func TestPersistsConfigAndSession(t *testing.T) {
 	}
 }
 
+func TestDefaultHighlighterIsShikiAndHighlightJsRemainsValid(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "state.json")
+	service := NewAt(path)
+	if got := service.GetConfig().HighlighterEngine; got != "shiki-js-regex" {
+		t.Fatalf("expected Shiki default highlighter, got %q", got)
+	}
+
+	service.SetConfig(AppConfig{
+		Theme:              "system",
+		HighlighterEngine:  "highlightjs",
+		FrontmatterDisplay: "panel",
+		ReaderTheme:        "editorial",
+		ReaderFont:         "sans",
+		ReaderFontSize:     15,
+		ReaderLineHeight:   "comfortable",
+		ReaderMeasure:      "standard",
+		OutlineVisible:     true,
+		OutlineWidth:       280,
+		MetadataWidth:      260,
+		CodeWrap:           true,
+		PrintMetadata:      true,
+		TableColumnSizing:  "balanced",
+	})
+	if got := service.GetConfig().HighlighterEngine; got != "highlightjs" {
+		t.Fatalf("expected command-selectable Highlight.js to persist, got %q", got)
+	}
+
+	service.SetConfig(AppConfig{
+		Theme:              "system",
+		HighlighterEngine:  "unknown",
+		FrontmatterDisplay: "panel",
+		ReaderTheme:        "editorial",
+		ReaderFont:         "sans",
+		ReaderFontSize:     15,
+		ReaderLineHeight:   "comfortable",
+		ReaderMeasure:      "standard",
+		OutlineVisible:     true,
+		OutlineWidth:       280,
+		MetadataWidth:      260,
+		CodeWrap:           true,
+		PrintMetadata:      true,
+		TableColumnSizing:  "balanced",
+	})
+	if got := service.GetConfig().HighlighterEngine; got != "shiki-js-regex" {
+		t.Fatalf("expected invalid highlighter to fall back to Shiki, got %q", got)
+	}
+}
+
 func TestMigratesTableRowNumbersDefaultFromV4State(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "state.json")
 	legacy := stateFile{

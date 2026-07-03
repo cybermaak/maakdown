@@ -23,7 +23,7 @@ export interface AppConfig {
 
 export const appConfig = writable<AppConfig>({
   theme: 'system',
-  highlighterEngine: 'highlightjs',
+  highlighterEngine: 'shiki-js-regex',
   frontmatterDisplay: 'panel',
   readerTheme: 'editorial',
   readerFont: 'sans',

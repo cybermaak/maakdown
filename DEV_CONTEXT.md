@@ -35,7 +35,9 @@ reader copy strips visual number chrome, and table row numbers use a smaller
 column. P20 replaced physical source-line display numbering with semantic
 reader-content line numbers driven by a parser-emitted Line Map, trusted
 post-sanitize anchors, per-block reader gutter labels, reader-line stats, and a
-`Go to line...` command.
+`Go to line...` command. P20.7 made Shiki JS-regex the default code highlighter,
+kept Highlight.js as a persisted command-palette-selectable fallback, and
+removed highlighter switching from the Settings popover.
 Cross-OS CI/UAT and native screenshot validation passed for P18 on `main`
 (`aa8dccf`) on 2026-07-02; P19 Windows/Linux validation plus
 release-smoke/manual release checks still gate the release. The remaining
@@ -114,8 +116,8 @@ search/focus/drag/drop/print coverage.
 
 - Pin Wails v2.12.x for v1; do not use Wails v3.
 - Pin Svelte 5.x and Vite 8.x.
-- Use highlight.js as the default highlighter.
-- Keep Shiki optional and use its JavaScript RegExp engine only.
+- Use Shiki with its JavaScript RegExp engine as the default highlighter.
+- Keep highlight.js as a command-palette-selectable fallback.
 - Load parser and enhancement-heavy dependencies outside the initial application
   chunk through the parser worker and dynamic imports.
 - Use a tokenized loopback Go asset server for local Markdown images; do not send normal image payloads over Wails IPC.
@@ -152,8 +154,9 @@ search/focus/drag/drop/print coverage.
   using an fsynced temporary file followed by atomic rename.
 - Use canonical filesystem paths as tab identities and watcher registration keys.
 - Keep inactive tab models in memory but mount and enhance only the active tab.
-- Use highlight.js as the default highlighter and expose highlight.js/Shiki
-  selection in Reader Settings for persisted user evaluation.
+- Use Shiki with its JavaScript RegExp engine as the default highlighter and
+  expose Highlight.js/Shiki selection through the command palette for persisted
+  user evaluation.
 - Theme rendered Markdown through a dedicated semantic reader contract. It owns
   prose, headings, links, syntax, selection, and Mermaid palettes independently
   from application chrome and supports future user-selectable themes.
@@ -923,3 +926,13 @@ provisioning profiles, notarization credentials, or signed release artifacts.
   copy-exclusion chrome, and context-menu code copy now uses the same sanitized
   DOM text path. Verification passed: focused UAT-05 wrapped-code regression,
   `npm run check`, full `npm test`, and `npm run build`.
+- 2026-07-03: Made Shiki JS-regex the default highlighter and moved the
+  highlighter engine switch out of Settings into explicit command palette
+  actions (`Use Shiki highlighter`, `Use Highlight.js highlighter`). Backend
+  config defaults now use Shiki but still accept persisted Highlight.js values
+  so the command-palette fallback remains reversible. The benchmark assumes
+  Shiki is default rather than toggling it in Settings, and UAT-05 verifies the
+  Settings control is hidden while the palette switches engines both ways.
+  Verification passed: `go test ./internal/config`, `go test ./...`,
+  `npm run check`, full `npm test`, focused UAT-05, `npm run build`, and
+  `npm run benchmark`.

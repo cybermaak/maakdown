@@ -152,18 +152,6 @@
         onchange={(value) => update({ codeWrap: value === 'wrap' })}
       />
     </div>
-    <div class="settings-field">
-      <span class="settings-field-label">Code highlighting</span>
-      <SegmentedControl
-        label="Code highlighting"
-        options={[
-          { value: 'highlightjs', label: 'Highlight.js' },
-          { value: 'shiki-js-regex', label: 'Shiki' }
-        ]}
-        value={config.highlighterEngine}
-        onchange={(value: AppConfig['highlighterEngine']) => update({ highlighterEngine: value })}
-      />
-    </div>
   </section>
 
   <section class="settings-section">

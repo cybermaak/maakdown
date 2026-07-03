@@ -14,8 +14,8 @@
 | Frontend | Svelte 5.x + TypeScript + Vite 8.x |
 | Markdown pipeline | unified/remark/rehype |
 | Math | KaTeX |
-| Default highlighter | highlight.js |
-| Optional highlighter evaluation | Shiki with JavaScript RegExp engine, selectable in Reader Settings |
+| Default highlighter | Shiki with JavaScript RegExp engine |
+| Fallback highlighter evaluation | highlight.js, selectable through the command palette |
 | Diagrams | Mermaid, lazy-loaded |
 | Local assets | Go `AssetService` + loopback-only HTTP asset server with tokenized URLs |
 | Dynamic Wails asset handler | Not used for Markdown document assets in v1 |
@@ -165,8 +165,9 @@ Persists settings and workspace session state as versioned JSON in the operating
 Stored settings include theme, frontmatter display mode, highlighter engine, typography, panel dimensions, trusted-folder preferences, and performance/debug settings.
 
 The production settings surface exposes theme, frontmatter mode, typography,
-panel behavior, and other reader preferences. The Shiki engine selector remains
-behind a development/evaluation flag and is not normal reader chrome.
+panel behavior, and other reader preferences. The highlighter engine selector is
+omitted from Settings; persisted Shiki/Highlight.js switching lives in the
+command palette and is not compact reader chrome.
 
 Stored session state includes ordered tab paths, active tab, per-document reading positions, and recent files. Writes use a temporary file, sync/close, and atomic rename. Invalid or unsupported data falls back to defaults without preventing startup.
 
@@ -379,8 +380,8 @@ interface Highlighter {
 
 Implementations:
 
-- `HighlightJsHighlighter`: v1 default, viewport-only.
-- `ShikiJsRegexHighlighter`: optional evaluation implementation using Shiki JavaScript RegExp engine. No Oniguruma/WASM path in v1.
+- `ShikiJsRegexHighlighter`: v1 default implementation using Shiki JavaScript RegExp engine. No Oniguruma/WASM path in v1.
+- `HighlightJsHighlighter`: command-palette-selectable fallback and comparison engine, viewport-only.
 - `InstrumentedHighlighter`: records latency and approximate process/RSS deltas.
 
 Scheduling:
@@ -389,8 +390,9 @@ Scheduling:
 - visible code blocks are prioritized
 - offscreen highlight requests are cancellable
 - raw code remains readable if highlighting is delayed
-- highlighter selection is persisted in Reader Settings; compact toolbar chrome
-  still treats highlighting as an implementation detail
+- highlighter selection is persisted through command palette actions; compact
+  toolbar and Settings chrome still treat highlighting as an implementation
+  detail
 
 ### `core/mermaid`
 
@@ -658,7 +660,8 @@ Accessibility and visual:
 
 - No Wails v3 in v1.
 - No Shiki Oniguruma/WASM in v1 product path.
-- No highlighter-engine selector in the compact toolbar; Reader Settings owns it.
+- No highlighter-engine selector in the compact toolbar or Settings popover;
+  the command palette owns the persisted switch.
 - No native hash scrolling in document content.
 - No raw `file://` image loading.
 - No image byte/base64 transfer over Wails IPC for normal document rendering.

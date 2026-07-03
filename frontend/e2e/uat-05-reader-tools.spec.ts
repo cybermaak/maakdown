@@ -50,6 +50,15 @@ test.describe('UAT-05 reader productivity tools', () => {
 
     const code = page.locator('.doc-block-code').first();
     await code.scrollIntoViewIfNeeded();
+    await expect(code.locator('[data-highlight-engine="shiki-js-regex"]')).toBeVisible({ timeout: 15_000 });
+    await page.keyboard.press(`${mod}+k`);
+    await page.keyboard.type('highlight.js');
+    await page.keyboard.press('Enter');
+    await expect(code.locator('[data-highlight-engine="highlightjs"]')).toBeVisible({ timeout: 15_000 });
+    await page.keyboard.press(`${mod}+k`);
+    await page.keyboard.type('shiki');
+    await page.keyboard.press('Enter');
+    await expect(code.locator('[data-highlight-engine="shiki-js-regex"]')).toBeVisible({ timeout: 15_000 });
     await code.getByRole('button', { name: 'Copy code' }).click();
     expect(await readMockState(page, (state) => state.clipboardText as string)).toContain('openAndParse');
     await expect(page.getByText('Code copied')).toBeAttached();
@@ -78,6 +87,8 @@ test.describe('UAT-05 reader productivity tools', () => {
     await page.getByRole('button', { name: 'Settings', exact: true }).click();
     const settings = page.getByRole('dialog', { name: 'Settings' });
     await expect(settings.getByRole('heading', { name: 'Reading display' })).toBeVisible();
+    await expect(settings).not.toContainText('Code highlighting');
+    await expect(settings).not.toContainText('Highlight.js');
     const settingsBackground = await settings.evaluate((element) => getComputedStyle(element).backgroundColor);
     await settings.getByRole('button', { name: 'Done' }).click();
     await page.keyboard.press(`${mod}+k`);

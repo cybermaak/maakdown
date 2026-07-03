@@ -38,5 +38,5 @@ No dedicated platform spike is required before P0. The project should proceed wi
 - Svelte 5.x and Vite 8.x for the frontend.
 - Do not use Wails v2 dynamic `AssetsHandler` for Markdown document assets.
 - Use the tokenized loopback asset server for local images.
-- Use highlight.js as the default highlighter.
-- Keep Shiki optional and use its JavaScript RegExp engine only.
+- Use Shiki with its JavaScript RegExp engine as the default highlighter.
+- Keep highlight.js as a command-palette-selectable fallback.

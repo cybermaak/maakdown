@@ -85,7 +85,7 @@ func defaultState() stateFile {
 		Version: stateVersion,
 		Config: AppConfig{
 			Theme:              "system",
-			HighlighterEngine:  "highlightjs",
+			HighlighterEngine:  "shiki-js-regex",
 			FrontmatterDisplay: "panel",
 			ReaderTheme:        "editorial",
 			ReaderFont:         "sans",
@@ -164,7 +164,7 @@ func normalizeConfigForVersion(value AppConfig, version int) AppConfig {
 	if value.Theme != "light" && value.Theme != "dark" && value.Theme != "system" {
 		value.Theme = defaults.Theme
 	}
-	if value.HighlighterEngine != "shiki-js-regex" {
+	if value.HighlighterEngine != "shiki-js-regex" && value.HighlighterEngine != "highlightjs" {
 		value.HighlighterEngine = defaults.HighlighterEngine
 	}
 	if value.FrontmatterDisplay != "hidden" {

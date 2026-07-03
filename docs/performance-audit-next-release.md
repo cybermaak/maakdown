@@ -56,8 +56,8 @@ line numbers only, no source-map reconstruction.
 
 The benchmark verifies at least one rendered block for each enhancement surface:
 
-- highlight.js: rendered
-- Shiki: rendered after settings switch
+- Shiki: rendered by default
+- Highlight.js: command-palette-selectable fallback covered by UAT
 - Mermaid: rendered without errors
 - KaTeX: rendered
 
@@ -109,8 +109,9 @@ reasonable machine variance:
   workspace multi-tab activation.
 - P13.3 parser source-position overhead: Passed on macOS with enabled/disabled
   comparison in `reader-benchmark.json`.
-- P13.4 enhancement audit: Passed on macOS with highlight.js, Shiki, Mermaid,
-  and KaTeX rendering checks in the reader benchmark.
+- P13.4 enhancement audit: Passed on macOS with Shiki, Mermaid, and KaTeX
+  rendering checks in the reader benchmark; Highlight.js fallback is covered by
+  command-palette UAT.
 - P13.5 audit publication: Passed by this document plus `git diff --check`.
 
 Windows and Linux benchmark validation remains pending for the release gate.

@@ -54,7 +54,7 @@
     unwatchDocument,
     watchDocument
   } from '@ipc';
-  import { appConfig } from './stores/configStore';
+  import { appConfig, type AppConfig } from './stores/configStore';
   import { applyTheme } from './core/theme/theme';
   import { applyReaderTheme, resolveTheme } from './core/theme/readerTheme';
   import { searchDocument } from './core/search/search';
@@ -408,20 +408,16 @@
     window.addEventListener('pointerup', up);
   }
 
-  function toggleHighlighter() {
-    const next = {
-      ...$appConfig,
-      highlighterEngine: $appConfig.highlighterEngine === 'highlightjs'
-        ? 'shiki-js-regex' as const
-        : 'highlightjs' as const
-    };
+  function updateConfig(next: typeof $appConfig) {
     appConfig.set(next);
     if (!fixture) void setConfig(next);
   }
 
-  function updateConfig(next: typeof $appConfig) {
-    appConfig.set(next);
-    if (!fixture) void setConfig(next);
+  function setHighlighterEngine(highlighterEngine: AppConfig['highlighterEngine']) {
+    updateConfig({ ...$appConfig, highlighterEngine });
+    announcement = highlighterEngine === 'shiki-js-regex'
+      ? 'Using Shiki highlighter'
+      : 'Using Highlight.js highlighter';
   }
 
   function showSearch() {
@@ -495,6 +491,8 @@
     if (command === 'find') showSearch();
     if (command === 'go-to-line') void goToReaderLine();
     if (command === 'line-numbers') updateConfig({ ...$appConfig, documentLineNumbers: !$appConfig.documentLineNumbers });
+    if (command === 'highlighter-shiki') setHighlighterEngine('shiki-js-regex');
+    if (command === 'highlighter-highlightjs') setHighlighterEngine('highlightjs');
     // Outline/metadata toggles are no longer surfaced as toolbar buttons, but the
     // wiring stays reachable for future advanced settings.
     if (command === 'toggle-outline') toggleOutline();

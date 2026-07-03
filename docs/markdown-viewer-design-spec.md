@@ -153,8 +153,8 @@ This model is required before enabling virtualization in P3.
 
 ## 9. Progressive Enhancement
 
-- **Code:** highlight.js is the default v1 engine. It runs on visible blocks only, scheduled through idle callbacks or a dedicated highlighter worker when needed.
-- **Shiki:** retained as an optional evaluation engine, but only with Shiki's JavaScript RegExp engine for v1. Do not ship Shiki's Oniguruma/WASM engine in the product path because it adds CSP/WASM/WebView risk without being required for v1.
+- **Code:** Shiki with its JavaScript RegExp engine is the default v1 highlighter. It runs on visible blocks only, scheduled through idle callbacks or a dedicated highlighter worker when needed.
+- **Highlight.js:** retained as a command-palette-selectable fallback and comparison engine. Do not ship Shiki's Oniguruma/WASM engine in the product path because it adds CSP/WASM/WebView risk without being required for v1.
 - **Mermaid:** lazy-load on first visible Mermaid block; render visible diagrams only; rerender visible diagrams on theme change; show a safe error block for invalid diagrams.
 - **Math:** render during parse with KaTeX, subject to sanitize schema allowlisting.
 
@@ -264,8 +264,9 @@ take precedence.
 The incorporated decisions are:
 
 - use a compact three-zone icon toolbar with stable dimensions and tooltips
-- keep the highlighter selector out of the compact toolbar; expose persisted
-  highlight.js/Shiki selection in Reader Settings for normal-use evaluation
+- keep the highlighter selector out of the compact toolbar and Settings
+  popover; expose persisted Shiki/Highlight.js selection through the command
+  palette for normal-use evaluation
 - make the command palette the first P10 vertical slice and the main route to
   commands, tabs, recents, headings, and settings
 - format metadata and other human-readable values through one locale-aware layer
@@ -354,8 +355,9 @@ The visual direction is native editorial: quiet desktop chrome, excellent docume
 - Metadata status values use semantic badges, tags use chips, and file watch state is visible without dominating the document.
 - Metadata dates, times, sizes, counts, and durations use the shared formatting
   layer and never expose raw `Date.toString()`-style values.
-- Theme, metadata mode, typography, and evaluation/debug controls have one
-  settings surface reachable through the command palette.
+- Theme, metadata mode, typography, and reader controls have one settings
+  surface reachable through the command palette. The highlighter engine remains
+  a persisted command-palette setting rather than Settings popover chrome.
 
 Reader error presentations:
 
@@ -417,7 +419,7 @@ enhancement work.
 
 - Wails v2.12 documentation describes `AssetServer`/dynamic asset handling and notes that Wails v2 dynamic asset handling does not work with Vite 5+.
 - Wails GitHub releases identify Wails v3 as alpha/pre-release.
-- Shiki documents both the default Oniguruma WebAssembly engine and the JavaScript RegExp engine; v1 chooses the JavaScript engine for optional Shiki evaluation to avoid the WASM/CSP path.
+- Shiki documents both the default Oniguruma WebAssembly engine and the JavaScript RegExp engine; v1 chooses the JavaScript engine as the default highlighter to avoid the WASM/CSP path.
 - The reviewed Maakdown mock and design-system handoff are preserved under `docs/design-system/` as the P8 visual source material.
 - The supplemental design and product review is preserved under
   `docs/design-system/reviews/` and incorporated into specification v0.6.

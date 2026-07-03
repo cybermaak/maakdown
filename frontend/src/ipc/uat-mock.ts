@@ -62,7 +62,7 @@ const SESSION_KEY = '__uat_session';
 
 const defaultConfig: AppConfig = {
   theme: 'system',
-  highlighterEngine: 'highlightjs',
+  highlighterEngine: 'shiki-js-regex',
   frontmatterDisplay: 'panel',
   readerTheme: 'editorial',
   readerFont: 'sans',
