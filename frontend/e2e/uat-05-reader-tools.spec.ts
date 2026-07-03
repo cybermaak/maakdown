@@ -214,6 +214,56 @@ test.describe('UAT-05 document reader labels', () => {
   });
 });
 
+test.describe('UAT-05 code line numbers', () => {
+  test.beforeEach(async ({ page }) => {
+    await seedApp(page, {
+      documents: [{
+        path: '/uat/wrapped-code.md',
+        trustedRoot: '/uat',
+        contents: [
+          '# Wrapped code',
+          '',
+          '```go',
+          'func (s *Service) ResolveAsset(documentPath, rawPath string) (AssetRef, error) { root, err := DetectTrustedRoot(documentPath, s.configuredRoot); if err != nil { return AssetRef{}, err } }',
+          'resolved, err := ResolveAssetPath(documentPath, rawPath, root)',
+          'return s.register(resolved)',
+          '```'
+        ].join('\n')
+      }],
+      session: { tabs: [{ path: '/uat/wrapped-code.md' }], activePath: '/uat/wrapped-code.md' },
+      config: {
+        codeLineNumbers: true,
+        codeWrap: true,
+        readerFontSize: 22,
+        readerMeasure: 'narrow'
+      }
+    });
+    await gotoApp(page);
+    await expectReaderReady(page);
+  });
+
+  test('keeps wrapped continuations visually unnumbered', async ({ page }) => {
+    const code = page.locator('.doc-block-code').first();
+    await expect(code.locator('pre.code-line-numbers.code-wrap')).toBeVisible();
+    await expect.poll(() => code.locator('.code-line-row').count()).toBe(3);
+    const metrics = await code.locator('pre').evaluate((pre) => {
+      const rows = Array.from(pre.querySelectorAll<HTMLElement>('.code-line-row'));
+      const numbers = Array.from(pre.querySelectorAll<HTMLElement>('.code-line-number'));
+      const contents = Array.from(pre.querySelectorAll<HTMLElement>('.code-line-content'));
+      const lineHeight = Number.parseFloat(getComputedStyle(pre).lineHeight);
+      return {
+        numbers: numbers.map((number) => number.innerText.trim()),
+        firstContentHeight: contents[0].getBoundingClientRect().height,
+        secondNumberTopDelta: numbers[1].getBoundingClientRect().top - numbers[0].getBoundingClientRect().top,
+        lineHeight
+      };
+    });
+    expect(metrics.numbers).toEqual(['1', '2', '3']);
+    expect(metrics.firstContentHeight).toBeGreaterThan(metrics.lineHeight * 1.5);
+    expect(metrics.secondNumberTopDelta).toBeGreaterThan(metrics.lineHeight * 1.5);
+  });
+});
+
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }

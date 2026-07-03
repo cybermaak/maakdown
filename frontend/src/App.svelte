@@ -519,6 +519,12 @@
     for (let index = 0; index < selection.rangeCount; index += 1) {
       container.append(selection.getRangeAt(index).cloneContents());
     }
+    return sanitizedDomText(container);
+  }
+
+  function sanitizedDomText(node: Node): string {
+    const container = document.createElement('div');
+    container.append(node.cloneNode(true));
     const excludedSelector = READER_COPY_EXCLUDED_CLASSES.map((className) => `.${className}`).join(', ');
     container.querySelectorAll(excludedSelector).forEach((node) => node.remove());
     container.style.position = 'fixed';
@@ -583,7 +589,7 @@
     }
 
     if (pre) {
-      items.push({ label: 'Copy code', onSelect: () => copyText(pre.textContent ?? '') });
+      items.push({ label: 'Copy code', onSelect: () => copyText(sanitizedDomText(pre)) });
       items.push({ separator: true });
     }
     items.push({ label: 'Find in document', onSelect: showSearch });

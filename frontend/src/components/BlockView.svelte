@@ -148,7 +148,7 @@
     const escaped = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const expression = new RegExp(escaped, caseSensitive ? 'g' : 'gi');
     const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, {
-      acceptNode: (node) => node.parentElement?.closest('script, style, mark') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT
+      acceptNode: (node) => node.parentElement?.closest('script, style, mark, .reader-line, .code-line-number, .table-row-number, .table-row-number-heading') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT
     });
     const nodes: Text[] = [];
     while (walker.nextNode()) nodes.push(walker.currentNode as Text);
@@ -182,12 +182,67 @@
     pre.classList.toggle('code-wrap', codeWrapped);
     pre.classList.toggle('code-nowrap', !codeWrapped);
     if (codeLineNumbers) {
-      pre.dataset.lines = Array.from({ length: lineCount }, (_, index) => String(index + 1)).join('\n');
+      applyCodeLineRows(pre, lineCount);
       pre.style.setProperty('--code-line-digits', String(digits));
     } else {
-      pre.removeAttribute('data-lines');
       pre.style.removeProperty('--code-line-digits');
     }
+  }
+
+  function applyCodeLineRows(pre: HTMLPreElement, lineCount: number) {
+    const code = Array.from(pre.children).find((child): child is HTMLElement => child instanceof HTMLElement && child.tagName.toLowerCase() === 'code');
+    if (!code || code.dataset.codeLineRows === 'true') return;
+    const lines = splitNodesByLine(Array.from(code.childNodes));
+    code.replaceChildren(...Array.from({ length: lineCount }, (_, index) => {
+      const row = document.createElement('span');
+      row.className = 'code-line-row';
+      const number = document.createElement('span');
+      number.className = 'code-line-number';
+      number.setAttribute('aria-hidden', 'true');
+      number.textContent = String(index + 1);
+      const content = document.createElement('span');
+      content.className = 'code-line-content';
+      content.append(...(lines[index] ?? []));
+      row.append(number, content);
+      return row;
+    }));
+    code.classList.add('code-line-rows');
+    code.dataset.codeLineRows = 'true';
+  }
+
+  function splitNodesByLine(nodes: Node[]): Node[][] {
+    const lines: Node[][] = [[]];
+    for (const node of nodes) {
+      const parts = splitNodeByLine(node);
+      parts.forEach((part, index) => {
+        if (index > 0) {
+          lines.push([]);
+        }
+        lines[lines.length - 1].push(...part);
+      });
+    }
+    return lines;
+  }
+
+  function splitNodeByLine(node: Node): Node[][] {
+    if (node.nodeType === Node.TEXT_NODE) {
+      return (node.textContent ?? '').split('\n').map((part) => part ? [document.createTextNode(part)] : []);
+    }
+    if (node instanceof HTMLBRElement) {
+      return [[], []];
+    }
+    if (node instanceof Element) {
+      const childLines = splitNodesByLine(Array.from(node.childNodes));
+      return childLines.map((children) => {
+        if (!children.length) {
+          return [];
+        }
+        const clone = node.cloneNode(false) as Element;
+        clone.append(...children);
+        return [clone];
+      });
+    }
+    return [[node.cloneNode(true)]];
   }
 
   function applyReaderLineLabels() {

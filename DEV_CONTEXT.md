@@ -914,3 +914,12 @@ provisioning profiles, notarization credentials, or signed release artifacts.
   full `npm test`, `npm run check`, `npm run build`, focused UAT-05, and
   `npm run benchmark` with `large-10k-lines.md` reporting 2,606 blocks, 3,626
   reader lines, bounded mounted blocks, and deep anchor offset `0`.
+- 2026-07-03: Fixed wrapped code-block numbering after user feedback. Code
+  line numbers now render as logical source-line rows inside `BlockView`: each
+  source line owns one number cell and one code cell, so a wrapped line expands
+  its row while continuation visual rows stay unnumbered. Highlight.js and
+  Shiki markup are preserved by splitting text nodes at newline boundaries and
+  cloning token spans per line. Code line-number cells are part of the shared
+  copy-exclusion chrome, and context-menu code copy now uses the same sanitized
+  DOM text path. Verification passed: focused UAT-05 wrapped-code regression,
+  `npm run check`, full `npm test`, and `npm run build`.
