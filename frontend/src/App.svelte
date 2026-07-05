@@ -849,7 +849,14 @@
         onBack={() => void moveHistory(-1)}
         onForward={() => void moveHistory(1)}
       />
-      <TabStrip tabs={workspace.tabs} activeTabId={workspace.activeTabId} onActivate={activateTab} onClose={handleClose} />
+      <TabStrip
+        tabs={workspace.tabs}
+        activeTabId={workspace.activeTabId}
+        config={$appConfig}
+        onActivate={activateTab}
+        onClose={handleClose}
+        onConfigChange={updateConfig}
+      />
       {#if searchOpen}
         <SearchBar
           query={searchQuery}

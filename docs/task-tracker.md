@@ -25,6 +25,7 @@
 | P19 | Done | Next release: Reader feedback polish | settings clarity, source gutter alignment, minimap legend, table filter UX, and Mermaid source toggle are implemented; macOS and Windows release validation passed; Linux release validation pending |
 | P20 | Done | Stability and maintainability proposal | recent bug-fix commits and current code paths reviewed; proposal recorded in `docs/stability-maintainability-proposal.md`; implementation tracks remain proposal-only until accepted |
 | P21 | Done | Design system consolidation and ad hoc UI migration | downloaded reference scanned, missing Svelte primitives added, ad hoc feature controls migrated, governance docs updated, and verification passed |
+| P22 | Done | Docked reading controls | global reader measure and document line-number controls are docked in the tab bar, use design-system primitives, preserve global settings, and keep tabs scrollable at narrow widths |
 
 ## P0 - Scaffold
 
@@ -208,3 +209,11 @@
 | P21.1 | Done | Scan downloaded reference and selectively adopt missing primitives | Codex | `/Users/maak/Downloads/Maakdown Design System`, `docs/design-system/`, frontend design-system code | Downloaded reference is reviewed as a guide; token parity is recorded; new/refined controls are implemented natively in Svelte, exported, documented, and visible in the gallery | `cd frontend && npm run check`; `cd frontend && npm run visual-smoke` |
 | P21.2 | Done | Migrate ad hoc UI controls to design-system primitives | Codex | P21.1, existing settings/table/dialog/palette/context/recents behavior | Settings, table filters/sort chips, Mermaid dialog, command palette, context menu, recents, About, and print status compose design-system primitives while preserving behavior and density | `cd frontend && npm run uat -- uat-05-reader-tools.spec.ts uat-07-accessibility.spec.ts uat-08-context-menu.spec.ts uat-12-table-tools.spec.ts` (16 passed); full `cd frontend && npm run uat` (36 passed) |
 | P21.3 | Done | Update UI governance and project memory | Codex | P21.1-P21.2 | `AGENTS.md`, `docs/design-system/README.md`, `DEV_CONTEXT.md`, and this tracker require design-system-first UI changes with documented exceptions | `cd frontend && npm run test` (57 passed); `cd frontend && npm run build`; `scripts/verify.sh` |
+
+## P22 - Docked Reading Controls
+
+| ID | Status | Task | Owner | Depends On | Exit Criteria | Verification |
+|---|---|---|---|---|---|---|
+| P22.1 | Done | Add global reading controls to the tab bar | Codex | P11.4, P21 | Reader measure and document line-number visibility are reachable from the tab bar through `SegmentedControl` and `IconButton`, update the existing global `AppConfig`, and do not introduce per-document settings | `cd frontend && npm run check`; focused UAT-05 docked controls case |
+| P22.2 | Done | Preserve narrow-window tab behavior | Codex | P22.1 | Docked controls do not truncate; the tab list owns horizontal overflow and scrolls independently of the dock at narrow widths | focused UAT-05 narrow overflow assertions; seeded Playwright render check (`tabClientWidth` 307, `tabScrollWidth` 1040, no clipped controls) |
+| P22.3 | Done | Verify shared chrome and settings selectors | Codex | P22.1-P22.2 | Existing settings/table UAT remains precise now that the dock shares accessible names with Settings controls | `cd frontend && npm run uat -- uat-05-reader-tools.spec.ts`; `cd frontend && npm run uat -- uat-07-accessibility.spec.ts`; `cd frontend && npm run uat -- uat-12-table-tools.spec.ts`; full `cd frontend && npm run uat` (37 passed) |

@@ -127,7 +127,7 @@ test.describe('UAT-05 reader productivity tools', () => {
 
   test('document reader gutter stays aligned across wide block types', async ({ page }) => {
     await page.getByRole('button', { name: 'Settings', exact: true }).click();
-    await page.getByLabel('Document line numbers').check();
+    await page.getByRole('dialog', { name: 'Settings' }).getByRole('switch', { name: 'Document line numbers' }).check();
     await page.getByRole('button', { name: 'Done' }).click();
 
     async function readerLineLeft(selector: string): Promise<number> {
@@ -189,6 +189,75 @@ test.describe('UAT-05 reader productivity tools', () => {
     });
     expect(gutter.ruleWidth).toBe('1px');
     expect(gutter.labelRuleWidth).toBe('0px');
+  });
+});
+
+test.describe('UAT-05 docked reading controls', () => {
+  test('keep global reader settings reachable while narrow tab lists scroll', async ({ page }) => {
+    const paths = Array.from({ length: 8 }, (_, index) => `/uat/dock-note-${String(index + 1).padStart(2, '0')}.md`);
+    await page.setViewportSize({ width: 560, height: 760 });
+    await seedApp(page, {
+      documents: paths.map((path, index) => ({
+        path,
+        trustedRoot: '/uat',
+        contents: [
+          `# Dock note ${index + 1}`,
+          '',
+          'This document is intentionally small so tab overflow is the edge under test.',
+          '',
+          '```ts',
+          `console.log('dock ${index + 1}');`,
+          '```'
+        ].join('\n')
+      })),
+      session: { tabs: paths.map((path) => ({ path })), activePath: paths[0] },
+      config: { readerMeasure: 'standard', documentLineNumbers: false }
+    });
+    await gotoApp(page);
+    await expectReaderReady(page);
+
+    const dock = page.locator('.reading-dock');
+    const tabList = page.locator('.tab-list');
+    await expect(dock.getByRole('group', { name: 'Measure' })).toBeVisible();
+    await expect(dock.getByRole('button', { name: 'Show document line numbers' })).toBeVisible();
+
+    const tabOverflow = await tabList.evaluate((element) => ({
+      clientWidth: element.clientWidth,
+      overflowX: getComputedStyle(element).overflowX,
+      scrollWidth: element.scrollWidth
+    }));
+    expect(tabOverflow.overflowX).toBe('auto');
+    expect(tabOverflow.scrollWidth).toBeGreaterThan(tabOverflow.clientWidth);
+
+    const dockLayout = await dock.evaluate((element) => {
+      const strip = element.closest('.tab-strip')?.getBoundingClientRect();
+      const dockRect = element.getBoundingClientRect();
+      const clippedControls = Array.from(element.querySelectorAll<HTMLElement>('button'))
+        .filter((button) => button.scrollWidth > button.clientWidth + 1 || button.scrollHeight > button.clientHeight + 1)
+        .map((button) => button.textContent?.trim() || button.getAttribute('aria-label') || 'unnamed control');
+      return {
+        clippedControls,
+        dockLeft: dockRect.left,
+        dockRight: dockRect.right,
+        stripLeft: strip?.left ?? 0,
+        stripRight: strip?.right ?? 0
+      };
+    });
+    expect(dockLayout.clippedControls).toEqual([]);
+    expect(dockLayout.dockLeft).toBeGreaterThanOrEqual(dockLayout.stripLeft - 1);
+    expect(dockLayout.dockRight).toBeLessThanOrEqual(dockLayout.stripRight + 1);
+
+    await dock.getByRole('button', { name: 'Wide' }).click();
+    await expect(page.locator('html')).toHaveCSS('--reading-measure', '1040px');
+    await dock.getByRole('button', { name: 'Show document line numbers' }).click();
+    await expect(dock.getByRole('button', { name: 'Hide document line numbers' })).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('.reader-line').first()).toBeVisible();
+
+    await tabList.evaluate((element) => { element.scrollLeft = element.scrollWidth; });
+    await page.getByRole('tab', { name: 'dock-note-08.md' }).click();
+    await expect(page.getByRole('tab', { name: 'dock-note-08.md' })).toHaveAttribute('aria-selected', 'true');
+    await expect(page.locator('html')).toHaveCSS('--reading-measure', '1040px');
+    await expect(page.locator('.reader-line').first()).toBeVisible();
   });
 });
 
