@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { Dialog } from '../design-system';
+  import { Button, Dialog } from '../design-system';
   import { appVersion, openExternal } from '@ipc';
   import { appConfig } from '../stores/configStore';
   import { resolveTheme } from '../core/theme/readerTheme';
@@ -33,8 +33,8 @@
     </div>
     <p class="about-tagline">A fast, local Markdown reader.</p>
     <p class="about-license">MIT License · © 2026 Mohammed Kamel</p>
-    <button type="button" class="about-link" onclick={() => void openExternal(repoUrl)}>
+    <Button class="about-link" variant="ghost" size="sm" onclick={() => void openExternal(repoUrl)}>
       github.com/cybermaak/maakdown
-    </button>
+    </Button>
   </div>
 </Dialog>

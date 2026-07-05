@@ -1,5 +1,6 @@
 <script lang="ts">
   import { tick } from 'svelte';
+  import { Menu } from '../design-system';
   import { closeContextMenu, contextMenu, type ContextMenuItem } from '../stores/contextMenu';
 
   let menuEl = $state<HTMLDivElement | undefined>();
@@ -82,30 +83,12 @@
 
 {#if $contextMenu.open}
   <div
-    class="context-menu"
-    role="menu"
-    tabindex="-1"
+    class="context-menu-shell"
+    role="presentation"
     bind:this={menuEl}
     style={`left:${position.x}px; top:${position.y}px`}
     oncontextmenu={(event) => event.preventDefault()}
   >
-    {#each $contextMenu.items as item, index}
-      {#if item.separator}
-        <div class="context-menu-separator" role="separator"></div>
-      {:else}
-        <button
-          type="button"
-          role="menuitem"
-          class="context-menu-item"
-          class:danger={item.danger}
-          disabled={item.disabled}
-          tabindex="-1"
-          onclick={() => select(item)}
-          onkeydown={(event) => handleKeydown(event, index)}
-        >
-          {item.label}
-        </button>
-      {/if}
-    {/each}
+    <Menu items={$contextMenu.items} onselect={(item) => select(item)} onitemkeydown={handleKeydown} />
   </div>
 {/if}

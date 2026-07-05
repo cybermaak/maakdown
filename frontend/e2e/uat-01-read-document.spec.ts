@@ -55,7 +55,7 @@ test.describe('UAT-01 Open and read a technical document', () => {
     // Highlighted code (lazy, enhanced once visible)
     const code = page.locator('.doc-block-code code.language-typescript');
     await code.scrollIntoViewIfNeeded();
-    await expect(page.locator('.doc-block-code .hljs-keyword, .doc-block-code .hljs-title').first()).toBeVisible();
+    await expect(page.locator('.doc-block-code [data-highlight-engine]').first()).toBeVisible({ timeout: 15_000 });
 
     // Mermaid diagram renders an SVG once scheduled
     const mermaid = page.locator('.doc-block-mermaid');

@@ -21,6 +21,7 @@
     X
   } from '@lucide/svelte';
   import type { DocumentTab, RecentDocument } from '../core/workspace/workspace';
+  import { CommandItem as CommandItemControl, CommandSurface } from '../design-system';
 
   interface CommandItem {
     id: string;
@@ -192,34 +193,27 @@
   }
 </script>
 
-<div class="palette-scrim" role="presentation" onclick={(event) => { if (event.target === event.currentTarget) onClose(); }} onkeydown={handleKeydown}>
-  <div bind:this={palette} class="command-palette" role="dialog" aria-modal="true" aria-label="Command palette">
-    <input bind:this={input} aria-label="Search commands, tabs, recents, and headings" placeholder="Search commands, tabs, recents, headings..." bind:value={query} />
-    <div class="palette-results">
-      {#each groups as group}
-        <div class="palette-section" role="group" aria-label={group.section}>
-          <div class="palette-section-title">{group.section}</div>
-          {#each group.items as item}
-            {@const Icon = item.icon}
-            <button
-              class:active={item.index === activeIndex}
-              aria-current={item.index === activeIndex ? 'true' : undefined}
-              onmouseenter={() => (activeIndex = item.index)}
-              onclick={() => { item.run(); onClose(); }}
-            >
-              <Icon size={15} aria-hidden="true" />
-              <span class="palette-item-copy">
-                <span class="palette-item-title">{item.label}</span>
-                <small>{item.subtitle}</small>
-              </span>
-              {#if item.path}<span class="palette-path">{item.path}</span>{/if}
-              {#if item.hint}<kbd>{item.hint}</kbd>{/if}
-            </button>
-          {/each}
-        </div>
-      {:else}
-        <div class="palette-empty">No commands, tabs, recents, or headings match.</div>
-      {/each}
-    </div>
+<CommandSurface label="Command palette" onclose={onClose} onkeydown={handleKeydown} bind:element={palette}>
+  <input bind:this={input} aria-label="Search commands, tabs, recents, and headings" placeholder="Search commands, tabs, recents, headings..." bind:value={query} />
+  <div class="palette-results">
+    {#each groups as group}
+      <div class="palette-section" role="group" aria-label={group.section}>
+        <div class="palette-section-title">{group.section}</div>
+        {#each group.items as item}
+          <CommandItemControl
+            icon={item.icon}
+            label={item.label}
+            subtitle={item.subtitle}
+            path={item.path}
+            hint={item.hint}
+            active={item.index === activeIndex}
+            onmouseenter={() => (activeIndex = item.index)}
+            onclick={() => { item.run(); onClose(); }}
+          />
+        {/each}
+      </div>
+    {:else}
+      <div class="palette-empty">No commands, tabs, recents, or headings match.</div>
+    {/each}
   </div>
-</div>
+</CommandSurface>

@@ -63,9 +63,39 @@ Markdown, Mermaid, virtualization, security, and Wails service boundaries.
 - `Toolbar`
 - `Tab`
 - `StatusIndicator`
+- `Toggle`
+- `Checkbox`
+- `Chip`
+- `Field`
+- `SettingRow`
+- `Stepper`
+- `CommandSurface`
+- `CommandItem`
+- `Menu`
 
 Every interactive primitive requires keyboard behavior, a visible focus state,
 an accessible name, disabled handling, and light/dark coverage.
+
+## 2026-07 Selective Consolidation
+
+The downloaded reference at `/Users/maak/Downloads/Maakdown Design System` was
+scanned during the design-system consolidation pass. Its exported color,
+spacing, and typography tokens matched the preserved repo reference tokens, so
+production tokens were not rewritten globally.
+
+The pass selectively adopted missing/refined controls from the reference into
+native Svelte primitives: toggle switches, checklist checkboxes, active chips,
+labelled fields, settings rows, a small stepper, command-palette item rows, and
+menu rows. `Popover` now supports titles, header/footer slots, sizing, and
+section grouping, while `Dialog` supports large canvas-oriented dialogs and
+custom header actions. These are production Svelte components and must not copy
+the reference React bundle, CDN dependency loading, or generated global bundle
+patterns.
+
+Feature code should compose these primitives first. If a reusable control is
+missing, add it under `frontend/src/design-system/`, export it from
+`index.ts`, show it in `DesignSystemGallery.svelte`, and document the behavior
+here before using it in feature code.
 
 ## Handoff Caveats
 

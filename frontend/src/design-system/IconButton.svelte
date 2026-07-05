@@ -1,27 +1,25 @@
 <script lang="ts">
   import type { Component } from 'svelte';
+  import type { HTMLButtonAttributes } from 'svelte/elements';
 
-  interface Props {
+  interface Props extends HTMLButtonAttributes {
     icon: Component;
     label: string;
     active?: boolean;
-    disabled?: boolean;
-    size?: 'sm' | 'md';
-    onclick?: (event: MouseEvent) => void;
+    size?: 'xs' | 'sm' | 'md';
   }
 
-  let { icon: Icon, label, active = false, disabled = false, size = 'md', onclick }: Props = $props();
+  let { icon: Icon, label, active = false, size = 'md', class: className = '', ...rest }: Props = $props();
 </script>
 
 <button
-  class={`ds-icon-button ${size}`}
+  class={`ds-icon-button ${size} ${className}`.trim()}
   class:active
   type="button"
   aria-label={label}
   title={label}
   aria-pressed={active}
-  {disabled}
-  {onclick}
+  {...rest}
 >
-  <Icon size={size === 'sm' ? 15 : 17} strokeWidth={2} aria-hidden="true" />
+  <Icon size={size === 'xs' ? 13 : size === 'sm' ? 15 : 17} strokeWidth={2} aria-hidden="true" />
 </button>

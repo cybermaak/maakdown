@@ -38,6 +38,10 @@ post-sanitize anchors, per-block reader gutter labels, reader-line stats, and a
 `Go to line...` command. P20.7 made Shiki JS-regex the default code highlighter,
 kept Highlight.js as a persisted command-palette-selectable fallback, and
 removed highlighter switching from the Settings popover.
+P21 consolidated ad hoc UI controls into the production Svelte design system
+after scanning `/Users/maak/Downloads/Maakdown Design System`; reference tokens
+matched the preserved repo exports, so the pass added/refined missing
+primitives and migrated feature surfaces without a global theme rewrite.
 Cross-OS CI/UAT and native screenshot validation passed for P18 on `main`
 (`aa8dccf`) on 2026-07-02; P19 Windows/Linux validation plus
 release-smoke/manual release checks still gate the release. The remaining
@@ -81,7 +85,8 @@ search/focus/drag/drop/print coverage.
 - `frontend/src/core/tables/`: sanitized table projection, bounded column
   sizing, type-aware per-column filtering, stable sorting, and suppression logic for
   unsuitable table interactions.
-- `frontend/src/design-system/`: production Svelte primitives and deterministic gallery.
+- `frontend/src/design-system/`: production Svelte primitives, command/menu/form
+  controls, floating shells, and deterministic gallery.
 - `frontend/src/components/`: reader surface, masthead, hover minimap, workspace
   chrome, dialogs, settings, and native-window controls.
 - `fixtures/`: deterministic Markdown evaluation documents and local fixture assets.
@@ -143,6 +148,25 @@ search/focus/drag/drop/print coverage.
   accent, hairline borders, Inter, JetBrains Mono, and minimal motion.
 - Implement design-system primitives natively in Svelte; the exported React
   prototype is reference-only.
+- UI feature work must compose `frontend/src/design-system` primitives first.
+  If a reusable control is missing, add the primitive, export it, render its
+  states in `DesignSystemGallery.svelte`, document it under
+  `docs/design-system/`, and only then use it in feature code.
+- Exceptions to primitive extraction are limited to OS-native chrome and drag
+  regions, sanitized browser-rendered Markdown, one-off layout containers,
+  virtualizer/measurement wrappers, or highly specialized feature surfaces where
+  extraction would make the code less clear; non-obvious exceptions should be
+  documented.
+- The downloaded design-system reference at
+  `/Users/maak/Downloads/Maakdown Design System` was scanned on 2026-07-05.
+  Its color/spacing/typography tokens matched the preserved repo reference
+  exports, so the accepted direction was selective primitive adoption rather
+  than a global token rewrite.
+- The 2026-07 design-system consolidation added native Svelte `Toggle`,
+  `Checkbox`, `Chip`, `Field`, `SettingRow`, `Stepper`, `CommandSurface`,
+  `CommandItem`, and `Menu` primitives, expanded `Popover` with richer shell
+  options, and expanded `Dialog` for large canvas dialogs and custom header
+  actions.
 - Use a pinned local `@lucide/svelte` package; do not load production icons or
   UI dependencies from a CDN.
 - Use a two-row toolbar/tab composition, visible watch states, semantic
@@ -308,6 +332,21 @@ proposal-only until accepted as active work.
 
 ## Completed Tasks
 
+- 2026-07-05: Completed P21 design-system consolidation. Scanned
+  `/Users/maak/Downloads/Maakdown Design System`, confirmed its exported
+  tokens matched the preserved repo reference tokens, added missing/refined
+  Svelte primitives, expanded `Popover`/`Dialog`, migrated Settings, table
+  sort/filter controls, Mermaid inspection, command palette, context menu,
+  recents, About, and print status to compose design-system controls, cleaned
+  obsolete local control CSS, updated design-system governance docs and
+  `AGENTS.md`, and adjusted UAT-01 to assert the current Shiki/Highlight.js
+  enhancement marker rather than Highlight.js-only token classes. Verification
+  passed: `cd frontend && npm run check`, `cd frontend && npm run test` (57
+  tests), `cd frontend && npm run build`, `cd frontend && npm run visual-smoke`
+  after installing the missing Playwright Chromium cache, focused UAT-05/07/08/12
+  (16 tests), full `cd frontend && npm run uat` (36 tests), and
+  `scripts/verify.sh` (frontend test/check/build, Go tests, Wails
+  `darwin/arm64` build).
 - 2026-07-02: Reviewed recent bug-fix commits and current reader/parser/native
   integration code for stability and maintainability patterns. Added
   `docs/stability-maintainability-proposal.md` with phased recommendations for
@@ -636,10 +675,9 @@ scripts/release-check.sh
 
 ## Verification Notes
 
-- Current frontend verification includes 29 unit tests, zero-warning Svelte
-  checks, the production build, reader/workspace benchmarks, visual smoke, and
-  25 production-bundled UAT tests with an axe serious/critical accessibility
-  gate.
+- Current frontend verification includes 57 unit tests, zero-warning Svelte
+  checks, the production build, visual smoke, and 36 production-bundled UAT
+  tests with an axe serious/critical accessibility gate.
 - CI run 27470447128 passed all 25 UAT tests and screenshot capture on macOS,
   Ubuntu, and Windows. These jobs use Playwright Chromium on every runner and
   therefore prove portable frontend behavior, not native webview parity.
