@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { ArrowDown, ArrowUp, ArrowUpDown, ListFilter, Search, X } from '@lucide/svelte';
+  import { ArrowDown, ArrowUp, ArrowUpDown, ListFilter, Search } from '@lucide/svelte';
   import type { Block } from '../core/model/types';
+  import { Button, Checkbox, Chip, IconButton, Popover } from '../design-system';
   import {
     activeFilterEntries,
     defaultTableInteractionState,
@@ -198,6 +199,12 @@
     return tableState.sortColumn === column ? tableState.sortDirection : 'none';
   }
 
+  function sortIconComponent(column: number) {
+    if (sortIcon(column) === 'asc') return ArrowUp;
+    if (sortIcon(column) === 'desc') return ArrowDown;
+    return ArrowUpDown;
+  }
+
   function columnHasFilter(column: number): boolean {
     return isActiveTableFilter(tableState.filters?.[String(column)]);
   }
@@ -290,21 +297,13 @@
     <div class="table-tools" aria-label="Table tools">
       <div class="table-chip-row">
         {#if sortActive}
-          <span class="table-chip">
-            <ArrowUpDown size={13} aria-hidden="true" />
-            <span>{activeSortLabel}: {activeSortDirection}</span>
-            <button type="button" aria-label="Clear table sort" onclick={clearSort}><X size={12} aria-hidden="true" /></button>
-          </span>
+          <Chip icon={ArrowUpDown} removable label="Clear table sort" onremove={clearSort}>{activeSortLabel}: {activeSortDirection}</Chip>
         {/if}
         {#each activeFilters as [column, filter]}
-          <span class="table-chip">
-            <ListFilter size={13} aria-hidden="true" />
-            <span>{filterSummary(column, filter)}</span>
-            <button type="button" aria-label={`Remove ${columnLabel(column)} filter`} onclick={() => clearColumnFilter(column)}><X size={12} aria-hidden="true" /></button>
-          </span>
+          <Chip icon={ListFilter} removable label={`Remove ${columnLabel(column)} filter`} onremove={() => clearColumnFilter(column)}>{filterSummary(column, filter)}</Chip>
         {/each}
         <span class="table-row-count" aria-live="polite">{rowSummary}</span>
-        <button type="button" class="table-clear-all" aria-label="Clear all table controls" onclick={clearAll}>Clear all</button>
+        <Button class="table-clear-all" variant="ghost" size="sm" aria-label="Clear all table controls" onclick={clearAll}>Clear all</Button>
       </div>
     </div>
   {/if}
@@ -331,36 +330,32 @@
                   <span class="table-header-content">
                     <span class="table-header-label">{@html cellHtml(cell)}</span>
                     <span class="table-header-actions" class:active={sortIcon(index) !== 'none' || columnHasFilter(index) || openFilterColumn === index}>
-                      <button type="button" class="table-sort-button" aria-label={sortLabel(index)} onclick={() => sort(index)}>
-                        {#if sortIcon(index) === 'asc'}
-                          <ArrowUp class="table-sort-icon active" size={14} aria-hidden="true" />
-                        {:else if sortIcon(index) === 'desc'}
-                          <ArrowDown class="table-sort-icon active" size={14} aria-hidden="true" />
-                        {:else}
-                          <ArrowUpDown class="table-sort-icon" size={14} aria-hidden="true" />
-                        {/if}
-                      </button>
-                      <button
-                        type="button"
-                        class="table-filter-button"
-                        class:active={columnHasFilter(index) || openFilterColumn === index}
-                        aria-label={filterLabel(index)}
+                      <IconButton
+                        icon={sortIconComponent(index)}
+                        label={sortLabel(index)}
+                        size="xs"
+                        active={sortIcon(index) !== 'none'}
+                        onclick={() => sort(index)}
+                      />
+                      <IconButton
+                        icon={ListFilter}
+                        label={filterLabel(index)}
+                        size="xs"
+                        active={columnHasFilter(index) || openFilterColumn === index}
                         aria-expanded={openFilterColumn === index}
                         data-table-filter-trigger
                         onclick={() => openFilter(index)}
-                      >
-                        <ListFilter size={13} aria-hidden="true" />
-                      </button>
+                      />
                     </span>
                   </span>
                   {#if openFilterColumn === index && openColumn && pendingFilter}
-                    <div
-                      bind:this={filterPopover}
-                      class="table-filter-popover"
-                      class:align-right={popoverAlignRight(index)}
-                      role="dialog"
-                      aria-label={`Filter ${columnLabel(index)}`}
-                      tabindex="-1"
+                    <Popover
+                      bind:element={filterPopover}
+                      open={true}
+                      class={`table-filter-popover ${popoverAlignRight(index) ? 'align-right' : ''}`}
+                      label={`Filter ${columnLabel(index)}`}
+                      width="min(300px, calc(100vw - 48px))"
+                      tabindex={-1}
                       onkeydown={filterKeydown}
                     >
                       <div class="table-filter-copy">
@@ -382,15 +377,13 @@
                         </label>
                         <div class="table-value-list" role="group" aria-label={`${columnLabel(index)} values`}>
                           {#each enumOptions(openColumn) as option}
-                            <label class="table-value-option" title={option.label}>
-                              <input
-                                type="checkbox"
-                                checked={enumValueChecked(option.value)}
-                                onchange={(event) => toggleEnumValue(option.value, event.currentTarget.checked)}
-                              />
-                              <span>{option.label}</span>
-                              <small>{option.count}</small>
-                            </label>
+                            <Checkbox
+                              title={option.label}
+                              label={option.label}
+                              count={option.count}
+                              checked={enumValueChecked(option.value)}
+                              onchange={(checked) => toggleEnumValue(option.value, checked)}
+                            />
                           {/each}
                         </div>
                       {:else if pendingFilter.kind === 'text'}
@@ -443,10 +436,10 @@
 
                       <div class="table-filter-footer">
                         <span aria-live="polite">{prospectiveRows.length} of {projection.rowCount} rows match</span>
-                        <button type="button" class="table-filter-secondary" onclick={() => clearColumnFilter(index)}>Clear</button>
-                        <button type="button" class="table-filter-apply" onclick={applyPendingFilter}>Apply</button>
+                        <Button variant="ghost" size="sm" onclick={() => clearColumnFilter(index)}>Clear</Button>
+                        <Button variant="primary" size="sm" onclick={applyPendingFilter}>Apply</Button>
                       </div>
-                    </div>
+                    </Popover>
                   {/if}
                 {:else}
                   {@html cellHtml(cell)}
@@ -472,7 +465,7 @@
           <tr>
             <td class="table-empty" colspan={projection.columnCount + (rowNumberColumnVisible ? 1 : 0)}>
               <span>No rows match the current filters.</span>
-              <button type="button" onclick={clearAll}>Clear filters</button>
+              <Button variant="ghost" size="sm" onclick={clearAll}>Clear filters</Button>
             </td>
           </tr>
         {/if}

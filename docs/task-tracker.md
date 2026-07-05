@@ -24,6 +24,7 @@
 | P13-P18 | Done | Next release: Precision Reading & Performance core scope | P13-P18 implementation, macOS acceptance, cross-OS CI/UAT, native screenshots, and 2026-07-28 Windows release validation are complete; release-smoke/Linux manual release checks still gate release |
 | P19 | Done | Next release: Reader feedback polish | settings clarity, source gutter alignment, minimap legend, table filter UX, and Mermaid source toggle are implemented; macOS and Windows release validation passed; Linux release validation pending |
 | P20 | Done | Stability and maintainability proposal | recent bug-fix commits and current code paths reviewed; proposal recorded in `docs/stability-maintainability-proposal.md`; implementation tracks remain proposal-only until accepted |
+| P21 | Done | Design system consolidation and ad hoc UI migration | downloaded reference scanned, missing Svelte primitives added, ad hoc feature controls migrated, governance docs updated, and verification passed |
 
 ## P0 - Scaffold
 
@@ -199,3 +200,11 @@
 | ID | Status | Task | Owner | Depends On | Exit Criteria | Verification |
 |---|---|---|---|---|---|---|
 | P20.1 | Done | Review bug-fix commits and draft stability proposal | Codex | DEV_CONTEXT, task tracker, recent bug-fix history, current reader/parser/native integration code | Proposal identifies recurring bug classes and phased design improvements for stability and maintainability under `docs/` | Docs-only verification: `find docs -maxdepth 1 -type f`, `rg "Stability And Maintainability Proposal|P20" docs DEV_CONTEXT.md`, scoped/staged `git diff --check`, and `git status --short --branch` |
+
+## P21 - Design System Consolidation
+
+| ID | Status | Task | Owner | Depends On | Exit Criteria | Verification |
+|---|---|---|---|---|---|---|
+| P21.1 | Done | Scan downloaded reference and selectively adopt missing primitives | Codex | `/Users/maak/Downloads/Maakdown Design System`, `docs/design-system/`, frontend design-system code | Downloaded reference is reviewed as a guide; token parity is recorded; new/refined controls are implemented natively in Svelte, exported, documented, and visible in the gallery | `cd frontend && npm run check`; `cd frontend && npm run visual-smoke` |
+| P21.2 | Done | Migrate ad hoc UI controls to design-system primitives | Codex | P21.1, existing settings/table/dialog/palette/context/recents behavior | Settings, table filters/sort chips, Mermaid dialog, command palette, context menu, recents, About, and print status compose design-system primitives while preserving behavior and density | `cd frontend && npm run uat -- uat-05-reader-tools.spec.ts uat-07-accessibility.spec.ts uat-08-context-menu.spec.ts uat-12-table-tools.spec.ts` (16 passed); full `cd frontend && npm run uat` (36 passed) |
+| P21.3 | Done | Update UI governance and project memory | Codex | P21.1-P21.2 | `AGENTS.md`, `docs/design-system/README.md`, `DEV_CONTEXT.md`, and this tracker require design-system-first UI changes with documented exceptions | `cd frontend && npm run test` (57 passed); `cd frontend && npm run build`; `scripts/verify.sh` |

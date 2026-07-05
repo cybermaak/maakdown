@@ -1,15 +1,23 @@
 <script lang="ts">
-  import { FolderOpen, Moon, Search, Settings, Sun } from '@lucide/svelte';
+  import { ArrowUpDown, FolderOpen, ListFilter, Moon, Search, Settings, Sun } from '@lucide/svelte';
   import Badge from './Badge.svelte';
   import Button from './Button.svelte';
   import Callout from './Callout.svelte';
+  import Checkbox from './Checkbox.svelte';
+  import Chip from './Chip.svelte';
   import CodeBlockChrome from './CodeBlockChrome.svelte';
+  import CommandItem from './CommandItem.svelte';
+  import Field from './Field.svelte';
   import IconButton from './IconButton.svelte';
+  import Menu from './Menu.svelte';
   import Popover from './Popover.svelte';
   import SegmentedControl from './SegmentedControl.svelte';
+  import SettingRow from './SettingRow.svelte';
   import StatusIndicator from './StatusIndicator.svelte';
+  import Stepper from './Stepper.svelte';
   import Tab from './Tab.svelte';
   import Tag from './Tag.svelte';
+  import Toggle from './Toggle.svelte';
   import TocItem from './TocItem.svelte';
   import Toolbar from './Toolbar.svelte';
   import Wikilink from './Wikilink.svelte';
@@ -18,6 +26,15 @@
   let theme = $state<'system' | 'light' | 'dark'>('system');
   let activeTab = $state('guide');
   let popoverOpen = $state(true);
+  let lineNumbers = $state(true);
+  let checklist = $state(true);
+  let size = $state(16);
+  const menuItems = [
+    { label: 'Copy link' },
+    { label: 'Open externally' },
+    { separator: true },
+    { label: 'Remove recent', danger: true }
+  ];
 </script>
 
 <main class="gallery">
@@ -42,21 +59,33 @@
       <IconButton icon={FolderOpen} label="Open document" />
       <IconButton icon={Search} label="Search" active />
       <IconButton icon={Settings} label="Settings" />
+      <IconButton icon={ListFilter} label="Filter column" size="xs" active />
     </div>
   </section>
 
   <section>
-    <h2>Theme</h2>
-    <SegmentedControl
-      value={theme}
-      label="Theme"
-      options={[
-        { value: 'system', label: 'System' },
-        { value: 'light', label: 'Light' },
-        { value: 'dark', label: 'Dark' }
-      ]}
-      onchange={(value) => (theme = value)}
-    />
+    <h2>Form Controls</h2>
+    <div class="gallery-stack">
+      <Field label="Theme">
+        <SegmentedControl
+          value={theme}
+          label="Theme"
+          options={[
+            { value: 'system', label: 'System' },
+            { value: 'light', label: 'Light' },
+            { value: 'dark', label: 'Dark' }
+          ]}
+          onchange={(value) => (theme = value)}
+        />
+      </Field>
+      <Field label="Text size" value={`${size}px`}>
+        <Stepper value={size} min={13} max={22} label="Text size" format={(value) => `${value}px`} onchange={(value) => (size = value)} />
+      </Field>
+      <SettingRow label="Document line numbers" help="Show reader line starts in the gutter.">
+        <Toggle label="Document line numbers" checked={lineNumbers} onchange={(checked) => (lineNumbers = checked)} />
+      </SettingRow>
+      <Checkbox label="stable" count={8} checked={checklist} onchange={(checked) => (checklist = checked)} />
+    </div>
     <div class="gallery-row">
       <Sun size={18} />
       <Moon size={18} />
@@ -75,6 +104,10 @@
       <Tag value="architecture" />
       <Tag value="release" />
       <StatusIndicator label="Up to date" tone="success" />
+    </div>
+    <div class="gallery-row">
+      <Chip icon={ArrowUpDown} removable label="Clear sort">Score: ascending</Chip>
+      <Chip icon={ListFilter} removable label="Remove status filter">Status: stable</Chip>
     </div>
   </section>
 
@@ -115,10 +148,19 @@
     <h2>Floating</h2>
     <Button onclick={() => (popoverOpen = !popoverOpen)}>Toggle popover</Button>
     <div class="gallery-popover-anchor">
-      <Popover open={popoverOpen} label="Reader appearance">
-        <strong>Reader appearance</strong>
-        <p>Typography and measure controls.</p>
+      <Popover open={popoverOpen} label="Reader appearance" title="Reader appearance">
+        <div class="ds-popover-section">
+          <div class="ds-popover-section-title">Display</div>
+          <SettingRow label="Metadata" help="Print frontmatter masthead.">
+            <Toggle label="Metadata" checked={lineNumbers} onchange={(checked) => (lineNumbers = checked)} />
+          </SettingRow>
+        </div>
       </Popover>
+    </div>
+    <Menu items={menuItems} onselect={() => {}} />
+    <div class="gallery-command-sample">
+      <CommandItem icon={Search} label="Find in document" subtitle="Command" hint="Cmd F" active onclick={() => {}} />
+      <CommandItem icon={FolderOpen} label="Open document" subtitle="Command" hint="Cmd O" onclick={() => {}} />
     </div>
   </section>
 </main>

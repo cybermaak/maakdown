@@ -130,6 +130,26 @@ Beast mode increases autonomy for implementation choices, not for remote pushes 
 - Keep workflow and release documentation aligned with the actual scripts and
   triggers.
 
+## UI And Design System Policy
+
+- UI changes must first use existing primitives from
+  `frontend/src/design-system`.
+- If a needed reusable control does not exist, add it to the design system
+  before using it in feature code: create the Svelte primitive, export it from
+  `frontend/src/design-system/index.ts`, render its important states in
+  `DesignSystemGallery.svelte`, add component CSS under `.ds-*` selectors, and
+  update `docs/design-system/README.md`.
+- Keep feature CSS for layout, placement, and domain-specific presentation.
+  Do not recreate reusable button, icon button, popover, dialog, chip, toggle,
+  checkbox, menu, field, or settings-row styling inside feature components.
+- Exceptions are allowed when extracting a primitive would make the code less
+  clear or fight the platform. Good examples are OS-native window chrome and
+  drag regions, browser-rendered Markdown content owned by the sanitizer,
+  one-off layout containers, measurement/virtualizer wrappers, and highly
+  specialized surfaces whose behavior is tightly coupled to a single feature.
+  Document the exception in the component or relevant docs when it is not
+  obvious from the code.
+
 ## App Icon Update Procedure
 
 The app has three icon surfaces that must be updated together:

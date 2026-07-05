@@ -1,6 +1,6 @@
 <script lang="ts">
   import { FileText, FolderOpen, Pin, PinOff, Trash2 } from '@lucide/svelte';
-  import { Button } from '../design-system';
+  import { Button, IconButton } from '../design-system';
   import type { RecentDocument } from '../core/workspace/workspace';
 
   interface Props {
@@ -27,10 +27,10 @@
         <h2>Recent documents</h2>
         <div class="recent-list-actions">
           {#if hasMissing && onClearMissing}
-            <button type="button" class="recent-action" onclick={onClearMissing}><Trash2 size={13} /> Missing</button>
+            <Button variant="ghost" size="sm" onclick={onClearMissing}><Trash2 size={13} /> Missing</Button>
           {/if}
           {#if hasUnpinned && onClearUnpinned}
-            <button type="button" class="recent-action" onclick={onClearUnpinned}><Trash2 size={13} /> Unpinned</button>
+            <Button variant="ghost" size="sm" onclick={onClearUnpinned}><Trash2 size={13} /> Unpinned</Button>
           {/if}
         </div>
       </div>
@@ -41,14 +41,13 @@
             <small>{recent.missingAt ? 'Missing - locate or clear' : recent.path}</small>
           </button>
           {#if onPinRecent}
-            <button
-              type="button"
-              class="recent-pin"
-              aria-label={recent.pinned ? `Unpin ${recent.displayName}` : `Pin ${recent.displayName}`}
+            {@const PinIcon = recent.pinned ? PinOff : Pin}
+            <IconButton
+              icon={PinIcon}
+              label={recent.pinned ? `Unpin ${recent.displayName}` : `Pin ${recent.displayName}`}
+              size="sm"
               onclick={() => onPinRecent(recent.path, !recent.pinned)}
-            >
-              {#if recent.pinned}<PinOff size={14} />{:else}<Pin size={14} />{/if}
-            </button>
+            />
           {/if}
         </div>
       {/each}

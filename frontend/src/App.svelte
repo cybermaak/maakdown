@@ -2,6 +2,7 @@
   import { onDestroy, onMount } from 'svelte';
   import { LoaderCircle } from '@lucide/svelte';
   import DesignSystemGallery from './design-system/DesignSystemGallery.svelte';
+  import { Button } from './design-system';
   import DocumentView from './components/DocumentView.svelte';
   import TabStrip from './components/TabStrip.svelte';
   import Minimap from './components/Minimap.svelte';
@@ -933,7 +934,7 @@
       {#if printing}
         <div class="print-status" role="status">
           <span>Preparing complete document for print... {printProgress}%</span>
-          <button type="button" onclick={() => printController?.abort()}>Cancel</button>
+          <Button variant="ghost" size="sm" onclick={() => printController?.abort()}>Cancel</Button>
         </div>
       {/if}
       <p class="sr-only" aria-live="polite">{announcement}</p>
