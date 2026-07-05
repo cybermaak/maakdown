@@ -8,7 +8,7 @@ The app is a viewer, not an editor. It renders CommonMark/GFM, code, KaTeX math,
 
 ## Current Phase
 
-**Phase:** P11.11 is active; P13-P20 implementation and macOS acceptance are
+**Phase:** P11.11 is active; P13-P22 implementation and macOS acceptance are
 complete for the next release; P0-P10 and P12 are complete
 **Active focus:** remaining native editorial acceptance and cross-platform
 release validation. P13-P18 delivered the
@@ -42,6 +42,10 @@ P21 consolidated ad hoc UI controls into the production Svelte design system
 after scanning `/Users/maak/Downloads/Maakdown Design System`; reference tokens
 matched the preserved repo exports, so the pass added/refined missing
 primitives and migrated feature surfaces without a global theme rewrite.
+P22 added a narrow dock of frequently used global reader controls to the tab
+bar: reader measure and document line-number visibility are now available
+beside the tabs, while the tab list itself owns horizontal overflow at narrow
+widths.
 Cross-OS CI/UAT and native screenshot validation passed for P18 on `main`
 (`aa8dccf`) on 2026-07-02; P19 Windows/Linux validation plus
 release-smoke/manual release checks still gate the release. The remaining
@@ -89,6 +93,8 @@ search/focus/drag/drop/print coverage.
   controls, floating shells, and deterministic gallery.
 - `frontend/src/components/`: reader surface, masthead, hover minimap, workspace
   chrome, dialogs, settings, and native-window controls.
+- `frontend/src/components/TabStrip.svelte`: document tabs plus the docked
+  global reading controls for measure and document line numbers.
 - `fixtures/`: deterministic Markdown evaluation documents and local fixture assets.
 - `fixtures/table-tools.md`: manual and UAT-backed table interaction fixture for
   sorting, filtering, wrapping, and unsupported-table suppression checks.
@@ -167,6 +173,12 @@ search/focus/drag/drop/print coverage.
   `CommandItem`, and `Menu` primitives, expanded `Popover` with richer shell
   options, and expanded `Dialog` for large canvas dialogs and custom header
   actions.
+- The docked reading controls in the tab bar intentionally update the existing
+  global `AppConfig` settings only; there are no per-document reader-control
+  overrides in this iteration.
+- Narrow workspace widths preserve docked control labels and icon affordances;
+  the tab list, not the dock, owns horizontal overflow and scrolls like a code
+  editor tab strip.
 - Use a pinned local `@lucide/svelte` package; do not load production icons or
   UI dependencies from a CDN.
 - Use a two-row toolbar/tab composition, visible watch states, semantic
@@ -332,6 +344,17 @@ proposal-only until accepted as active work.
 
 ## Completed Tasks
 
+- 2026-07-05: Completed P22 docked reading controls. Added tab-bar access to
+  the global reader measure segmented control and document line-number toggle
+  using design-system primitives, kept persistence on the existing
+  `updateConfig` path, moved tab overflow into the tab list, fixed a stale
+  narrow breakpoint that collapsed the main column, and tightened UAT selectors
+  now that the dock shares names with Settings controls. Verification passed:
+  `cd frontend && npm run check`, `cd frontend && npm run test` (57 tests),
+  `cd frontend && npm run build`, `cd frontend && npm run visual-smoke`,
+  focused UAT-05/07/12, full `cd frontend && npm run uat` (37 tests), and a
+  seeded narrow Playwright render check showing tab overflow, no clipped dock
+  controls, `--reading-measure: 1040px`, and visible reader-line labels.
 - 2026-07-05: Completed P21 design-system consolidation. Scanned
   `/Users/maak/Downloads/Maakdown Design System`, confirmed its exported
   tokens matched the preserved repo reference tokens, added missing/refined
@@ -676,7 +699,7 @@ scripts/release-check.sh
 ## Verification Notes
 
 - Current frontend verification includes 57 unit tests, zero-warning Svelte
-  checks, the production build, visual smoke, and 36 production-bundled UAT
+  checks, the production build, visual smoke, and 37 production-bundled UAT
   tests with an axe serious/critical accessibility gate.
 - CI run 27470447128 passed all 25 UAT tests and screenshot capture on macOS,
   Ubuntu, and Windows. These jobs use Playwright Chromium on every runner and
