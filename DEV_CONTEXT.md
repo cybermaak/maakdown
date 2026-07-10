@@ -46,6 +46,9 @@ P22 added a narrow dock of frequently used global reader controls to the tab
 bar: reader measure and document line-number visibility are now available
 beside the tabs, while the tab list itself owns horizontal overflow at narrow
 widths.
+P23 ran a direct macOS desktop regression pass against the packaged
+`build/bin/Maakdown.app`. The pass found and fixed a stale native View-menu
+`Focus Mode` item that survived the earlier frontend/product removal.
 Cross-OS CI/UAT and native screenshot validation passed for P18 on `main`
 (`aa8dccf`) on 2026-07-02; P19 Windows/Linux validation plus
 release-smoke/manual release checks still gate the release. The remaining
@@ -344,6 +347,21 @@ proposal-only until accepted as active work.
 
 ## Completed Tasks
 
+- 2026-07-09: Completed a direct macOS desktop regression pass against the
+  rebuilt packaged app (`build/bin/Maakdown.app`) instead of browser/UAT. The
+  pass verified the packaged app through `scripts/verify.sh`, launched the
+  desktop binary with Markdown fixture argv, confirmed native pending-open and
+  persisted-session behavior through real app state, inspected CoreGraphics
+  window metadata for the packaged app, and queried the live macOS menu bar via
+  System Events. A stale native View-menu `Focus Mode` item was still present
+  even though P19.10 removed focus mode from the frontend/product scope; it was
+  removed from `main.go`, then the app was rebuilt and the live View menu
+  rechecked as `Command Palette`, `Find in Document`, `Next Tab`,
+  `Previous Tab`, and `Enter Full Screen`. Limitation: the current desktop
+  session would not expose the frameless WebKit window through Accessibility
+  and `screencapture` returned black/uncapturable output, so direct visual
+  interaction with the reader content/docked controls could not be completed in
+  this environment.
 - 2026-07-05: Completed P22 docked reading controls. Added tab-bar access to
   the global reader measure segmented control and document line-number toggle
   using design-system primitives, kept persistence on the existing

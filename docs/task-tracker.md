@@ -2,7 +2,7 @@
 
 **Purpose:** project task breakdown and progress tracker.  
 **Status values:** Todo, In Progress, Blocked, Done, Deferred.  
-**Last updated:** 2026-07-05.
+**Last updated:** 2026-07-09.
 
 ## Summary
 
@@ -26,6 +26,7 @@
 | P20 | Done | Stability and maintainability proposal | recent bug-fix commits and current code paths reviewed; proposal recorded in `docs/stability-maintainability-proposal.md`; implementation tracks remain proposal-only until accepted |
 | P21 | Done | Design system consolidation and ad hoc UI migration | downloaded reference scanned, missing Svelte primitives added, ad hoc feature controls migrated, governance docs updated, and verification passed |
 | P22 | Done | Docked reading controls | global reader measure and document line-number controls are docked in the tab bar, use design-system primitives, preserve global settings, and keep tabs scrollable at narrow widths |
+| P23 | Done | Direct macOS desktop regression pass | packaged app launches and native menu/pending-open paths are checked directly; stale native Focus Mode menu item removed |
 
 ## P0 - Scaffold
 
@@ -217,3 +218,11 @@
 | P22.1 | Done | Add global reading controls to the tab bar | Codex | P11.4, P21 | Reader measure and document line-number visibility are reachable from the tab bar through `SegmentedControl` and `IconButton`, update the existing global `AppConfig`, and do not introduce per-document settings | `cd frontend && npm run check`; focused UAT-05 docked controls case |
 | P22.2 | Done | Preserve narrow-window tab behavior | Codex | P22.1 | Docked controls do not truncate; the tab list owns horizontal overflow and scrolls independently of the dock at narrow widths | focused UAT-05 narrow overflow assertions; seeded Playwright render check (`tabClientWidth` 307, `tabScrollWidth` 1040, no clipped controls) |
 | P22.3 | Done | Verify shared chrome and settings selectors | Codex | P22.1-P22.2 | Existing settings/table UAT remains precise now that the dock shares accessible names with Settings controls | `cd frontend && npm run uat -- uat-05-reader-tools.spec.ts`; `cd frontend && npm run uat -- uat-07-accessibility.spec.ts`; `cd frontend && npm run uat -- uat-12-table-tools.spec.ts`; full `cd frontend && npm run uat` (37 passed) |
+
+## P23 - Direct macOS Desktop Regression Pass
+
+| ID | Status | Task | Owner | Depends On | Exit Criteria | Verification |
+|---|---|---|---|---|---|---|
+| P23.1 | Done | Run packaged-app verification and native launch smoke | Codex | P22 | `build/bin/Maakdown.app` is rebuilt and launched directly with Markdown fixture argv; native pending-open/session behavior is confirmed without browser UAT | `scripts/verify.sh`; isolated direct-binary launch wrote expected fixture tabs to temporary app state; CoreGraphics reported an onscreen packaged-app window |
+| P23.2 | Done | Check native menu regressions | Codex | P19.10, P23.1 | Native menu chrome matches removed product scope and no longer exposes focus mode | Live System Events menu query initially found `Focus Mode`; after `main.go` fix and rebuild, View menu was `Command Palette`, `Find in Document`, `Next Tab`, `Previous Tab`, `Enter Full Screen` |
+| P23.3 | Done | Record native visual automation limitation | Codex | P23.1 | The pass documents any environment limits that prevent direct reader-content visual interaction | Accessibility exposed zero app windows and `screencapture` returned black/uncapturable output for the frameless WebKit window in this desktop session, so direct visual interaction with reader content/docked controls remains unverified here |

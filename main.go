@@ -48,9 +48,6 @@ func main() {
 	viewMenu.AddText("Find in Document", keys.CmdOrCtrl("f"), func(_ *menu.CallbackData) {
 		app.EmitCommand("find")
 	})
-	viewMenu.AddText("Focus Mode", keys.Combo("f", keys.CmdOrCtrlKey, keys.ShiftKey), func(_ *menu.CallbackData) {
-		app.EmitCommand("focus")
-	})
 	viewMenu.AddText("Next Tab", keys.Control("tab"), func(_ *menu.CallbackData) {
 		app.EmitCommand("next-tab")
 	})
