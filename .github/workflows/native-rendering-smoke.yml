@@ -85,13 +85,18 @@ jobs:
         shell: bash
         run: |
           ls -lh output/native-screenshots
-          test "$(find output/native-screenshots -name '*.png' | wc -l | tr -d ' ')" = "2"
+          expected="$(node scripts/native-screenshot-scenarios.mjs --count)"
+          actual="$(find output/native-screenshots -name '*.png' | wc -l | tr -d ' ')"
+          test "$actual" = "$expected"
+          test "$(find output/native-screenshots -name '*.stderr' | wc -l | tr -d ' ')" = "0"
 
       - name: Upload native screenshots
         if: always()
         uses: actions/upload-artifact@v7
         with:
           name: native-rendering-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}
-          path: output/native-screenshots/
+          path: |
+            output/native-screenshots/*.png
+            output/native-screenshots/*.log
           if-no-files-found: error
           retention-days: 7
