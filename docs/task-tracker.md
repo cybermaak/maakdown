@@ -2,7 +2,7 @@
 
 **Purpose:** project task breakdown and progress tracker.  
 **Status values:** Todo, In Progress, Blocked, Done, Deferred.  
-**Last updated:** 2026-07-09.
+**Last updated:** 2026-07-10.
 
 ## Summary
 
@@ -27,6 +27,7 @@
 | P21 | Done | Design system consolidation and ad hoc UI migration | downloaded reference scanned, missing Svelte primitives added, ad hoc feature controls migrated, governance docs updated, and verification passed |
 | P22 | Done | Docked reading controls | global reader measure and document line-number controls are docked in the tab bar, use design-system primitives, preserve global settings, and keep tabs scrollable at narrow widths |
 | P23 | Done | Direct macOS desktop regression pass | packaged app launches and native menu/pending-open paths are checked directly; stale native Focus Mode menu item removed |
+| P24 | In Progress | Native screenshot coverage expansion | packaged-app screenshot CI captures representative reader, table, Mermaid, technical-document, and multi-tab scenarios on macOS, Windows, and Linux; sandbox run and artifact pullback pending |
 
 ## P0 - Scaffold
 
@@ -226,3 +227,9 @@
 | P23.1 | Done | Run packaged-app verification and native launch smoke | Codex | P22 | `build/bin/Maakdown.app` is rebuilt and launched directly with Markdown fixture argv; native pending-open/session behavior is confirmed without browser UAT | `scripts/verify.sh`; isolated direct-binary launch wrote expected fixture tabs to temporary app state; CoreGraphics reported an onscreen packaged-app window |
 | P23.2 | Done | Check native menu regressions | Codex | P19.10, P23.1 | Native menu chrome matches removed product scope and no longer exposes focus mode | Live System Events menu query initially found `Focus Mode`; after `main.go` fix and rebuild, View menu was `Command Palette`, `Find in Document`, `Next Tab`, `Previous Tab`, `Enter Full Screen` |
 | P23.3 | Done | Record native visual automation limitation | Codex | P23.1 | The pass documents any environment limits that prevent direct reader-content visual interaction | Accessibility exposed zero app windows and `screencapture` returned black/uncapturable output for the frameless WebKit window in this desktop session, so direct visual interaction with reader content/docked controls remains unverified here |
+
+## P24 - Native Screenshot Coverage Expansion
+
+| ID | Status | Task | Owner | Depends On | Exit Criteria | Verification |
+|---|---|---|---|---|---|---|
+| P24.1 | In Progress | Expand packaged-app screenshot matrix | Codex | P7.9/P22/P23 | Native screenshot CI uses one shared scenario list and captures light/dark screenshots for reader smoke, table tools, Mermaid cases, UAT technical constructs, and a multi-tab workspace on macOS, Windows, and Linux | Local helper output and bash syntax checks passed; `ci/sandbox` native rendering run and artifact pullback pending |

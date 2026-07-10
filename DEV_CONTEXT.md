@@ -49,6 +49,9 @@ widths.
 P23 ran a direct macOS desktop regression pass against the packaged
 `build/bin/Maakdown.app`. The pass found and fixed a stale native View-menu
 `Focus Mode` item that survived the earlier frontend/product removal.
+P24 is expanding the packaged-app native screenshot CI from a single smoke
+fixture to a representative matrix covering reader chrome, tables, diagrams,
+technical Markdown constructs, and multi-tab workspace state.
 Cross-OS CI/UAT and native screenshot validation passed for P18 on `main`
 (`aa8dccf`) on 2026-07-02; P19 Windows/Linux validation plus
 release-smoke/manual release checks still gate the release. The remaining
@@ -122,6 +125,11 @@ search/focus/drag/drop/print coverage.
 - `.github/workflows/native-rendering-smoke.yml`: non-blocking light/dark
   screenshot capture from packaged WKWebView, WebView2, and WebKitGTK apps on
   every push; artifacts expire after seven days.
+- `scripts/native-screenshot-scenarios.mjs`: shared scenario list and expected
+  screenshot count for native packaged-app screenshot CI.
+- `scripts/capture-native-{macos,linux}.sh` and
+  `scripts/capture-native-windows.ps1`: OS-specific packaged-app screenshot
+  capture scripts driven by the shared scenario list.
 - `.github/workflows/release-smoke.yml`: manually dispatched unsigned build,
   test, artifact-validation, and short-lived artifact-upload matrix for macOS,
   Windows, and Linux.
@@ -143,6 +151,12 @@ search/focus/drag/drop/print coverage.
   anchor correction.
 - Configure Mermaid with strict security and render failures as inert reader
   error blocks.
+- Native screenshot CI should capture representative packaged-app surfaces,
+  not only a single smoke fixture. The shared scenario matrix currently covers
+  `native-rendering-smoke.md`, `table-tools.md`, `mermaid-cases.md`,
+  `uat-technical-document.md`, and a multi-tab workspace launch in both light
+  and dark themes on macOS, Windows, and Linux. The seeded native visual state
+  enables document line numbers so the docked reading controls are represented.
 - Keep Mermaid's diagram-specific label modes intact. On Windows/WebView2,
   wait for document fonts before layout, add a small SVG viewBox gutter for
   edge-label rounding, and render exceptionally wide flowcharts at a readable
@@ -347,6 +361,14 @@ proposal-only until accepted as active work.
 
 ## Completed Tasks
 
+- 2026-07-10: Started P24 native screenshot coverage expansion. Added a shared
+  native screenshot scenario helper and updated macOS, Windows, and Linux
+  packaged-app capture scripts to produce ten screenshots per OS: five
+  representative scenarios in light and dark themes. The matrix covers reader
+  smoke/code/math/diagram rendering, table tools, Mermaid diagram cases, the
+  UAT technical document, and a multi-tab workspace launch. Local helper output
+  and bash syntax checks passed; remote native screenshot CI artifact pullback
+  is pending.
 - 2026-07-09: Completed a direct macOS desktop regression pass against the
   rebuilt packaged app (`build/bin/Maakdown.app`) instead of browser/UAT. The
   pass verified the packaged app through `scripts/verify.sh`, launched the
