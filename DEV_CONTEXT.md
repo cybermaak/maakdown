@@ -49,9 +49,11 @@ widths.
 P23 ran a direct macOS desktop regression pass against the packaged
 `build/bin/Maakdown.app`. The pass found and fixed a stale native View-menu
 `Focus Mode` item that survived the earlier frontend/product removal.
-P24 is expanding the packaged-app native screenshot CI from a single smoke
-fixture to a representative matrix covering reader chrome, tables, diagrams,
-technical Markdown constructs, and multi-tab workspace state.
+P24 expanded the packaged-app native screenshot CI from a single smoke fixture
+to a representative matrix covering reader chrome, tables, diagrams, technical
+Markdown constructs, and multi-tab workspace state. Sandbox run 29090528488
+passed on macOS, Windows, and Linux, and its screenshot artifacts were pulled
+to `output/ci-native-screenshots/29090528488`.
 Cross-OS CI/UAT and native screenshot validation passed for P18 on `main`
 (`aa8dccf`) on 2026-07-02. On 2026-07-28, after rebasing `main` onto the
 latest `origin/main`, Windows local release validation passed for the current
@@ -394,14 +396,19 @@ proposal-only until accepted as active work.
   and `output/native-screenshots/windows-dark.png` and visually checked.
   Pushed CI run `30371786173` and Native rendering screenshots run
   `30371784158` then passed for commit `d7ee274`.
-- 2026-07-10: Started P24 native screenshot coverage expansion. Added a shared
+- 2026-07-10: Completed P24 native screenshot coverage expansion. Added a shared
   native screenshot scenario helper and updated macOS, Windows, and Linux
   packaged-app capture scripts to produce ten screenshots per OS: five
   representative scenarios in light and dark themes. The matrix covers reader
   smoke/code/math/diagram rendering, table tools, Mermaid diagram cases, the
-  UAT technical document, and a multi-tab workspace launch. Local helper output
-  and bash syntax checks passed; remote native screenshot CI artifact pullback
-  is pending.
+  UAT technical document, and a multi-tab workspace launch. The workflow now
+  checks the expected PNG count and rejects Windows `.stderr` sidecars; uploads
+  include only PNG and merged log files. Verification passed: local helper
+  output, seeded state output, bash syntax checks, scoped `git diff --check`,
+  and `ci/sandbox` native rendering run 29090528488 at `6bebc0e` on macOS,
+  Windows, and Linux. Pulled artifacts contain 30 PNGs and 30 logs under
+  `output/ci-native-screenshots/29090528488`; generated contact sheets were
+  spot-checked.
 - 2026-07-09: Completed a direct macOS desktop regression pass against the
   rebuilt packaged app (`build/bin/Maakdown.app`) instead of browser/UAT. The
   pass verified the packaged app through `scripts/verify.sh`, launched the
@@ -774,6 +781,11 @@ scripts/release-check.sh
 - Current frontend verification includes 57 unit tests, zero-warning Svelte
   checks, the production build, visual smoke, and 37 production-bundled UAT
   tests with an axe serious/critical accessibility gate.
+- Native packaged-app screenshot CI now captures five light/dark scenarios per
+  OS from the shared `scripts/native-screenshot-scenarios.mjs` matrix. Sandbox
+  run 29090528488 passed on macOS WKWebView, Windows WebView2, and Linux
+  WebKitGTK; artifacts were downloaded to
+  `output/ci-native-screenshots/29090528488` as 30 PNGs and 30 merged logs.
 - CI run 27470447128 passed all 25 UAT tests and screenshot capture on macOS,
   Ubuntu, and Windows. These jobs use Playwright Chromium on every runner and
   therefore prove portable frontend behavior, not native webview parity.

@@ -27,7 +27,7 @@
 | P21 | Done | Design system consolidation and ad hoc UI migration | downloaded reference scanned, missing Svelte primitives added, ad hoc feature controls migrated, governance docs updated, and verification passed |
 | P22 | Done | Docked reading controls | global reader measure and document line-number controls are docked in the tab bar, use design-system primitives, preserve global settings, and keep tabs scrollable at narrow widths |
 | P23 | Done | Direct macOS desktop regression pass | packaged app launches and native menu/pending-open paths are checked directly; stale native Focus Mode menu item removed |
-| P24 | In Progress | Native screenshot coverage expansion | packaged-app screenshot CI captures representative reader, table, Mermaid, technical-document, and multi-tab scenarios on macOS, Windows, and Linux; sandbox run and artifact pullback pending |
+| P24 | Done | Native screenshot coverage expansion | packaged-app screenshot CI captures representative reader, table, Mermaid, technical-document, and multi-tab scenarios on macOS, Windows, and Linux; sandbox run passed and screenshots were pulled locally |
 
 ## P0 - Scaffold
 
@@ -232,4 +232,4 @@
 
 | ID | Status | Task | Owner | Depends On | Exit Criteria | Verification |
 |---|---|---|---|---|---|---|
-| P24.1 | In Progress | Expand packaged-app screenshot matrix | Codex | P7.9/P22/P23 | Native screenshot CI uses one shared scenario list and captures light/dark screenshots for reader smoke, table tools, Mermaid cases, UAT technical constructs, and a multi-tab workspace on macOS, Windows, and Linux | Local helper output and bash syntax checks passed; `ci/sandbox` native rendering run and artifact pullback pending |
+| P24.1 | Done | Expand packaged-app screenshot matrix | Codex | P7.9/P22/P23 | Native screenshot CI uses one shared scenario list and captures light/dark screenshots for reader smoke, table tools, Mermaid cases, UAT technical constructs, and a multi-tab workspace on macOS, Windows, and Linux | Local helper output, seeded state output, bash syntax checks, and scoped `git diff --check` passed; `ci/sandbox` native rendering run 29090528488 passed macOS, Windows, and Linux at `6bebc0e`; 30 PNGs and 30 logs were downloaded to `output/ci-native-screenshots/29090528488` with zero `.stderr` sidecars; generated contact sheets were spot-checked |
