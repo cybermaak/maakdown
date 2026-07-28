@@ -10,14 +10,14 @@ validation do not block the next task, but block release.
 
 | Phase | Status | Goal | Release Gate |
 |---|---|---|---|
-| P13 | Done | Performance baseline and instrumentation | macOS baseline recorded; Windows local release validation passed; Linux release validation pending |
-| P14 | Done | Source orientation and code reading tools | macOS browser/UAT validation passed; Windows local release validation passed; Linux release validation pending |
-| P15 | Done | Navigation insight | macOS browser/UAT validation passed; Windows local release validation passed; Linux release validation pending |
-| P16 | Done | Reader utilities | macOS unit, UAT, benchmark, build, and release checks passed; Windows local release validation passed; Linux release validation pending |
-| P17 | In Progress | Theme, accessibility, and release acceptance | macOS acceptance passed; Windows local release validation passed; latest push CI/native screenshots and Linux/manual release checks still gate the release |
+| P13 | Done | Performance baseline and instrumentation | macOS baseline recorded; Windows release validation passed; Linux release validation pending |
+| P14 | Done | Source orientation and code reading tools | macOS browser/UAT validation passed; Windows release validation passed; Linux release validation pending |
+| P15 | Done | Navigation insight | macOS browser/UAT validation passed; Windows release validation passed; Linux release validation pending |
+| P16 | Done | Reader utilities | macOS unit, UAT, benchmark, build, and release checks passed; Windows release validation passed; Linux release validation pending |
+| P17 | In Progress | Theme, accessibility, and release acceptance | macOS acceptance passed; Windows release validation passed; Linux/manual release checks and release smoke still gate the release |
 | P18 | Done | Table reading tools | macOS unit, UAT, build, benchmark, cross-OS CI/UAT, and native screenshot validation passed |
-| P19 | Done | Reader feedback polish | macOS check/unit/build/UAT/visual validation passed; Windows local release validation passed; Linux release validation pending |
-| P20 | Done | Reader line numbering redesign and code-rendering polish | macOS line-map implementation, wrapped-code numbering, Shiki-default command-palette switching, unit/check/build/UAT, and benchmark validation passed; Windows local release validation passed; Linux release validation pending |
+| P19 | Done | Reader feedback polish | macOS check/unit/build/UAT/visual validation passed; Windows release validation passed; Linux release validation pending |
+| P20 | Done | Reader line numbering redesign and code-rendering polish | macOS line-map implementation, wrapped-code numbering, Shiki-default command-palette switching, unit/check/build/UAT, and benchmark validation passed; Windows release validation passed; Linux release validation pending |
 
 ## Validation Fields
 
@@ -85,9 +85,9 @@ work progresses.
 | P17.3 | Done | Run measured optimization pass | Frontend/Backend/Perf | P13/P14-P16 | prioritized optimizations from audit are implemented or explicitly deferred with data | Passed: `npm run benchmark` and `npm run benchmark:workspace`; closeout recorded in `docs/performance-audit-next-release.md` | Pending: CI benchmark/release smoke before release | Pending: CI benchmark/release smoke before release |
 | P17.4 | Done | Update UAT plan and traceability | QA/Docs | P14-P16 | UAT docs include new spec-level scenarios without exceeding release time budget materially | Passed: UAT plan and traceability updated; `npm run uat` passed in 15.9s during release check | Pending: Windows CI UAT before release | Pending: Linux CI UAT before release |
 | P17.5 | Done | Run full macOS acceptance | Release | P13-P17.4 | all new features pass in packaged macOS app; no task has pending macOS validation | Passed: `scripts/release-check.sh` completed successfully on macOS, including Wails `darwin/arm64` build | N/A | N/A |
-| P17.6 | In Progress | Run Windows release-blocking validation | Release | P17.5 | all new features pass Windows CI plus native/manual checks where required | Already passed macOS; run Windows CI, native screenshots, release smoke, and manual native checks | Passed locally on 2026-07-28 after rebasing onto `origin/main`: `npm run check`, `npm test`, `npm run build`, full `npm run uat` (36 tests), `go test -timeout 60s -v ./...`, `npm run benchmark`, `npm run benchmark:workspace`, `npm run visual-smoke`, `wails build -clean`, and `scripts/capture-native-windows.ps1`; latest push CI/native screenshots still pending | N/A |
+| P17.6 | Done | Run Windows release-blocking validation | Release | P17.5 | all new features pass Windows CI plus native/manual checks where required | Already passed macOS; run Windows CI, native screenshots, release smoke, and manual native checks | Passed locally on 2026-07-28 after rebasing onto `origin/main`: `npm run check`, `npm test`, `npm run build`, full `npm run uat` (36 tests), `go test -timeout 60s -v ./...`, `npm run benchmark`, `npm run benchmark:workspace`, `npm run visual-smoke`, `wails build -clean`, and `scripts/capture-native-windows.ps1`; pushed CI run `30371786173` and Native rendering screenshots run `30371784158` passed on Windows | N/A |
 | P17.7 | In Progress | Run Linux release-blocking validation | Release | P17.5 | all new features pass Linux CI plus native/manual checks where required | Already passed macOS; run Linux CI, native screenshots, release smoke, and manual native checks | N/A | Passed: CI/UAT run `28557373069` and Native rendering screenshots run `28557373060` passed for P18 on 2026-07-02; release-smoke/manual release checks remain before release |
-| P17.8 | In Progress | Prepare release notes and final release gate | Release/Docs | P17.5-P17.7 | release notes describe precision reading features, perf results, and known limits; release process is ready | Passed: release checklist updated and macOS release check passed; final notes wait for Windows/Linux gates | Local Windows verification passed on 2026-07-28; release smoke still pending before release | Pending: release smoke before release |
+| P17.8 | In Progress | Prepare release notes and final release gate | Release/Docs | P17.5-P17.7 | release notes describe precision reading features, perf results, and known limits; release process is ready | Passed: release checklist updated and macOS release check passed; final notes wait for Linux/release-smoke gates | Passed: 2026-07-28 local Windows validation plus pushed CI run `30371786173` and Native rendering screenshots run `30371784158`; release smoke still pending before release | Pending: release smoke before release |
 
 ## P18 - Table Reading Tools
 

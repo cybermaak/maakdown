@@ -43,10 +43,14 @@ Cross-OS CI/UAT and native screenshot validation passed for P18 on `main`
 latest `origin/main`, Windows local release validation passed for the current
 next-release surface: frontend check/unit/build, full Chromium UAT, Go tests,
 reader/workspace benchmarks, browser visual smoke, packaged `wails build
--clean`, and built-exe light/dark native screenshot capture. The latest push
-CI/native screenshots still need to complete, and the remaining tracked P11.11
-editorial acceptance gaps are Linux WebKitGTK search/focus/drag/drop/print
-coverage.
+-clean`, and built-exe light/dark native screenshot capture. Pushed CI run
+`30371786173` and Native rendering screenshots run `30371784158` passed for
+commit `d7ee274`, including Windows UAT/screenshot jobs and cross-OS UAT
+jobs. Artifact download required GitHub artifact authentication from this
+environment, so remote macOS/Linux image review was limited to successful
+capture jobs and artifact metadata; local Windows native screenshots were
+visually checked. The remaining tracked P11.11 editorial acceptance gaps are
+Linux WebKitGTK search/focus/drag/drop/print coverage.
 
 ## Major Files And Directories
 
@@ -335,6 +339,8 @@ proposal-only until accepted as active work.
   `MAAKDOWN_SHOT_OUTDIR` pointed at a temporary output folder. Native
   screenshots were written to `output/native-screenshots/windows-light.png`
   and `output/native-screenshots/windows-dark.png` and visually checked.
+  Pushed CI run `30371786173` and Native rendering screenshots run
+  `30371784158` then passed for commit `d7ee274`.
 - 2026-07-02: Reviewed recent bug-fix commits and current reader/parser/native
   integration code for stability and maintainability patterns. Added
   `docs/stability-maintainability-proposal.md` with phased recommendations for

@@ -21,8 +21,8 @@
 | P10 | Done | Reading productivity | search, history, reader tools, and complete-document printing work |
 | P11 | In Progress | Editorial experience | browser-level cross-OS UAT and Windows WebView2 native acceptance are green; remaining native editorial gaps are Linux WebKitGTK search/focus/drag/drop/print coverage |
 | P12 | Done | OS integration | macOS, Linux, and Windows Markdown association are complete |
-| P13-P18 | Done | Next release: Precision Reading & Performance core scope | P13-P18 implementation, macOS acceptance, cross-OS CI/UAT, native screenshots, and 2026-07-28 Windows local release rerun are complete; release-smoke/Linux manual release checks still gate release |
-| P19 | Done | Next release: Reader feedback polish | settings clarity, source gutter alignment, minimap legend, table filter UX, and Mermaid source toggle are implemented; macOS and Windows local release validation passed; Linux release validation pending |
+| P13-P18 | Done | Next release: Precision Reading & Performance core scope | P13-P18 implementation, macOS acceptance, cross-OS CI/UAT, native screenshots, and 2026-07-28 Windows release validation are complete; release-smoke/Linux manual release checks still gate release |
+| P19 | Done | Next release: Reader feedback polish | settings clarity, source gutter alignment, minimap legend, table filter UX, and Mermaid source toggle are implemented; macOS and Windows release validation passed; Linux release validation pending |
 | P20 | Done | Stability and maintainability proposal | recent bug-fix commits and current code paths reviewed; proposal recorded in `docs/stability-maintainability-proposal.md`; implementation tracks remain proposal-only until accepted |
 
 ## P0 - Scaffold
