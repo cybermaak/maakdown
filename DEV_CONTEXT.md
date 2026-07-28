@@ -39,10 +39,14 @@ post-sanitize anchors, per-block reader gutter labels, reader-line stats, and a
 kept Highlight.js as a persisted command-palette-selectable fallback, and
 removed highlighter switching from the Settings popover.
 Cross-OS CI/UAT and native screenshot validation passed for P18 on `main`
-(`aa8dccf`) on 2026-07-02; P19 Windows/Linux validation plus
-release-smoke/manual release checks still gate the release. The remaining
-tracked P11.11 editorial acceptance gaps are Linux WebKitGTK
-search/focus/drag/drop/print coverage.
+(`aa8dccf`) on 2026-07-02. On 2026-07-28, after rebasing `main` onto the
+latest `origin/main`, Windows local release validation passed for the current
+next-release surface: frontend check/unit/build, full Chromium UAT, Go tests,
+reader/workspace benchmarks, browser visual smoke, packaged `wails build
+-clean`, and built-exe light/dark native screenshot capture. The latest push
+CI/native screenshots still need to complete, and the remaining tracked P11.11
+editorial acceptance gaps are Linux WebKitGTK search/focus/drag/drop/print
+coverage.
 
 ## Major Files And Directories
 
@@ -298,6 +302,9 @@ search/focus/drag/drop/print coverage.
 - Mermaid source inspection is an in-place reader toggle using `block.text`;
   it runs through the configured highlighter, does not edit source Markdown,
   and print mode should continue to render diagrams rather than source.
+- Windows native screenshot capture merges redirected stderr into the theme log
+  with direct file APIs and retry handling so WebView2/stdout file-lock timing
+  does not fail an otherwise successful capture.
 
 ## Planned Tasks
 
@@ -308,6 +315,20 @@ proposal-only until accepted as active work.
 
 ## Completed Tasks
 
+- 2026-07-28: Rebased `main` onto the latest `origin/main`, kept upstream task
+  tracker/context changes, and reran Windows release validation. Fixed
+  validation harness drift: UAT-01 now verifies the Shiki default highlighter,
+  UAT-05 waits for direct reader-gutter labels to settle across virtualizer
+  remounts, the reader benchmark closes Settings only when it is actually
+  present, and the Windows native screenshot script tolerates redirected-log
+  file locks. Validation passed: `npm run check`, `npm test`,
+  `npm run build`, focused UAT-01/UAT-05 checks, full `npm run uat`
+  (36 tests), `go test -timeout 60s -v ./...`, `npm run benchmark`,
+  `npm run benchmark:workspace`, `npm run visual-smoke`,
+  `wails build -clean`, and `powershell -ExecutionPolicy Bypass -File
+  scripts/capture-native-windows.ps1`. Native screenshots were written to
+  `output/native-screenshots/windows-light.png` and
+  `output/native-screenshots/windows-dark.png` and visually checked.
 - 2026-07-02: Reviewed recent bug-fix commits and current reader/parser/native
   integration code for stability and maintainability patterns. Added
   `docs/stability-maintainability-proposal.md` with phased recommendations for

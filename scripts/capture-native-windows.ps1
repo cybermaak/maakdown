@@ -13,6 +13,32 @@ New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
 
 Add-Type -AssemblyName System.Drawing
 Add-Type -AssemblyName System.Windows.Forms
+
+function Merge-StderrLog {
+    param(
+        [Parameter(Mandatory = $true)][string]$Log,
+        [Parameter(Mandatory = $true)][string]$Stderr
+    )
+
+    if (-not (Test-Path $Stderr)) {
+        return
+    }
+
+    for ($Attempt = 0; $Attempt -lt 10; $Attempt++) {
+        try {
+            $stderrText = [System.IO.File]::ReadAllText($Stderr)
+            [System.IO.File]::AppendAllText($Log, $stderrText)
+            Remove-Item $Stderr -Force -ErrorAction SilentlyContinue
+            return
+        } catch {
+            if ($Attempt -eq 9) {
+                throw
+            }
+            Start-Sleep -Milliseconds 250
+        }
+    }
+}
+
 foreach ($Theme in @("light", "dark")) {
     $ConfigRoot = Join-Path ([System.IO.Path]::GetTempPath()) "maakdown-visual-$Theme-$PID"
     $env:APPDATA = $ConfigRoot
@@ -41,10 +67,8 @@ foreach ($Theme in @("light", "dark")) {
     } finally {
         Stop-Process -Id $Process.Id -Force -ErrorAction SilentlyContinue
         Wait-Process -Id $Process.Id -ErrorAction SilentlyContinue
-        if (Test-Path "$Log.stderr") {
-            Get-Content "$Log.stderr" | Add-Content $Log
-            Remove-Item "$Log.stderr" -Force -ErrorAction SilentlyContinue
-        }
+        $Process.Dispose()
+        Merge-StderrLog -Log $Log -Stderr "$Log.stderr"
         Remove-Item -Recurse -Force $ConfigRoot -ErrorAction SilentlyContinue
     }
 }

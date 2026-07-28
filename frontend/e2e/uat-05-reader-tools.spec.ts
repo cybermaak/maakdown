@@ -133,28 +133,35 @@ test.describe('UAT-05 reader productivity tools', () => {
     async function readerLineLeft(selector: string): Promise<number> {
       const block = page.locator(selector).first();
       await block.scrollIntoViewIfNeeded();
-      await expect(block.locator('.reader-line')).toBeVisible();
-      return block.locator('.reader-line').evaluate((element) => Math.round(element.getBoundingClientRect().left));
+      const label = block.locator(':scope > .reader-line');
+      await expect(label).toBeVisible();
+      await expect.poll(async () => block.evaluate((element) => {
+        const label = element.querySelector<HTMLElement>(':scope > .reader-line');
+        if (!label) return Number.POSITIVE_INFINITY;
+        return Math.abs(Math.round(label.getBoundingClientRect().left) - Math.round(element.getBoundingClientRect().left));
+      })).toBeLessThanOrEqual(1);
+      return block.evaluate((element) => Math.round(element.querySelector<HTMLElement>(':scope > .reader-line')?.getBoundingClientRect().left ?? 0));
     }
 
-    const lefts = [
-      await readerLineLeft('.doc-block-heading'),
-      await readerLineLeft('.doc-block-code'),
-      await readerLineLeft('.doc-block-mermaid'),
-      await readerLineLeft('.doc-block-table')
-    ];
-    expect(Math.max(...lefts) - Math.min(...lefts)).toBeLessThanOrEqual(1);
+    const leftsBySelector = {
+      heading: await readerLineLeft('.doc-block-heading'),
+      code: await readerLineLeft('.doc-block-code'),
+      mermaid: await readerLineLeft('.doc-block-mermaid'),
+      table: await readerLineLeft('.doc-block-table')
+    };
+    const lefts = Object.values(leftsBySelector);
+    expect(Math.max(...lefts) - Math.min(...lefts), JSON.stringify(leftsBySelector)).toBeLessThanOrEqual(1);
 
     const listBlock = page.locator('.doc-block').filter({ has: page.locator('li') }).first();
     await listBlock.scrollIntoViewIfNeeded();
-    const listLabels = listBlock.locator('.reader-line');
+    const listLabels = listBlock.locator(':scope > .reader-line');
     await expect.poll(() => listLabels.count()).toBeGreaterThan(1);
     const labelTops = await listLabels.evaluateAll((labels) => labels.map((label) => Math.round(label.getBoundingClientRect().top)));
     const listLabelLeft = await listLabels.first().evaluate((element) => Math.round(element.getBoundingClientRect().left));
     const uniqueTops = new Set(labelTops);
     expect(uniqueTops.size).toBe(labelTops.length);
     expect([...uniqueTops].sort((a, b) => a - b)).toEqual(labelTops);
-    expect(Math.abs(listLabelLeft - lefts[0])).toBeLessThanOrEqual(1);
+    expect(Math.abs(listLabelLeft - leftsBySelector.heading)).toBeLessThanOrEqual(1);
 
     const firstListLabel = await listLabels.first().textContent();
     const firstListItemText = await listBlock.locator('li').first().evaluate((item) => {

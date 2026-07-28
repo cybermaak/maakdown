@@ -53,9 +53,10 @@ test.describe('UAT-01 Open and read a technical document', () => {
     await expect(page.locator('.doc-block .katex').first()).toBeVisible();
 
     // Highlighted code (lazy, enhanced once visible)
-    const code = page.locator('.doc-block-code code.language-typescript');
+    const code = page.locator('.doc-block-code').first();
     await code.scrollIntoViewIfNeeded();
-    await expect(page.locator('.doc-block-code .hljs-keyword, .doc-block-code .hljs-title').first()).toBeVisible();
+    await expect(code.locator('[data-highlight-engine="shiki-js-regex"]')).toBeVisible({ timeout: 15_000 });
+    await expect(code.locator('code')).toContainText('openAndParse');
 
     // Mermaid diagram renders an SVG once scheduled
     const mermaid = page.locator('.doc-block-mermaid');
