@@ -320,15 +320,21 @@ proposal-only until accepted as active work.
   validation harness drift: UAT-01 now verifies the Shiki default highlighter,
   UAT-05 waits for direct reader-gutter labels to settle across virtualizer
   remounts, the reader benchmark closes Settings only when it is actually
-  present, and the Windows native screenshot script tolerates redirected-log
-  file locks. Validation passed: `npm run check`, `npm test`,
+  present, the Windows native screenshot script tolerates redirected-log
+  file locks, and the README/CI screenshot script now fails with diagnostics
+  if a virtualized screenshot target never mounts while waiting on the
+  Shiki-era enhanced code block directly. Validation passed: `npm run check`,
+  `npm test`,
   `npm run build`, focused UAT-01/UAT-05 checks, full `npm run uat`
   (36 tests), `go test -timeout 60s -v ./...`, `npm run benchmark`,
   `npm run benchmark:workspace`, `npm run visual-smoke`,
   `wails build -clean`, and `powershell -ExecutionPolicy Bypass -File
-  scripts/capture-native-windows.ps1`. Native screenshots were written to
-  `output/native-screenshots/windows-light.png` and
-  `output/native-screenshots/windows-dark.png` and visually checked.
+  scripts/capture-native-windows.ps1`. After the first pushed CI run exposed
+  a Linux `uat-screenshots` harness timeout, validation also passed
+  `node scripts/capture-readme-screenshots.mjs` with
+  `MAAKDOWN_SHOT_OUTDIR` pointed at a temporary output folder. Native
+  screenshots were written to `output/native-screenshots/windows-light.png`
+  and `output/native-screenshots/windows-dark.png` and visually checked.
 - 2026-07-02: Reviewed recent bug-fix commits and current reader/parser/native
   integration code for stability and maintainability patterns. Added
   `docs/stability-maintainability-proposal.md` with phased recommendations for

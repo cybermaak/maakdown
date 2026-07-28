@@ -80,8 +80,9 @@ async function scrollToBlock(page, {
   centerNeedle = null,
   offsetTop
 }) {
+  let found = false;
   for (let i = 0; i < 80; i++) {
-    const found = await page.evaluate(
+    found = await page.evaluate(
       ({ sel, text }) => {
         const els = Array.from(document.querySelectorAll(sel));
         return text ? els.some((el) => el.textContent?.includes(text)) : els.length > 0;
@@ -89,10 +90,34 @@ async function scrollToBlock(page, {
       { sel: waitSelector, text: waitNeedle }
     );
     if (found) break;
-    await page.evaluate((sel) => {
-      document.querySelector(sel).scrollTop += 700;
+    const reachedEnd = await page.evaluate((sel) => {
+      const scroller = document.querySelector(sel);
+      if (!(scroller instanceof HTMLElement)) return true;
+      const previous = scroller.scrollTop;
+      scroller.scrollTop = Math.min(previous + scroller.clientHeight * 0.75, scroller.scrollHeight);
+      return scroller.scrollTop === previous;
     }, SCROLLER);
-    await page.waitForTimeout(60);
+    if (reachedEnd) break;
+    await page.waitForTimeout(120);
+  }
+  if (!found) {
+    const diagnostics = await page.evaluate(
+      ({ scroller, sel, text }) => {
+        const container = document.querySelector(scroller);
+        const matches = Array.from(document.querySelectorAll(sel));
+        return {
+          selector: sel,
+          text,
+          matches: matches.length,
+          matchingText: text ? matches.filter((el) => el.textContent?.includes(text)).length : null,
+          scrollTop: container instanceof HTMLElement ? container.scrollTop : null,
+          scrollHeight: container instanceof HTMLElement ? container.scrollHeight : null,
+          clientHeight: container instanceof HTMLElement ? container.clientHeight : null
+        };
+      },
+      { scroller: SCROLLER, sel: waitSelector, text: waitNeedle }
+    );
+    throw new Error(`Could not mount screenshot target: ${JSON.stringify(diagnostics)}`);
   }
   await page.waitForTimeout(400);
   await page.evaluate(
@@ -146,7 +171,9 @@ try {
       centerNeedle: 'openAndParse',
       offsetTop: 600
     });
-    await page.locator('.doc-block-code .hljs, .doc-block-code code').first().waitFor({ timeout: 20_000 });
+    const codeBlock = page.locator('.doc-block-code').filter({ hasText: 'openAndParse' }).first();
+    await codeBlock.waitFor({ state: 'visible', timeout: 20_000 });
+    await codeBlock.locator('[data-highlight-engine], code').first().waitFor({ state: 'visible', timeout: 20_000 });
     await settle(page);
     await page.screenshot({ path: resolve(outputDir, 'code-and-math.png') });
     await page.close();
