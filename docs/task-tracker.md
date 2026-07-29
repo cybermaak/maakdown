@@ -23,7 +23,7 @@
 | P12 | Done | OS integration | macOS, Linux, and Windows Markdown association are complete |
 | P13-P18 | Done | Next release: Precision Reading & Performance core scope | P13-P18 implementation, macOS acceptance, cross-OS CI/UAT, native screenshots, and 2026-07-28 Windows release validation are complete; release-smoke/Linux manual release checks still gate release |
 | P19 | Done | Next release: Reader feedback polish | settings clarity, source gutter alignment, minimap legend, table filter UX, and Mermaid source toggle are implemented; macOS and Windows release validation passed; Linux release validation pending |
-| P20 | Done | Stability and maintainability proposal | recent bug-fix commits and current code paths reviewed; proposal recorded in `docs/stability-maintainability-proposal.md`; implementation tracks remain proposal-only until accepted |
+| P20 | Done | Stability and maintainability proposal | recent bug-fix commits and current code paths reviewed; proposals recorded in `docs/stability-maintainability-proposal.md` and `docs/code-design-stability-proposal.md`; implementation tracks remain proposal-only until accepted |
 | P21 | Done | Design system consolidation and ad hoc UI migration | downloaded reference scanned, missing Svelte primitives added, ad hoc feature controls migrated, governance docs updated, and verification passed |
 | P22 | Done | Docked reading controls | global reader measure and document line-number controls are docked in the tab bar, use design-system primitives, preserve global settings, and keep tabs scrollable at narrow widths |
 | P23 | Done | Direct macOS desktop regression pass | packaged app launches and native menu/pending-open paths are checked directly; stale native Focus Mode menu item removed |
@@ -202,7 +202,7 @@
 
 | ID | Status | Task | Owner | Depends On | Exit Criteria | Verification |
 |---|---|---|---|---|---|---|
-| P20.1 | Done | Review bug-fix commits and draft stability proposal | Codex | DEV_CONTEXT, task tracker, recent bug-fix history, current reader/parser/native integration code | Proposal identifies recurring bug classes and phased design improvements for stability and maintainability under `docs/` | Docs-only verification: `find docs -maxdepth 1 -type f`, `rg "Stability And Maintainability Proposal|P20" docs DEV_CONTEXT.md`, scoped/staged `git diff --check`, and `git status --short --branch` |
+| P20.1 | Done | Review bug-fix commits and draft stability proposal | Codex | DEV_CONTEXT, task tracker, recent bug-fix history, current reader/parser/native integration code | Proposal docs identify recurring bug classes and phased design improvements for stability and maintainability under `docs/` | Docs-only verification: `find docs -maxdepth 1 -type f`, `rg "Stability And Maintainability Proposal|Code Design Proposal|P20" docs DEV_CONTEXT.md`, scoped/staged `git diff --check`, and `git status --short --branch` |
 
 ## P21 - Design System Consolidation
 

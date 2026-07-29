@@ -11,6 +11,7 @@ Thumbs.db
 cache/
 output/playwright/
 output/performance/
+tmp/
 
 # Go
 bin/

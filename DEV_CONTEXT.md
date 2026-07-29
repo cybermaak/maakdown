@@ -82,6 +82,10 @@ Linux WebKitGTK search/focus/drag/drop/print coverage.
   bug-fix commit history and current code review, recommending phased
   hardening around reader lifecycles, block decorations, parser metadata,
   platform capabilities, and regression gates.
+- `docs/code-design-stability-proposal.md`: parallel 2026-07-02 code-design
+  stability proposal from a Claude Code review pass; it overlaps
+  `docs/stability-maintainability-proposal.md` and remains proposal-only until
+  reconciled into an accepted plan.
 - `docs/performance-audit-next-release.md`: P13 macOS performance baseline,
   parser source-position overhead, memory probes, and next-release thresholds.
 - `docs/design-system/`: reviewed mock, design-system references, adoption
@@ -143,6 +147,8 @@ Linux WebKitGTK search/focus/drag/drop/print coverage.
 - `.github/workflows/release-smoke.yml`: manually dispatched unsigned build,
   test, artifact-validation, and short-lived artifact-upload matrix for macOS,
   Windows, and Linux.
+- `.codex/environments/environment.toml`: Codex desktop project metadata for
+  the local `wails dev` run action.
 
 ## Decisions
 
