@@ -4,17 +4,19 @@
 
 # Maakdown
 
-**A beautiful, distraction-free desktop app for reading your Markdown.**
+**A precise, distraction-free desktop app for reading your Markdown.**
 
 [![Build Status](https://img.shields.io/github/actions/workflow/status/cybermaak/maakdown/ci.yml?branch=main&style=flat-square)](https://github.com/cybermaak/maakdown/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 [![Platforms](https://img.shields.io/badge/Platforms-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey?style=flat-square)](#download)
 
-Maakdown is a fast, local-first Markdown viewer designed for technical documents, personal notes, and knowledge bases. Open any Markdown file and see it the way you meant it — clean typography, rich code formatting, math, and diagrams, all in a calm workspace.
+Maakdown is a fast, local-first Markdown viewer designed for technical documents, personal notes, and knowledge bases. Open any Markdown file and see it the way you meant it — clean typography, rich tables, code, math, and diagrams in a calm workspace.
+
+**Latest release: [v0.2.0 — Precision Reading & Performance](https://github.com/cybermaak/maakdown/releases/tag/v0.2.0)**
 
 <br />
 
-<img src="docs/assets/maakdown_demo.webp" alt="Animated demo: reading a technical document, jumping via the outline minimap, using the command palette, and switching to the dark theme with a rendered Mermaid diagram" width="900" />
+<img src="docs/assets/maakdown_demo.webp" alt="Animated demo: reading a technical document, navigating with the outline minimap, enabling document line numbers from the command palette, and switching to the dark theme with a rendered Mermaid diagram" width="900" />
 
 </div>
 
@@ -24,11 +26,11 @@ Maakdown is a fast, local-first Markdown viewer designed for technical documents
 
 We built Maakdown because reading Markdown shouldn't feel like staring at a raw code editor, nor should it require a heavyweight, slow electron app. 
 
-- **A Genuinely Nice Reading Experience**: Warm, book-like themes and careful typography. Tune the font, size, line height, and width to taste.
+- **Precision Reading Controls**: Change the reading measure or show semantic document line numbers directly from the tab bar, then jump to any reader line from the command palette.
 - **Lightning Fast on Massive Files**: Open a 10,000-line document and it still scrolls smoothly and stays light on memory. Text appears instantly, and richer details fill in as you read.
-- **Built for Technical Minds**: Syntax-highlighted code, KaTeX math, Mermaid diagrams, tables, task lists, callouts, footnotes, and local images all just work.
+- **Built for Technical Minds**: Shiki-highlighted code, KaTeX math, Mermaid diagrams, sortable and filterable tables, task lists, callouts, footnotes, and local images all just work.
 - **Local-First & Private**: Your files never leave your machine. Work offline across many notes using tabs, recent files, and a session that restores itself perfectly the next time you open the app.
-- **Keyboard & Navigation Ready**: Search the current document, navigate with a command palette, jump between notes via wikilinks, and print or export to PDF whenever you need a copy.
+- **Keyboard & Navigation Ready**: Search the current document, navigate with the outline minimap and command palette, jump between notes via wikilinks, and print or export to PDF whenever you need a copy.
 
 ---
 
@@ -37,13 +39,15 @@ We built Maakdown because reading Markdown shouldn't feel like staring at a raw 
 | Feature | Details |
 |---|---|
 | **Standard Markdown** | Full support for CommonMark + GFM tables, task lists, strikethrough, autolinks, and footnotes. |
-| **Code & Syntax** | Fenced-code highlighting via highlight.js (default), with optional Shiki integration. |
+| **Code & Syntax** | Shiki highlighting by default, with Highlight.js available as a fast fallback from the command palette. |
 | **Math & Diagrams** | Inline and block math rendered with KaTeX. Mermaid diagrams lazy-load on viewport entry. |
 | **Metadata & Callouts** | YAML frontmatter surfaces as a clean document masthead. Full support for GitHub/Obsidian-style callouts. |
-| **Seamless Navigation** | Hover-revealed outline with scroll-spy, internal `#anchors`, and per-tab history. |
+| **Precision Reading** | Docked reading-width controls, semantic document line numbers, `Go to line...`, reader statistics, and minimap search/structure marks. |
+| **Tables** | Constrained reader layouts, row numbers, sorting, type-aware filtering, and active filter/sort chips. |
+| **Seamless Navigation** | Hover-revealed outline with scroll-spy, internal `#anchors`, per-tab history, and a unified command palette. |
 | **Wikilinks** | Native `[[Note Name]]` support resolved through a blazing-fast Go-built vault index. |
 | **Workspace & Output** | Tabbed documents, drag-and-drop, native print, and system print-to-PDF support. |
-| **Custom Appearance** | Light/dark themes and highly configurable typography settings. |
+| **Custom Appearance** | Light/dark and high-contrast reader themes with configurable typography and measure. |
 
 ---
 
@@ -52,24 +56,37 @@ We built Maakdown because reading Markdown shouldn't feel like staring at a raw 
 <table>
   <tr>
     <td width="50%">
-      <img src="docs/screenshots/reading-dark.png" alt="Dark theme showing rendered Mermaid diagrams" />
-      <p align="center"><em>Dark theme with rendered Mermaid diagrams</em></p>
+      <img src="docs/screenshots/reading-light.png" alt="Light reading view with document metadata, outline minimap, and docked reading controls" />
+      <p align="center"><em>Focused reading with metadata and docked controls</em></p>
     </td>
     <td width="50%">
-      <img src="docs/screenshots/code-and-math.png" alt="Syntax-highlighted code and KaTeX math" />
-      <p align="center"><em>Syntax-highlighted code and KaTeX math</em></p>
+      <img src="docs/screenshots/reading-dark.png" alt="Dark theme showing rendered Mermaid diagrams and document line controls" />
+      <p align="center"><em>Dark theme with rendered Mermaid diagrams</em></p>
     </td>
   </tr>
   <tr>
     <td width="50%">
-      <img src="docs/screenshots/command-palette.png" alt="Command palette open over a document" />
-      <p align="center"><em>Command palette for fast keyboard navigation</em></p>
+      <img src="docs/screenshots/table-tools.png" alt="Table reader with row numbers, constrained columns, and sort and filter controls" />
+      <p align="center"><em>Reader-first tables with sorting and filtering</em></p>
     </td>
-    <td width="50%" valign="top">
-      <p><em>Note: Every screenshot above is generated from the real app rendering sample documents. You can regenerate them at any time in development.</em></p>
+    <td width="50%">
+      <img src="docs/screenshots/code-and-math.png" alt="Shiki syntax-highlighted TypeScript code and KaTeX math" />
+      <p align="center"><em>Shiki-highlighted code and KaTeX math</em></p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <img src="docs/screenshots/command-palette.png" alt="Command palette showing navigation and reader settings" />
+      <p align="center"><em>Unified commands, navigation, and settings</em></p>
+    </td>
+    <td width="50%">
+      <img src="docs/screenshots/workspace-tabs.png" alt="Multiple Markdown tabs open with Mermaid diagrams and docked reading controls" />
+      <p align="center"><em>Restorable multi-tab workspace</em></p>
     </td>
   </tr>
 </table>
+
+Every image above comes from the real app rendering release fixtures. The repeatable refresh process is documented in [`docs/release-site-refresh.md`](docs/release-site-refresh.md).
 
 ---
 

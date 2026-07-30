@@ -3,19 +3,19 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Maakdown — fast, local-first desktop Markdown viewer for macOS, Windows &amp; Linux</title>
-  <meta name="description" content="Maakdown is a free, open-source desktop Markdown reader. Clean typography, syntax-highlighted code, KaTeX math, Mermaid diagrams, wikilinks, and tabs — fast even on 10,000-line files. Signed &amp; notarized for macOS; Windows and Linux builds too.">
+  <title>Maakdown — precision Markdown reading for macOS, Windows &amp; Linux</title>
+  <meta name="description" content="Maakdown v0.2.0 is a free, local-first desktop Markdown reader with line-aware navigation, rich tables, Shiki code, KaTeX math, Mermaid diagrams, wikilinks, and tabs.">
   <link rel="canonical" href="https://cybermaak.dev/maakdown/">
   <link rel="icon" type="image/png" href="icon.png">
 
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Maakdown — a beautiful, distraction-free Markdown reader">
-  <meta property="og:description" content="Free, open-source, local-first desktop Markdown viewer. Typography, code, KaTeX, Mermaid, wikilinks, tabs. macOS (signed &amp; notarized), Windows, Linux.">
+  <meta property="og:title" content="Maakdown — precision reading for Markdown">
+  <meta property="og:description" content="Free, open-source, local-first Markdown reader with line-aware navigation, rich tables, code, math, diagrams, and a calm tabbed workspace.">
   <meta property="og:url" content="https://cybermaak.dev/maakdown/">
   <meta property="og:image" content="https://cybermaak.dev/maakdown/social-preview.png">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Maakdown — a beautiful, distraction-free Markdown reader">
-  <meta name="twitter:description" content="Free, open-source, local-first desktop Markdown viewer for macOS, Windows, and Linux.">
+  <meta name="twitter:title" content="Maakdown — precision reading for Markdown">
+  <meta name="twitter:description" content="Line-aware navigation, rich tables, code, math, diagrams, and a calm local-first workspace.">
   <meta name="twitter:image" content="https://cybermaak.dev/maakdown/social-preview.png">
 
   <style>
@@ -31,18 +31,20 @@
     a:hover { text-decoration:underline; }
     .wrap { max-width:980px; margin:0 auto; padding:0 24px; }
 
-    header { padding:72px 0 40px; text-align:center;
-      background:linear-gradient(180deg,var(--paper-50),var(--paper-100)); }
+    header { padding:64px 0 40px; text-align:center; background:var(--paper-50); }
     .brand { display:inline-flex; align-items:center; gap:18px; }
     .brand img { width:84px; height:84px; border-radius:19px; box-shadow:0 8px 24px rgba(35,35,32,.16); }
-    .brand h1 { font-size:52px; letter-spacing:-1px; }
+    .brand h1 { font-size:52px; letter-spacing:0; }
+    .release { margin:22px auto 0; width:max-content; padding:6px 12px; border-radius:999px;
+      border:1px solid var(--paper-400); background:var(--paper-0); color:var(--link);
+      font-size:14px; font-weight:700; }
     .tagline { font-size:24px; font-weight:600; margin-top:18px; }
     .sub { color:var(--ink-500); font-size:17px; max-width:640px; margin:10px auto 0; }
     .chips { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:22px; }
     .chip { padding:6px 14px; border-radius:999px; font-size:14px; font-weight:600;
       background:var(--paper-0); border:1px solid var(--paper-400); }
     .cta { margin-top:30px; display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
-    .btn { display:inline-block; padding:13px 26px; border-radius:10px; font-weight:700; font-size:16px; }
+    .btn { display:inline-block; padding:13px 26px; border-radius:8px; font-weight:700; font-size:16px; }
     .btn.primary { background:var(--link); color:#fff; }
     .btn.primary:hover { text-decoration:none; filter:brightness(1.08); }
     .btn.ghost { border:1px solid var(--paper-400); background:var(--paper-0); color:var(--ink-900); }
@@ -50,23 +52,35 @@
     .platforms { margin-top:14px; color:var(--ink-500); font-size:14px; }
 
     .hero { margin:44px auto 0; }
-    .hero img { width:100%; border-radius:12px; border:1px solid var(--paper-400);
+    .hero img { width:100%; border-radius:8px; border:1px solid var(--paper-400);
       box-shadow:0 24px 60px rgba(35,35,32,.18); }
 
     section { padding:56px 0; }
-    section h2 { font-size:30px; letter-spacing:-.5px; margin-bottom:24px; text-align:center; }
+    section h2 { font-size:30px; letter-spacing:0; margin-bottom:24px; text-align:center; }
     .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px; }
-    .card { background:var(--paper-0); border:1px solid var(--paper-400); border-radius:12px; padding:22px; }
+    .card { background:var(--paper-0); border:1px solid var(--paper-400); border-radius:8px; padding:22px; }
     .card h3 { font-size:18px; margin-bottom:8px; }
     .card p { color:var(--ink-500); font-size:15px; }
 
     .shots { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:20px; }
-    .shots figure img { width:100%; border-radius:10px; border:1px solid var(--paper-400);
+    .shots figure img { width:100%; border-radius:8px; border:1px solid var(--paper-400);
       box-shadow:0 10px 30px rgba(35,35,32,.12); }
     .shots figcaption { text-align:center; color:var(--ink-500); font-size:14px; margin-top:8px; }
 
     footer { border-top:1px solid var(--paper-300); padding:34px 0 48px;
       text-align:center; color:var(--ink-500); font-size:14px; }
+    @media (max-width:640px) {
+      .wrap { padding:0 16px; }
+      header { padding-top:42px; }
+      .brand { gap:12px; }
+      .brand img { width:64px; height:64px; border-radius:14px; }
+      .brand h1 { font-size:40px; }
+      .tagline { font-size:21px; }
+      .sub { font-size:16px; }
+      .hero { margin-top:32px; }
+      section { padding:44px 0; }
+      section h2 { font-size:27px; }
+    }
   </style>
 </head>
 <body>
@@ -74,9 +88,10 @@
 <header>
   <div class="wrap">
     <div class="brand"><img src="icon.png" alt="Maakdown app icon"><h1>Maakdown</h1></div>
-    <p class="tagline">A beautiful, distraction-free desktop reader for your Markdown.</p>
-    <p class="sub">Open any Markdown file and see it the way you meant it — clean typography,
-      rich code, math, and diagrams in a calm reading workspace. Local-first: your files never
+    <p class="release">v0.2.0 · Precision Reading &amp; Performance</p>
+    <p class="tagline">Precision reading for Markdown.</p>
+    <p class="sub">Read technical documents and personal notes with line-aware navigation,
+      rich tables, code, math, and diagrams in a calm local-first workspace. Your files never
       leave your machine.</p>
     <div class="chips">
       <span class="chip">Free &amp; open source (MIT)</span>
@@ -90,7 +105,7 @@
     </div>
     <p class="platforms">macOS (Apple silicon) · Windows x64 · Linux x64</p>
     <div class="hero wrap">
-      <img src="maakdown_demo.webp" alt="Animated demo: reading a technical document, jumping via the outline minimap, using the command palette, and switching to the dark theme with a rendered Mermaid diagram">
+      <img src="maakdown_demo.webp" alt="Animated demo: reading a technical document, navigating with the outline minimap, enabling document line numbers from the command palette, and switching to the dark theme with a rendered Mermaid diagram">
     </div>
   </div>
 </header>
@@ -99,14 +114,16 @@
   <div class="wrap">
     <h2>Why Maakdown?</h2>
     <div class="grid">
-      <div class="card"><h3>A genuinely nice reading experience</h3>
-        <p>Warm, book-like light and dark themes and careful typography. Tune font, size, line height, and measure to taste.</p></div>
+      <div class="card"><h3>Precision reading controls</h3>
+        <p>Change the reading measure or show semantic document line numbers from the tab bar, then jump to any reader line from the command palette.</p></div>
       <div class="card"><h3>Fast on massive files</h3>
         <p>A virtualized reader keeps 10,000-line documents scrolling smoothly and light on memory.
         Text appears instantly; code highlighting, math, and diagrams fill in as you read.</p></div>
       <div class="card"><h3>Built for technical documents</h3>
-        <p>Syntax-highlighted code, KaTeX math, Mermaid diagrams, GFM tables, task lists, callouts,
+        <p>Shiki-highlighted code, KaTeX math, Mermaid diagrams, GFM tables, task lists, callouts,
         footnotes, and local images all just work — safely sanitized.</p></div>
+      <div class="card"><h3>Tables made readable</h3>
+        <p>Constrained columns, row numbers, sorting, type-aware filters, and active chips make dense Markdown tables easier to scan without changing the source file.</p></div>
       <div class="card"><h3>Made for working across notes</h3>
         <p>Tabs, recent files, drag-and-drop, wikilinks between notes, full-document search, a
         command palette, and a session that restores itself on relaunch.</p></div>
@@ -124,12 +141,18 @@
   <div class="wrap">
     <h2>See it in action</h2>
     <div class="shots">
+      <figure><img src="reading-light.png" alt="Light reading view with metadata, outline minimap, and docked reading controls" loading="lazy">
+        <figcaption>Focused reading with metadata and docked controls</figcaption></figure>
       <figure><img src="reading-dark.png" alt="Dark theme with rendered Mermaid diagrams" loading="lazy">
         <figcaption>Dark theme with rendered Mermaid diagrams</figcaption></figure>
+      <figure><img src="table-tools.png" alt="Table reader with row numbers, constrained columns, and sort and filter controls" loading="lazy">
+        <figcaption>Reader-first tables with sorting and filtering</figcaption></figure>
       <figure><img src="code-and-math.png" alt="Syntax-highlighted code and KaTeX math" loading="lazy">
-        <figcaption>Syntax-highlighted code and KaTeX math</figcaption></figure>
+        <figcaption>Shiki-highlighted code and KaTeX math</figcaption></figure>
       <figure><img src="command-palette.png" alt="Command palette open over a document" loading="lazy">
         <figcaption>Command palette for fast keyboard navigation</figcaption></figure>
+      <figure><img src="workspace-tabs.png" alt="Multiple Markdown tabs open with Mermaid diagrams and docked reading controls" loading="lazy">
+        <figcaption>A restorable multi-tab workspace</figcaption></figure>
     </div>
   </div>
 </section>

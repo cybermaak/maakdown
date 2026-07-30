@@ -292,8 +292,8 @@ editor or a general-purpose browser. Its design centers on four promises:
 3. **Local by default:** files, assets, and credentials stay under explicit trust boundaries.
 4. **Predictable everywhere:** one architecture targets all desktop platforms.
 
-The v1 stack is Wails 2.11, Go, Svelte 5, Vite 8, unified/remark/rehype, KaTeX,
-highlight.js, and Mermaid. External links are delegated to the system browser.
+The v1 stack is Wails 2.12, Go, Svelte 5, Vite 8, unified/remark/rehype, KaTeX,
+Shiki, Highlight.js, and Mermaid. External links are delegated to the system browser.
 Relative images are served through an opaque, tokenized loopback URL.
 
 ![Maakdown architecture overview](assets/architecture-overview.svg)

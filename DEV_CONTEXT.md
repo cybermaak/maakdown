@@ -8,12 +8,12 @@ The app is a viewer, not an editor. It renders CommonMark/GFM, code, KaTeX math,
 
 ## Current Phase
 
-**Phase:** P11.11 is active; P13-P22 implementation and macOS acceptance are
-complete for the next release; P0-P10 and P12 are complete
-**Active focus:** remaining native editorial acceptance and cross-platform
-release validation. P13-P18 delivered the
-"Precision Reading & Performance"
-release scope: macOS benchmark baselines, source-position metadata,
+**Phase:** v0.2.0 is published; P25 release-presentation refresh is complete;
+P11.11 remaining Linux native editorial acceptance is active
+**Active focus:** retain the remaining Linux native editorial acceptance gap
+after completing the v0.2.0 README and GitHub Pages presentation refresh.
+P13-P18 delivered the "Precision Reading & Performance" release scope: macOS
+benchmark baselines, source-position metadata,
 document/code line numbers, code wrap controls, model-driven minimap marks,
 viewport/search marks, reader statistics, pinned/missing recents, print
 metadata controls, high-contrast reader tokens, reader-only table projection,
@@ -78,6 +78,9 @@ Linux WebKitGTK search/focus/drag/drop/print coverage.
   guidance.
 - `docs/next-release-task-tracker.md`: detailed P13-P19 task tracker with
   per-task macOS/Windows/Linux validation gates.
+- `docs/release-site-refresh.md`: repeatable per-release README screenshot,
+  landing-page asset, social-preview, verification, and Pages deployment
+  checklist.
 - `docs/stability-maintainability-proposal.md`: 2026-07-02 proposal based on
   bug-fix commit history and current code review, recommending phased
   hardening around reader lifecycles, block decorations, parser metadata,
@@ -149,6 +152,8 @@ Linux WebKitGTK search/focus/drag/drop/print coverage.
   Windows, and Linux.
 - `.codex/environments/environment.toml`: Codex desktop project metadata for
   the local `wails dev` run action.
+- `site/`: static public landing page and release media deployed by GitHub
+  Pages when `site/**` changes reach `main`.
 
 ## Decisions
 
@@ -173,6 +178,11 @@ Linux WebKitGTK search/focus/drag/drop/print coverage.
   `uat-technical-document.md`, and a multi-tab workspace launch in both light
   and dark themes on macOS, Windows, and Linux. The seeded native visual state
   enables document line numbers so the docked reading controls are represented.
+- Treat `docs/screenshots/` and `docs/assets/maakdown_demo.webp` as canonical
+  README release media generated from the real app. Mirror published assets
+  into `site/`, use reviewed tag-native screenshots for native-only states such
+  as multi-tab workspace coverage, and generate `site/social-preview.png` from
+  canonical app media rather than synthesizing product UI.
 - Keep Mermaid's diagram-specific label modes intact. On Windows/WebView2,
   wait for document fonts before layout, add a small SVG viewBox gutter for
   edge-label rounding, and render exceptionally wide flowcharts at a readable
@@ -1088,3 +1098,19 @@ provisioning profiles, notarization credentials, or signed release artifacts.
   Verification passed: `go test ./internal/config`, `go test ./...`,
   `npm run check`, full `npm test`, focused UAT-05, `npm run build`, and
   `npm run benchmark`.
+- 2026-07-29: Completed the v0.2.0 release-presentation refresh (P25).
+  Regenerated the canonical README screenshots and animated demo from the
+  current app, added reviewed release-tag table and multi-tab screenshots,
+  refreshed README and `site/` copy around Precision Reading & Performance,
+  and added a deterministic social-preview generator plus
+  `docs/release-site-refresh.md`. The evaluation-fixture source and generated
+  variants now identify the current Wails 2.12 baseline and Shiki/Highlight.js
+  highlighter pair, removing stale stack claims from the published images.
+  Browser QA passed at 1440x1000 and 390x844:
+  all eight site images loaded, there was no horizontal overflow or console
+  error, and Download resolved to v0.2.0. `npm run check`, `npm run build`, all
+  57 frontend tests, script syntax checks, local-reference checks, stale-copy
+  scanning, and scoped `git diff --check` passed. The pre-existing generated
+  whitespace change in
+  `frontend/wailsjs/go/models.ts` remained untouched and excluded from the
+  scoped whitespace check.
