@@ -8,10 +8,11 @@ The app is a viewer, not an editor. It renders CommonMark/GFM, code, KaTeX math,
 
 ## Current Phase
 
-**Phase:** v0.2.0 is published; P25 release-presentation refresh is complete;
+**Phase:** v0.2.0 is published; P26 release-runbook governance is complete;
 P11.11 remaining Linux native editorial acceptance is active
 **Active focus:** retain the remaining Linux native editorial acceptance gap
-after completing the v0.2.0 README and GitHub Pages presentation refresh.
+with the complete release sequence, release-note format, and post-publication
+site refresh now explicit and enforceable.
 P13-P18 delivered the "Precision Reading & Performance" release scope: macOS
 benchmark baselines, source-position metadata,
 document/code line numbers, code wrap controls, model-driven minimap marks,
@@ -78,6 +79,10 @@ Linux WebKitGTK search/focus/drag/drop/print coverage.
   guidance.
 - `docs/next-release-task-tracker.md`: detailed P13-P19 task tracker with
   per-task macOS/Windows/Linux validation gates.
+- `docs/RELEASING.md`: canonical end-to-end release runbook covering the gate,
+  release-note format, tag/artifact publication, verification, site refresh,
+  Pages deployment, and closeout.
+- `docs/release-checklist.md`: release gate used by the canonical runbook.
 - `docs/release-site-refresh.md`: repeatable per-release README screenshot,
   landing-page asset, social-preview, verification, and Pages deployment
   checklist.
@@ -183,6 +188,11 @@ Linux WebKitGTK search/focus/drag/drop/print coverage.
   into `site/`, use reviewed tag-native screenshots for native-only states such
   as multi-tab workspace coverage, and generate `site/social-preview.png` from
   canonical app media rather than synthesizing product UI.
+- Treat `docs/RELEASING.md` as the canonical release runbook. Generated GitHub
+  notes are placeholders; final notes follow the documented summary, homepage,
+  downloads, highlights, notable changes, notes, and changelog format. A public
+  feature release is not complete until `docs/release-site-refresh.md` has run,
+  the Pages workflow passes, and the live landing page is inspected.
 - Keep Mermaid's diagram-specific label modes intact. On Windows/WebView2,
   wait for document fonts before layout, add a small SVG viewBox gutter for
   edge-label rounding, and render exceptionally wide flowcharts at a readable
@@ -1114,3 +1124,13 @@ provisioning profiles, notarization credentials, or signed release artifacts.
   whitespace change in
   `frontend/wailsjs/go/models.ts` remained untouched and excluded from the
   scoped whitespace check.
+- 2026-07-30: Completed the canonical release runbook and governance pass
+  (P26). Expanded `docs/RELEASING.md` into the required end-to-end sequence:
+  release gate, established GitHub release-note format, verified tag and
+  platform publication, artifact and CI review, mandatory site refresh, Pages
+  verification, and tracker closeout. `AGENTS.md` now requires the guide for
+  release work and records the narrow exceptions. The release checklist now
+  matches the actual Windows/Linux CI plus local signed/notarized macOS split,
+  and `scripts/release-mac.sh` references the pinned Wails 2.12 baseline.
+  Release paths, policy references, shell syntax, stale-version scanning, and
+  scoped `git diff --check` passed.

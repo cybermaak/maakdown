@@ -1,7 +1,8 @@
 # Release Checklist
 
-This checklist is the P7 release gate. Signing commands require credentials that
-remain outside the repository.
+This checklist is the P7 release gate. Follow the complete sequence in
+`docs/RELEASING.md`. Signing commands require credentials that remain outside
+the repository.
 
 ## Build and artifact pipeline
 
@@ -12,14 +13,16 @@ remain outside the repository.
   (`Maakdown-<version>-macos-<arch>.zip`, `…-windows-….zip`,
   `…-linux-….tar.gz`). Used locally and by CI.
 - **Publish (CI):** the `Release` workflow (`.github/workflows/release.yml`)
-  triggers on a `v*` tag, builds macOS/Windows/Linux, packages each, and
-  attaches the archives to a GitHub Release. `workflow_dispatch` does a dry run
+  triggers on a `v*` tag, builds Windows/Linux, packages each, and attaches the
+  archives to a GitHub Release. Signed/notarized macOS artifacts are produced
+  locally with `scripts/release-mac.sh`. `workflow_dispatch` does a dry run
   (workflow artifacts only, no Release).
 - **Verify only (CI):** the `Cross-platform release smoke` workflow
   (`workflow_dispatch`) builds and uploads short-lived artifacts without
   publishing a Release.
-- Release artifacts are **unsigned**; signing/notarization is the credentialed
-  step below and is applied by the release operator.
+- CI-produced Windows and Linux artifacts are **unsigned**. macOS
+  signing/notarization is the credentialed local step below and is applied by
+  the release operator.
 
 To cut a release: tag the commit (`git tag vX.Y.Z && git push origin vX.Y.Z`)
 and the workflow publishes the GitHub Release. Validate workflow changes on the
@@ -51,11 +54,12 @@ and the workflow publishes the GitHub Release. Validate workflow changes on the
 
 ## Windows
 
-- Confirm certificate path/password are provided through secrets.
-- Build executable/installer.
-- Sign with timestamp server.
-- Verify signature.
-- Launch the signed installer and application on a clean Windows VM.
+- Build the executable/archive.
+- When a certificate is available, provide its path/password through secrets,
+  sign with a timestamp server, and verify the signature.
+- Until signing is available, record that the artifact is unsigned and that
+  SmartScreen may warn.
+- Launch the published application on a clean Windows VM.
 
 ## Linux
 
@@ -83,3 +87,6 @@ and the workflow publishes the GitHub Release. Validate workflow changes on the
 - Do not commit generated binaries or signing logs.
 - Run the `Cross-platform release smoke` workflow for the release commit and
   attach its macOS, Windows, and Linux result URLs to the release record.
+- Apply final release notes using the format in `docs/RELEASING.md`.
+- Execute `docs/release-site-refresh.md`, verify the Pages workflow, and inspect
+  the live landing page.

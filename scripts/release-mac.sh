@@ -31,7 +31,7 @@ if [[ -f .env ]]; then set -a; source .env; set +a; fi
 : "${MAAKDOWN_MACOS_CODESIGN_IDENTITY:?set MAAKDOWN_MACOS_CODESIGN_IDENTITY (in .env)}"
 : "${MAAKDOWN_NOTARY_PROFILE:?set MAAKDOWN_NOTARY_PROFILE (in .env)}"
 
-command -v wails >/dev/null 2>&1 || { echo "ERROR: wails not on PATH (go install github.com/wailsapp/wails/v2/cmd/wails@v2.11.0)" >&2; exit 1; }
+command -v wails >/dev/null 2>&1 || { echo "ERROR: wails not on PATH (go install github.com/wailsapp/wails/v2/cmd/wails@v2.12.0)" >&2; exit 1; }
 xcode-select -p >/dev/null 2>&1 || { echo "ERROR: Xcode command-line tools missing (xcode-select --install)" >&2; exit 1; }
 security find-identity -v -p codesigning | grep -q "Developer ID Application" \
   || { echo "ERROR: no 'Developer ID Application' identity in the keychain" >&2; exit 1; }

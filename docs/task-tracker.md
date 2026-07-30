@@ -2,7 +2,7 @@
 
 **Purpose:** project task breakdown and progress tracker.  
 **Status values:** Todo, In Progress, Blocked, Done, Deferred.  
-**Last updated:** 2026-07-29.
+**Last updated:** 2026-07-30.
 
 ## Summary
 
@@ -29,6 +29,7 @@
 | P23 | Done | Direct macOS desktop regression pass | packaged app launches and native menu/pending-open paths are checked directly; stale native Focus Mode menu item removed |
 | P24 | Done | Native screenshot coverage expansion | packaged-app screenshot CI captures representative reader, table, Mermaid, technical-document, and multi-tab scenarios on macOS, Windows, and Linux; sandbox run passed and screenshots were pulled locally |
 | P25 | Done | v0.2.0 release presentation refresh | README and landing page use current release screenshots, animation, copy, and a documented repeatable refresh process |
+| P26 | Done | Canonical release runbook and governance | release notes, artifact publishing, site refresh, closeout evidence, and AGENTS enforcement are documented as one required sequence |
 
 ## P0 - Scaffold
 
@@ -241,3 +242,10 @@
 |---|---|---|---|---|---|---|
 | P25.1 | Done | Refresh README and landing-page release presentation | Codex | v0.2.0 release, P24 screenshots | README and `site/` show current app chrome and v0.2.0 reading, table, code, math, diagram, and workspace capabilities; obsolete release copy is removed | Canonical screenshots and animated demo regenerated; reviewed native table/workspace screenshots adopted; social preview regenerated; desktop 1440x1000 and mobile 390x844 browser checks found no overflow or console errors, all eight site images loaded, and Download resolved to v0.2.0; `npm run check`; `npm run build`; scoped `git diff --check` |
 | P25.2 | Done | Document the repeatable release screenshot/site process | Codex | existing capture scripts, Pages workflow, commit history | One guide identifies canonical assets, generation commands, landing-page copies, verification, and deployment trigger | Added `docs/release-site-refresh.md`; all README and landing-page local references verified; stale release-copy scan passed |
+
+## P26 - Canonical Release Runbook And Governance
+
+| ID | Status | Task | Owner | Depends On | Exit Criteria | Verification |
+|---|---|---|---|---|---|---|
+| P26.1 | Done | Consolidate the end-to-end release process | Codex | `docs/RELEASING.md`, release checklist, release/site workflows, signing scripts, v0.1.0/v0.2.0 notes | The canonical runbook covers release gating, note format, tagging, platform publishing, artifact verification, site refresh, Pages verification, and project-memory closeout | Reviewed v0.1.0/v0.2.0 release notes and current workflows/scripts; release paths exist; shell syntax and scoped `git diff --check` passed |
+| P26.2 | Done | Enforce the release guide through AGENTS | Codex | P26.1, remote/signing policies | Agents must read the canonical guide for release work, use the release-note format, execute the site refresh for feature releases, and record explicit exceptions | `rg` policy review confirmed canonical guide, release-note format, site refresh, Pages verification, exception recording, and remote-authorization rules |

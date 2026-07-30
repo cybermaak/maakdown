@@ -100,6 +100,28 @@ The user plans to sign macOS and Windows builds with their own certificates. Age
 - Keep signing-safe templates, entitlements, manifests, and documentation in git.
 - Generated installers, disk images, signed binaries, symbol archives, and notarization logs are build artifacts and should remain ignored unless the user explicitly asks otherwise.
 
+## Release Guide Policy
+
+- When asked to prepare, cut, sign, publish, verify, document, or complete a
+  release, read and follow `docs/RELEASING.md` as the canonical release
+  runbook.
+- Use `docs/release-checklist.md` as the release gate. Do not tag or publish
+  while required checks are failing or release blockers remain unaccepted.
+- Final GitHub release notes must follow the format in `docs/RELEASING.md`:
+  opening summary, homepage, exact downloads table, highlights, notable changes,
+  notes, and full changelog.
+- For every public feature release, execute
+  `docs/release-site-refresh.md` after the artifacts and release notes are
+  final, then verify the GitHub Pages deployment and live landing page.
+- A documentation-only release or emergency artifact rebuild may skip new
+  screenshots only when the user-facing app surface is unchanged. Record the
+  exception in `DEV_CONTEXT.md`.
+- Keep `DEV_CONTEXT.md`, `docs/task-tracker.md`, and any active release tracker
+  aligned with the release tag, verification evidence, published assets,
+  release notes, and site-refresh status.
+- Remote pushes, tags, GitHub Release mutations, and publication still require
+  explicit user authorization under the Remote Policy.
+
 ## Beast Mode
 
 If the user says to "go beast mode" on a goal:
